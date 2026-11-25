@@ -1,0 +1,9 @@
+// The spec workspace: every spec package authored here, one folder each,
+// versioned and released on its own. heron/ is the Heron system's spec;
+// more products' specs and org-level packages they share sit beside it as
+// sibling folders, and each is listed here so the workspace checks as one.
+// Nothing here refers to implementation code: implementations import a
+// package at a version and add their own project tree around it.
+import = [
+  "./heron/",
+]
