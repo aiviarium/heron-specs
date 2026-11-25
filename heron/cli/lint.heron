@@ -1,0 +1,53 @@
+lint: command("heron lint") {
+  usage = ["heron lint [--json] [--fix] [entry points…]"]
+
+  | Checks each [entry point](#language.core_format.files.entry_point), loads what its extensions implement, and runs every
+  | registered lint and [prose lint provider](#language.markup.prose_view.prose_lint_provider) over it: the core lints, those packages and
+  | extensions add, and the prose providers, such as Vale. It prints the check's
+  | diagnostics and the findings together, sorted, as `heron check` prints them.
+  | Options come before the [entry points](#language.core_format.files.entry_point).
+
+  entries: argument("entry points", type = String, optional = true, variadic = true) {
+    | Files, or folders whose `index.heron` is the [entry point](#language.core_format.files.entry_point), relative to the working
+    | folder. With none, `.`.
+  }
+
+  json: option("--json", type = Bool, default = false) {
+    | Prints the findings as one JSON array, each with `file`, `start`, `end`, `severity`,
+    | `code`, `message`, `related`, `fixes`, `line` and `column`.
+  }
+
+  fix: option("--fix", type = Bool, default = false) {
+    | Applies each finding's first fix that isn't a suggestion, writes `heron lint: applied
+    | ‹n› fixes` to standard error, and reports the findings it didn't fix. A suggestion is
+    | a guess among others, such as a spelling correction, which only the editor offers, as
+    | a code action. The tree isn't linted again after the fixes: run `heron lint` once more
+    | to see what they changed.
+  }
+
+  exit(0) {{ No diagnostic and no finding, of any severity. }}
+  exit(1) {{ A diagnostic or a finding is left, a warning or a hint included; or a fix couldn't be written. }}
+  exit(2) {{ An unknown option, or an [entry point](#language.core_format.files.entry_point) that doesn't exist. }}
+
+  example {{ `heron lint --fix spec` rewrites what the prose lints can fix with certainty and lists the rest, such as unknown words, for an author to decide. }}
+
+  any_finding_fails: rule(lint, by = product.system.command_line) {
+    must {{ exit with status 1 when any diagnostic or finding is left, whatever its severity }}
+  }
+
+  fix_applies_no_guess: rule(lint.fix, by = product.system.command_line) {
+    mustNot {{ apply a fix marked as a suggestion }}
+    instead {{ leave the finding reported, for the editor to offer its suggestions as code actions }}
+  }
+
+  fix_no_overlap: rule(lint.fix, by = product.system.command_line) {
+    if {{ the edits of a fix overlap an edit already taken, or start at the same offset }}
+    mustNot {{ apply it }}
+    instead {{ leave its finding reported, so the next `heron lint --fix` can apply it to the changed text }}
+  }
+
+  fix_in_place: rule(lint.fix, by = product.system.command_line) {
+    must {{ apply each file's edits from its end backwards, so earlier offsets stay valid, and keep the file's permissions }}
+  }
+
+}

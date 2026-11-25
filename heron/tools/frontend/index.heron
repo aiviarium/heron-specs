@@ -1,0 +1,11 @@
+// The frontend: the design system, the shell, the editor and the preview.
+include = [
+  "./design_system.heron",
+  "./writing.heron",
+  "./screens/",
+  "./shell.heron",
+  "./editor.heron",
+  "./preview.heron",
+]
+
+| The frontend `heron serve` serves: the design system, the shell, the editor and its preview.

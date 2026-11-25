@@ -1,0 +1,12 @@
+// Interop: foreign code declared in Heron, the JS host that runs it, how
+// data crosses, when it runs, the protocol, and packaging.
+include = [
+  "./declaring.heron",
+  "./host.heron",
+  "./data_mapping.heron",
+  "./timing.heron",
+  "./protocol.heron",
+  "./packaging.heron",
+]
+
+| Behaviour that needs a real language, declared in Heron and written in that language: how it's bound, the [JS host](#language.interop.host.js_host) that runs it, how data crosses, when it runs, the protocol every foreign process speaks, and the SDK it's written with. JS and TS come first; the protocol is language-neutral, so other runtimes can follow with their own SDKs.

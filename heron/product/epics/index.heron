@@ -1,0 +1,13 @@
+// The backlog: one file per epic, each with its stories and their criteria.
+include = [
+  "./authoring.heron",
+  "./checking.heron",
+  "./running.heron",
+  "./generating.heron",
+  "./extending.heron",
+  "./specifying.heron",
+  "./editing.heron",
+  "./documenting.heron",
+]
+
+| The outcomes the work is planned around. Each epic holds its stories with their acceptance criteria; an implementation plans them into its own increments.

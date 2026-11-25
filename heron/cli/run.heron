@@ -1,0 +1,73 @@
+run: command("heron run") {
+  usage = ["heron run [--json] [--yes] [--undo-on-failure] [--entry file] <task> [--param value…]"]
+
+  | Runs a task of the tree by its path, with its parameters as options. It checks the tree,
+  | finds the task, reads its parameters, orders what it `@needs`, asks before a task marked
+  | `<confirm>`, loads the tree's extensions, runs each task in order with the real
+  | capabilities, and writes a `run` record. Its options are read by hand, not as
+  | the other commands' are: they take two dashes, come before the task, and everything after the
+  | task is the task's parameters.
+
+  task: argument("task", type = String) {
+    | The task's path from the tree's root, such as `seed_local` or `db.migrate`. A path
+    | that names nothing at the root is looked up inside the tree's `repository` node when
+    | that node is `std/repo`'s `Repository`, so `heron run setup` runs `repository.setup`.
+  }
+
+  params: argument("--param value", type = String, optional = true, variadic = true) {
+    | The task's parameters, as `--name value` or `--name=value`, a dash in the name read
+    | as an underscore. A `Bool` given with no value is `true`. A `List` or `Set` takes the
+    | option repeated or comma-separated values; an `Int`, a `Float` or `Decimal`, and a
+    | `Bool` are parsed as such; an enum takes a variant's name; any other type takes JSON
+    | when the value starts with `{` or `[`, and the text otherwise.
+  }
+
+  json: option("--json", type = Bool, default = false) {
+    | Prints the task's result as JSON, `null` included. Without it a string result is
+    | printed as it is, any other result as indented JSON, and nothing for `null`.
+  }
+
+  yes: option("--yes", type = Bool, default = false) {
+    | Runs tasks marked `<confirm>` without asking. Without it, each is asked about on the
+    | terminal, `Run ‹path›? [y/N]`, and only `y` or `yes` runs it.
+  }
+
+  undo: option("--undo-on-failure", type = Bool, default = false) {
+    | When a task fails, runs the `@undo` task of every task that finished, newest first,
+    | each recorded with the role `undo`.
+  }
+
+  entry: option("--entry", type = String, default = ".") {
+    | The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`; also written `--entry=file`.
+  }
+
+  exit(0) {{ The task and everything it needs succeeded. }}
+  exit(1) {{ The tree doesn't check, a task failed, a confirmation was declined, or an extension couldn't load. }}
+  exit(2) {{ An unknown option, no task named, no such task, a parameter that's unknown, missing without a terminal or not of its type, an `@needs` cycle or a need that isn't a task, or a `<confirm>` task without a terminal or `--yes`. }}
+
+  example {{ `heron run seed_local --count 20 --kinds cat,dog` passes `count` as an Int and `kinds` as a list of two. }}
+
+  missing_asked: rule(run.params, by = product.system.command_line) {
+    when {{ a required parameter isn't given and standard input is a terminal }}
+    must {{ ask for it on standard error as `‹name› (‹Type›): `, again until the answer parses as its type }}
+  }
+
+  missing_without_terminal: rule(run.params, by = product.system.command_line) {
+    when {{ a required parameter isn't given and standard input isn't a terminal }}
+    must {{ fail with status 2 before any task runs, naming the option, as `‹task› needs --‹name› (‹Type›)` }}
+  }
+
+  needs_once_in_order: rule(run, by = product.system.command_line) {
+    must {{ run every task `@needs` names, transitively, each once and before the tasks that need it, and the task asked for last }}
+  }
+
+  failure_stops: rule(run, by = product.system.command_line) {
+    when {{ a task fails }}
+    must {{ stop, print `heron run: ‹path› failed: ‹error›` on standard error and exit with status 1, running no task after it }}
+  }
+
+  every_run_recorded: rule(run, by = product.system.command_line) {
+    must {{ write a `run` record for every run that started its first task, succeeded or not, with its task, entry, arguments, the tasks it ran with their roles, its steps, processes, logs, calls and resources, and its result or error and exit status }}
+  }
+
+}

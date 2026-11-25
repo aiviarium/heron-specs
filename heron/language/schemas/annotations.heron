@@ -1,0 +1,46 @@
+annotations: section {
+  | A package declares an annotation with `annotation(on)`: its parameters are what the
+  | annotation takes, and its body may `accept` children, as a kind's does. Like a flag, it
+  | names the kinds it attaches to from its own side.
+
+  declaring_annotations: rule(language.core_format.nodes.annotations.annotation_term, by = product.system.checker) {
+    must {{ check an annotation's arguments against its declaration's parameters, as a call's are }}
+    example {{ `std/http` declares `status(code: Int): annotation(on = [types.type])`, which takes `@status(404)` }}
+  }
+
+  annotation_on: rule(language.core_format.nodes.annotations.annotation_term, by = product.system.linter) {
+    where {{ an annotation is declared with `on`, a list of kinds and categories }}
+    should {{ report [annotation placement](#language.schemas.annotations.diagnostics.annotation_misplaced) where it stands on a node whose kind fits none of them }}
+    unless {{ `on` is left out or empty, when the annotation may stand on any node }}
+  }
+
+  annotation_on_params: rule(language.core_format.nodes.annotations.annotation_term, by = product.system.linter) {
+    where {{ an annotation stands on a parameter, as `get_one(@path id: String): op` }}
+    should {{ report [annotation on a parameter](#language.schemas.annotations.diagnostics.annotation_on_param) unless its `on` names a kind of typed members that parameters are, such as `types.param` }}
+  }
+
+  repeatable: rule(language.core_format.nodes.annotations.annotation_term, by = product.system.linter) {
+    if {{ an annotation stands twice on one node and its declaration isn't flagged `annotation<repeatable>` }}
+    should {{ report [annotation repeated](#language.schemas.annotations.diagnostics.annotation_repeated) at the second }}
+  }
+
+  extern: rule(language.core_format.nodes.annotations.annotation_term, by = product.system.extension_host) {
+    must {{ bind a declaration annotated `@extern(e)` to the [extension](#language.schemas.extensions.extension_process) `e`, which implements it }}
+    example {{ `@extern(compliance) redact(text: String): func(String)` }}
+  }
+
+  diagnostics: section {
+    annotation_misplaced: diagnostic("annotation-placement", severity = warning, by = product.system.linter) {
+      message = "@‹annotation› doesn't attach to ‹kind›; it attaches to ‹kinds›"
+      | On a node with no kind, the kind reads "this node".
+    }
+
+    annotation_on_param: diagnostic("annotation-placement", severity = warning, by = product.system.linter) {
+      message = "@‹annotation› doesn't attach to a parameter; it attaches to ‹kinds›"
+    }
+
+    annotation_repeated: diagnostic("annotation-placement", severity = warning, by = product.system.linter) {
+      message = "@‹annotation› stands twice on one node, and it isn't <repeatable>"
+    }
+  }
+}

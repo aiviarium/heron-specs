@@ -1,0 +1,145 @@
+projects: section {
+  | The system's structure is part of its spec: which projects exist, what each one
+  | implements and how they depend on each other. A project is declared with `std/spec`'s
+  | `project` kind, usually in a `projects.heron` beside the tree's entry file, and its
+  | path is relative to the file that declares it. [Projects](#language.specifications.projects.specifications_projects)
+  | shows three, one of them external, and [grouped versioning](#language.specifications.projects.specifications_versioning)
+  | shows a group.
+  |
+  | | Field        | Type                   | Says                                                           |
+  | | ------------ | ---------------------- | -------------------------------------------------------------- |
+  | | `implements` | `List(Ref(Any))`       | the spec subtrees the project implements                       |
+  | | `paths`      | `Map(String, String)`  | a file pattern per subtree, narrowing it to part of the project |
+  | | `depends_on` | `List(Ref(project))`   | the projects it uses, the edges of the project graph            |
+  | | `owners`     | `List(String)`         | who answers for it, by the host's handles; reviews route by it   |
+  | | `members`    | `List(Ref(project))`   | the projects a group holds                                      |
+  | | `source`     | `Source`               | where an external project's code comes from                     |
+  | | `versioning` | `Versioning`           | the version `scheme` and what `bumps` it                        |
+  | | `releases`   | `Releases`             | the `changelog` every release is recorded in                    |
+
+  project_kind: term {{
+    `project(path = …) { … }`, one part of the system with code of its own, such as a
+    service, a library or an app, at a path relative to its file. Its body sets the fields
+    above and holds the tasks that act on it, such as its `build` and `test`.
+  }}
+
+  project_group: term {{
+    A project with `members = […]`. Its `versioning` and `releases` are the defaults its
+    members amend, its version is the group's, and `versioning<shared>` puts every member
+    on that one version.
+  }}
+
+  external_project: term {{
+    Code the system uses but doesn't own, such as a git submodule or a vendored copy:
+    `project<external>(path = …)`, pinned with `source = git(url, ref = …)`.
+  }}
+
+  git_source: term {{
+    `git(url, ref = …)`, `std/spec`'s func that returns a `Source`: the url, the ref as
+    written and, once `heron run setup` has resolved it, the commit. Setup checks the
+    source out at the project's path and `heron.lock` pins the commit.
+  }}
+
+  project_fields: rule(project_kind, by = product.system.checker) {
+    must {{ check a project's fields against `project`'s declaration, and its references to other projects as names in scope }}
+    example {{ `owner = "x"` reports "p (a project) has no field owner", and `depends_on = [nobody]` reports "unknown name nobody" }}
+  }
+
+  project_tasks: rule(project_kind, by = product.system.checker) {
+    must {{ accept tasks in a project's body, so the tasks that build and test a project live in it }}
+  }
+
+  project_heading: rule(project_kind, by = product.system.docs_generator) {
+    must {{ show a project with its path from the tree's entry file beside its name, and no path for a project at the entry file's folder or above it }}
+    then {{ the root project's `"."` isn't shown, since it says nothing a reader needs }}
+  }
+
+  lock_pins_sources: rule(git_source, by = product.system.interpreter) {
+    must {{ write each source's url, ref and the commit it resolved to into `heron.lock`, and read them back unchanged }}
+  }
+
+  external_read_only: rule(external_project, by = product.actors.implementer) {
+    mustNot {{ change the code of an [external project](#language.specifications.projects.external_project) }}
+    unless {{ the scope of the work at hand names the change }}
+  }
+
+  spec_versioned_by_project: rule(project_kind, by = product.actors.author) {
+    must {{ version a spec through the project that holds it, separately from the projects that implement it }}
+    then {{ each release of an implementing project can record which spec version it implements }}
+  }
+
+  undeclared_dependency: rule(project_kind, by = product.system.linter) {
+    if {{ a project's code imports another project's code that its `depends_on` doesn't name }}
+    should {{ report [undeclared dependency](#language.specifications.projects.diagnostics.undeclared_dependency) at the project }}
+  }
+
+  version_from_changelog: rule(project_kind, by = product.system.interpreter) {
+    must {{ take a project's version from its latest release in the changelog its `releases` names, never from its declaration }}
+  }
+
+  unversioned_change: rule(project_kind, by = product.system.linter) {
+    if {{ a change alters a project's public surface and records no release that bumps its version }}
+    should {{ report [unversioned change](#language.specifications.projects.diagnostics.unversioned_change) }}
+  }
+
+  group_defaults: rule(project_group, by = product.system.interpreter) {
+    must {{ give each member of a group the group's `versioning` and `releases` as defaults it amends, and the group's one version where `versioning<shared>` is set }}
+  }
+
+  diagnostics: section {
+    @display("Undeclared dependency")
+    undeclared_dependency: diagnostic("project-dependency", severity = warning, by = product.system.linter) {
+      message = "‹project› uses ‹other› without naming it in depends_on"
+      | A dependency between projects that the project graph doesn't show.
+    }
+
+    @display("Unversioned change")
+    unversioned_change: diagnostic("project-version", severity = warning, by = product.system.linter) {
+      message = "the public surface of ‹project› changed without a version change"
+      | A change to what callers rely on that no release records.
+    }
+  }
+
+  @display("Projects")
+  specifications_projects: example {
+    | ```heron
+    | payments_svc: project(path = "services/payments") {
+    |   implements = [payments]
+    |   paths = { refunds = "src/refunds/**" }
+    |   depends_on = [shared_types, ledger]
+    |   owners = ["@acme/payments"]
+    | }
+    |
+    | shared_types: project(path = "packages/types") {
+    |   owners = ["@acme/platform"]
+    | }
+    |
+    | ledger: project<external>(path = "vendor/ledger") {
+    |   source = git("https://github.com/acme/ledger", ref = "v2.3.1")
+    | }
+    | ```
+  }
+
+  @display("Grouped versioning")
+  specifications_versioning: example {
+    | ```heron
+    | acme: project(path = ".") {
+    |   members = [payments_spec, payments_svc, shared_types]
+    |
+    |   versioning.{
+    |     scheme = "%major%.%minor%.%patch%[-%pre%.%pre_n%]"
+    |   }
+    |
+    |   releases.{
+    |     changelog = "changelog.heron"
+    |   }
+    | }
+    |
+    | payments_spec: project(path = "specs/payments") {
+    |   versioning.{
+    |     bumps = FromSpec(breaking = "major", added = "minor", clarified = "patch")
+    |   }
+    | }
+    | ```
+  }
+}

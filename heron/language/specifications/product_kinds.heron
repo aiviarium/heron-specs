@@ -1,0 +1,80 @@
+@display("Product kinds")
+product_kinds: section {
+  | `std/product` gives a spec the agile forms a team plans with: who the system is for,
+  | what they need from it as epics of stories with acceptance criteria and use cases with
+  | numbered flows, and when it's delivered as increments and milestones with what done
+  | means. A criterion reads given, when and then with `std/spec`'s `when` and `then`, and
+  | `verify` links it to the test that proves it.
+  |
+  | | Kind                         | Holds                                                                      |
+  | | ---------------------------- | -------------------------------------------------------------------------- |
+  | | `actor(kind)`                | a party that uses the system or that it uses: `PERSON`, the default, `SYSTEM` or `AGENT` |
+  | | `persona(of)`                | a typical person behind an actor, with `goals` and `pains`                  |
+  | | `epic(owner)`                | stories, use cases, sections and at most one `done`, for one outcome         |
+  | | `story(as)`                  | `want`, `so` and its criteria                                               |
+  | | `criterion`                  | any `given`, at most one `when`, any `then`, and `verify`                   |
+  | | `usecase(actor, supporting)` | a `goal`, preconditions, steps, alternates, failures and the conditions it ends with    |
+  | | `alternate(at, rejoins)`     | the steps of a flow that branches off `at` and still reaches the goal       |
+  | | `failure(at)`                | the steps of a flow that branches off `at` and fails the goal               |
+  | | `increment(delivers)`        | a shippable slice that delivers stories, with at most one `done`             |
+  | | `milestone(reached_by)`      | a point in time the work is measured against, with at most one `done`        |
+  | | `done`                       | the criteria the build is accepted by                                       |
+
+  actor_kind: term {{
+    `name: actor(kind = ActorKind.SYSTEM) {{ … }}`, a party the system serves or calls,
+    and a subject a rule's `by` can name. A person is the default kind.
+  }}
+
+  story_kind: term {{
+    `name: story(as = actor) { want =| … so =| … }`, one need of one actor, small enough
+    to build in one increment, with its acceptance criteria as children.
+  }}
+
+  usecase_kind: term {{
+    `name: usecase(actor = …) { … }`, how an actor reaches one goal step by step. Its
+    own steps are the main flow, numbered from 1; an alternate or a failure at step 3 is
+    3a, then 3b, and its steps are 3a1, 3a2.
+  }}
+
+  product_bodies: rule(story_kind, by = product.system.checker) {
+    must {{ check each product kind's body against its declaration, reporting [accepts at most](#language.schemas.accept.diagnostics.accepts_at_most) at a criterion's second `when` and at an epic's, an increment's or a milestone's second `done` }}
+  }
+
+  actor_kinds: rule(actor_kind, by = product.system.checker) {
+    must {{ resolve an actor's `kind` as a variant of `ActorKind`, and report any other as unresolved }}
+    example {{ `actor(kind = ActorKind.ROBOT)` reports "ActorKind has no member ROBOT" }}
+  }
+
+  actor_view: rule(actor_kind, by = product.system.docs_generator) {
+    must {{ show actors as a list of definitions, an actor that isn't a person with its kind beside its name, and a persona as a card with its actor, goals and pains }}
+  }
+
+  story_view: rule(story_kind, by = product.system.docs_generator) {
+    must {{ show a story as the sentence "As a ‹actor›, I want ‹want›, so that ‹so›.", with the actor linked, and its criteria under "Acceptance" as given, when and then, a second given or then read "And" }}
+  }
+
+  usecase_numbering: rule(usecase_kind, by = product.system.docs_generator) {
+    must {{ number a use case's steps and branches as the term says, and show where an alternate rejoins as "Rejoins at" and the step it returns to }}
+  }
+
+  done_view: rule(language.specifications.traceability.status_flag, by = product.system.docs_generator) {
+    must {{ show an increment's stories under "Delivers", its status beside its name, and its `done` criteria under "Done when" }}
+  }
+
+  one_status_each: rule(language.specifications.traceability.status_flag, by = product.system.linter) {
+    should {{ report [flags of one group](#language.schemas.flags.diagnostics.flag_group_twice) at a node's second [status flag](#language.specifications.traceability.status_flag) }}
+  }
+
+  story_as_actor: rule(story_kind, by = product.system.checker) {
+    if {{ a story's `as`, a persona's `of` or a use case's `actor` names a node that isn't an actor }}
+    must {{ report [not an actor](#language.specifications.product_kinds.diagnostics.not_an_actor) at the reference }}
+  }
+
+  diagnostics: section {
+    @display("Not an actor")
+    not_an_actor: diagnostic("type", by = product.system.checker) {
+      message = "‹name› is a ‹kind›, not an actor"
+      | A reference that must name an actor naming another kind of node; any `Ref(kind)` is checked the same way.
+    }
+  }
+}

@@ -1,0 +1,128 @@
+prose: section {
+  | What [the prose linter](#product.system.prose_linter) reports over the [prose view](#language.markup.prose_view): Vale for style and
+  | spelling, and the spec-aware lints of `std/lint`, which [the quality checks](#language.specifications.quality_checks) specify.
+  | Both report through `heron lint`, CI and the [language server](#product.system.language_server) alike.
+
+  vale: section {
+    | Vale is markup-aware and already holds the team's style guide, so it runs as it is,
+    | on a projection of the prose rather than on raw [Heron files](#language.core_format.files.heron_file).
+
+    suggestion_fix: term {{
+      A fix that's a guess, such as one of Vale's spelling suggestions: offered to a reader as
+      a code action and never applied by `heron lint -fix` or marked preferred in an editor.
+    }}
+
+    vale_binary: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ find Vale at `HERON_VALE`, then on `PATH`, then in the Go bin directory `go install` writes to }}
+      unless {{ none has it, and then the provider reports nothing }}
+    }
+
+    vale_config: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ read `lint { vale { … } }`: `config` relative to the file that sets it, `min_level` (`suggestion` unless set) and `skip` (`["code"]` unless set); without `config`, use the nearest .vale.ini above the [entry point](#language.core_format.files.entry_point) }}
+      unless {{ no configuration file exists, and then Vale doesn't run on the tree }}
+    }
+
+    config_as_is: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ use the .vale.ini, its styles and its vocabularies as they are, reading only its global `StylesPath` and `Vocab` keys itself }}
+    }
+
+    html_projection: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ render a file's regions as one HTML document, with [masked spans](#language.markup.prose_view.masked_span) as `<code>` and each region's block as its element }}
+      unless {{ the region's block is a scope `skip` names: `code` or `pre`, `heading` or `h1` to `h3`, `list` or `li`, `blockquote` or `quote`, `paragraph` or `p`, which is left out }}
+      then {{ Vale's scopes apply to Heron's structure }}
+    }
+
+    vale_call: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ send each file's document to `vale --output=JSON --ext=.html --no-exit --config=<config>` on standard input, from the configuration's folder, one call per file, at most four at once, each stopped after 30 s }}
+    }
+
+    vale_failure: rule(tools.prose.vale, by = product.system.prose_linter) {
+      if {{ Vale exits with an error, times out or answers JSON it can't read }}
+      must {{ report [Vale failed](#tools.prose.vale.diagnostics.vale_failed) at the start of the file's first region }}
+    }
+
+    alert_mapping: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ map each alert's line and 1-based inclusive rune columns to byte offsets of the document, then through the document's regions and their [source maps](#language.markup.prose_view.source_map) to the source, as [an alert](#tools.prose.vale.diagnostics.vale_alert) }}
+      unless {{ the alert spans two regions, falls inside a mask, or is below `min_level`, and then it's dropped }}
+      then {{ an alert lands on the right words, never inside code, links, inserts or tags }}
+    }
+
+    alert_fixes: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ turn an alert's `replace` action into a fix per replacement, at most five, and its `remove` action into one fix that also removes the space before the match; ask `vale fix` for the suggestions of any other action, for at most 25 alerts a file }}
+    }
+
+    suggestions_not_applied: rule(tools.prose.vale, by = product.system.command_line) {
+      mustNot {{ apply a [suggestion](#tools.prose.vale.suggestion_fix) with `heron lint -fix` }}
+      instead {{ apply only the fixes that aren't suggestions, and leave the rest to a reader's code action }}
+    }
+
+    vale_cache: rule(tools.prose.vale, by = product.system.prose_linter) {
+      must {{ key Vale's results by a hash of the binary, the configuration, `min_level`, `skip` and every file under the styles path, joined to each region's own hash, and send only the regions whose key changed }}
+      then {{ an unchanged tree sends nothing to Vale, and accepting a word or editing a style re-lints }}
+    }
+
+    vocabulary_edit: rule(tools.prose.vale, by = product.system.prose_linter) {
+      when {{ `heron.vale.accept` or `heron.vale.reject` runs with a .vale.ini, a vocabulary it names and a word }}
+      must {{ add the word to `accept.txt` or `reject.txt` under `<StylesPath>/config/vocabularies/<vocabulary>/`, take it out of the other list, and keep their other lines as they are }}
+      unless {{ the file isn't a .vale.ini, it names no such vocabulary or has no `StylesPath`, or the word isn't one word, which fails the command with an error saying which }}
+    }
+
+    setup_pin: rule(tools.prose.vale, by = product.system.prose_linter) {
+      where {{ `heron run setup` runs in a repository with a .vale.ini at its root }}
+      must {{ pin Vale's module version, read from the binary's build info, and its checksum in heron.lock's `tools`, then run `vale sync` }}
+      then {{ every machine and CI job lints with the same Vale and the same styles }}
+    }
+
+    setup_moved: rule(tools.prose.vale, by = product.system.prose_linter) {
+      if {{ heron.lock pins another version than the binary has, and `--update` isn't given }}
+      must {{ fail the setup step with both versions and the `go install` command for the pinned one }}
+    }
+
+    setup_missing: rule(tools.prose.vale, by = product.system.prose_linter) {
+      if {{ Vale isn't installed }}
+      must {{ fail the setup step with the command that installs it, `go install github.com/vale-cli/vale/v3/cmd/vale@v3.28.1` unless heron.lock pins another version }}
+    }
+
+    @display("Vale configuration")
+    vale_configuration: example {
+      | ```heron
+      | lint {
+      |   vale {
+      |     config = "./.vale.ini"
+      |     min_level = "warning"
+      |
+      |     // Vale's scopes, applied to the projected document.
+      |     skip = ["code"]
+      |   }
+      | }
+      | ```
+    }
+
+    diagnostics: section {
+      vale_alert: diagnostic("Vale.‹check›", severity = warning, by = product.system.prose_linter) {
+        message = "‹Vale's message›"
+        | One alert, coded after its check, as `Vale.Vale.Spelling`, so `@lint(allow)` takes the code
+        | or the check. Vale's `error` is an error, `warning` a warning, and `suggestion` a hint.
+      }
+
+      @display("Vale failed")
+      vale_failed: diagnostic("Vale.Error", severity = warning, by = product.system.prose_linter) {
+        message = "vale failed: ‹reason›"
+      }
+    }
+  }
+
+  spec_lints: section {
+    | The spec-aware lints know the tree, which Vale can't: its terms, rules, metrics and node
+    | names. [The quality checks](#language.specifications.quality_checks) give their rules and diagnostics.
+
+    by_import: rule(tools.prose.spec_lints, by = product.system.prose_linter) {
+      must {{ run the spec-aware lints on a tree that imports `std/lint`, and on no other }}
+    }
+
+    spec_cache: rule(tools.prose.spec_lints, by = product.system.prose_linter) {
+      must {{ key their results by a hash of the tree's terms, node names and measured rules, joined to each region's own hash }}
+      then {{ adding a term re-lints every region }}
+    }
+  }
+}

@@ -1,0 +1,363 @@
+// The extension protocol's messages: JSON-RPC's requests, responses and
+// notifications, sent as length-prefixed CBOR frames over stdio. This file is
+// the one description of them; every side's bindings are generated from it,
+// so another runtime's SDK can be generated the same way.
+import = ["std/types@1"]
+
+/// The wire name of a method, where it isn't the func's own name.
+method(name: String): annotation(on = [func])
+
+/// A method that is sent as a notification: it has no response.
+notification: flag(on = [func])
+
+/// The protocol version both sides send in initialize.
+version: String = "1.0"
+
+/// One frame: a request when it has an id and a method, a response when it
+/// has an id and a result or an error, a notification when it has a method
+/// and no id.
+Message: type {
+  id?: Int
+  method?: String
+  params?: Any
+  result?: Any
+  error?: ErrorObject
+  /// The run a request belongs to, so the audit record links what an
+  /// extension did to the run that asked for it.
+  run?: String
+}
+
+/// An error response. A value the declaration throws travels in `data`,
+/// with its Heron type in `type`.
+ErrorObject: type {
+  code: Int
+  message: String
+  type?: String
+  data?: Any
+}
+
+/// JSON-RPC's error codes, and the protocol's own in its server range.
+code_parse_error: Int = -32700
+code_invalid_request: Int = -32600
+code_method_not_found: Int = -32601
+code_invalid_params: Int = -32602
+code_internal_error: Int = -32603
+/// The request was cancelled with `$/cancel`, as in the language server
+/// protocol.
+code_cancelled: Int = -32800
+/// The foreign code failed with something its declaration doesn't throw.
+code_foreign_error: Int = -32000
+/// The foreign code threw a value of a type its declaration throws.
+code_thrown: Int = -32001
+/// A declared limit was exceeded, such as the frame size.
+code_limit_exceeded: Int = -32002
+code_timeout: Int = -32003
+
+/// A program and its version.
+PeerInfo: type {
+  name: String
+  version: String
+}
+
+/// The kinds of part a declaration can be.
+Point: enum {
+  func: Self
+  macro: Self
+  transport: Self
+  lint: Self
+  resource: Self
+  generator: Self
+  /// A module of docs renderers, named in a docs block's `renderers`.
+  renderer: Self
+}
+
+/// A type as written in a Heron signature, such as List(String)?.
+TypeRef: type {
+  name: String
+  args?: List(TypeRef)
+  optional?: Bool
+}
+
+/// A parameter of a declaration.
+ParamSig: type {
+  name: String
+  type: TypeRef
+  optional?: Bool
+  variadic?: Bool
+}
+
+/// A declaration that names an extension: an `@extern(…)` declaration, or a
+/// binding to a module's export.
+Declaration: type {
+  /// The path of the declaration, such as `inventory.slugify`.
+  path: String
+  point: Point
+  /// The module export that implements it, such as `slugify` or `default`.
+  export?: String
+  /// The module, for a binding through js(…).
+  module?: String
+  params?: List(ParamSig)
+  returns?: TypeRef
+  throws?: List(String)
+  pure?: Bool
+  /// For a generator, the generation target it serves.
+  target?: String
+}
+
+/// What an extension implements of what it was sent.
+Implemented: type {
+  path: String
+  point: Point
+  /// For a renderer module, the kinds it renders, by declaration path.
+  kinds?: List(String)
+}
+
+/// The limits a host applies. Frame and concurrency limits bind both sides;
+/// files, network and commands are what the extension declared it needs.
+Limits: type {
+  max_frame: Int
+  max_in_flight: Int
+  timeout_ms: Int
+  files?: List(String)
+  network?: List(String)
+  commands?: List(String)
+}
+
+/// What a side offers the other beyond the methods every peer serves.
+Capabilities: type {
+  /// Methods the side serves, by wire name.
+  methods: List(String)
+  streaming?: Bool
+  cancellation?: Bool
+}
+
+InitializeParams: type {
+  protocol: String
+  host: PeerInfo
+  root: String
+  declarations: List(Declaration)
+  limits: Limits
+  capabilities: Capabilities
+  /// The directory run-scoped files go under, as `<temp>/<run>/<name>`.
+  temp?: String
+}
+
+InitializeResult: type {
+  protocol: String
+  extension: PeerInfo
+  implements: List(Implemented)
+  capabilities: Capabilities
+}
+
+/// A call of a func or macro bound to foreign code, or of a member of an implemented
+/// interface, such as a transport's send.
+CallParams: type {
+  target: String
+  member?: String
+  args: Map(String, Any)
+}
+
+/// A node of the resolved tree, as `heron check --json` prints it.
+Node: type {
+  path: String
+  name?: String
+  kind?: String
+  type?: String
+  value?: Any
+  file?: String
+  start?: Int
+  end?: Int
+  line?: Int
+  flags?: List(String)
+  prose?: List(String)
+  children?: List(Node)
+}
+
+Severity: enum {
+  error: Self
+  warning: Self
+  info: Self
+}
+
+/// A replacement of a byte range of a file.
+TextEdit: type {
+  /// The file, or the finding's file when left out.
+  file?: String
+  start: Int
+  end: Int
+  new: String
+}
+
+/// A change that resolves a finding: edits applied together, as
+/// `heron lint --fix` applies the first fix of each finding.
+Fix: type {
+  title: String
+  edits: List(TextEdit)
+}
+
+/// A lint finding, on a node by path, and at a byte range where it has one.
+Finding: type {
+  node: String
+  message: String
+  severity?: Severity
+  file?: String
+  start?: Int
+  end?: Int
+  fixes?: List(Fix)
+}
+
+LintParams: type {
+  lint: String
+  nodes: List(Node)
+}
+
+LintResult: type {
+  findings: List(Finding)
+}
+
+GenerateParams: type {
+  generator: String
+  target: String
+  tree: Node
+}
+
+GeneratedFile: type {
+  path: String
+  content: String
+  /// A build output, which the managed ignore block lists.
+  ignored?: Bool
+}
+
+GenerateResult: type {
+  files: List(GeneratedFile)
+}
+
+/// A request in a resource's life: the resource, and the instance or
+/// snapshot handle where there is one.
+ResourceParams: type {
+  resource: String
+  handle?: Any
+  snapshot?: Any
+}
+
+ResourceResult: type {
+  handle?: Any
+  snapshot?: Any
+}
+
+/// A node or markup tag for a docs renderer, as plain data: the generator
+/// has rendered its prose and children already, so the renderer arranges
+/// them and adds only markup.
+RenderParams: type {
+  /// The renderer module's declaration path.
+  renderer: String
+  /// The kind's declaration path, such as spec.rule.
+  kind: String
+  /// The node's path; left out for a markup tag.
+  path?: String
+  name?: String
+  /// The node's title as the docs show it.
+  title?: String
+  /// The heading level the title takes, from 2.
+  level?: Int
+  /// The anchor the node's wrapper carries.
+  anchor?: String
+  /// The node's own prose, rendered.
+  prose?: String
+  /// The node's children, each rendered through its kind's renderer.
+  children?: String
+  /// The arguments of the node's kind, or a markup tag's attributes,
+  /// typed by the kind's parameters.
+  attrs?: Map(String, Any)
+  /// A markup tag's rendered content.
+  body?: String
+  /// The components of the kind's slots other than before and after, by
+  /// name, for the renderer to place.
+  slots?: Map(String, String)
+}
+
+RenderResult: type {
+  html: String
+  /// For a markup tag, whether it renders as a block.
+  block?: Bool
+  /// The islands the HTML uses.
+  islands?: List(String)
+}
+
+CancelParams: type {
+  id: Int
+}
+
+LogParams: type {
+  level: Severity
+  message: String
+}
+
+ProgressParams: type {
+  id: Int
+  message?: String
+  done?: Int
+  total?: Int
+}
+
+/// One item of a streamed result; the response that ends the request
+/// follows the last item.
+StreamParams: type {
+  id: Int
+  item: Any
+}
+
+NodeParams: type {
+  path: String
+  depth?: Int
+}
+
+NameParams: type {
+  name: String
+}
+
+Empty: type
+
+/// What the host sends an extension.
+Extension: interface {
+  initialize(params: InitializeParams): func(InitializeResult)
+  call(params: CallParams): func(Any)
+  lint(params: LintParams): func(LintResult)
+  generate(params: GenerateParams): func(GenerateResult)
+  render(params: RenderParams): func(RenderResult)
+  @method("resource/setup")
+  resource_setup(params: ResourceParams): func(ResourceResult)
+  @method("resource/reset")
+  resource_reset(params: ResourceParams): func(ResourceResult)
+  @method("resource/snapshot")
+  resource_snapshot(params: ResourceParams): func(ResourceResult)
+  @method("resource/restore")
+  resource_restore(params: ResourceParams): func(ResourceResult)
+  @method("resource/fork")
+  resource_fork(params: ResourceParams): func(ResourceResult)
+  @method("resource/teardown")
+  resource_teardown(params: ResourceParams): func(ResourceResult)
+  shutdown(params: Empty): func(Empty)
+}
+
+/// What an extension sends the host: the way back into Heron, `ctx`.
+Host: interface {
+  /// The node at a path, or null when nothing is there.
+  node(params: NodeParams): func(Node)
+  call(params: CallParams): func(Any)
+  resource(params: NameParams): func(Any)
+  secret(params: NameParams): func(String)
+  temp(params: NameParams): func(String)
+}
+
+/// Notifications either side may send.
+Notifications: interface {
+  @method("$/cancel")
+  cancel(params: CancelParams): func<notification>
+  @method("$/log")
+  log(params: LogParams): func<notification>
+  @method("$/progress")
+  progress(params: ProgressParams): func<notification>
+  @method("$/stream")
+  stream(params: StreamParams): func<notification>
+}

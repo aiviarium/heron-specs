@@ -1,0 +1,19 @@
+actors: section {
+  | The people, programs and agents that use Heron or that Heron calls, and the personas behind
+  | them.
+
+  author: actor {{
+    Someone who writes or changes a Heron tree: a spec, a [schema](#language.schemas.kinds.schema), data or tasks. This spec's
+    own authors are authors too.
+  }}
+
+  implementer: actor(kind = ActorKind.AGENT) {{
+    An agent, or a person working the same way, that builds or changes part of the system
+    from its spec alone: it loads one subtree and the surface of what it targets, and builds
+    until the criteria and verify links of that subtree pass.
+  }}
+
+  reviewer: actor {{
+    Someone who reads a change against the spec before it's accepted.
+  }}
+}

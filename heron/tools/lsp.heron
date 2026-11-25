@@ -1,0 +1,257 @@
+@display("LSP")
+lsp: section {
+  | What [the language server](#product.system.language_server) answers: one [session](#tools.lsp.session.lsp_session) per client,
+  | over standard input and output from `heron lsp` and over the `/lsp` socket from
+  | [the server](#product.system.server). It answers from the same checked tree as `heron check`
+  | and `heron lint`, so an editor never disagrees with them.
+
+  session: section {
+    | A [session](#tools.lsp.session.lsp_session) holds the open documents as overlays of the loader, checks each in the tree
+    | of its [owner entry](#tools.lsp.session.owner_entry), and rechecks everything open after an edit, with the check memo
+    | making that cheap.
+
+    lsp_session: term {{
+      One client's language server: its open documents, the analyses of their trees and the
+      diagnostics last published. Sessions on one server share the registry and nothing
+      else.
+    }}
+
+    canonical_identity: term {{
+      The one identity of a file, whatever URI reached it: percent-escapes, a `localhost`
+      host, `.` and `..` segments, symbolic links and trailing slashes all collapse to it.
+      A URI of another scheme, such as an untitled buffer, is its own identity, and
+      `heron:/std/<path>` names a standard package's embedded file.
+    }}
+
+    owner_entry: term {{
+      The [entry point](#language.core_format.files.entry_point) an open document is checked in: of the `index.heron` files in its
+      folder and every folder above it up to the workspace root, the outermost whose tree
+      includes the document, or the document itself when none does.
+    }}
+
+    one_identity: rule(tools.lsp.session, by = product.system.language_server) {
+      must {{ turn every document URI into the file's [canonical identity](#tools.lsp.session.canonical_identity), and keep one document per identity whichever URIs opened it }}
+      then {{ a file opened by two spellings is one document, closed when its last spelling closes }}
+    }
+
+    overlay: rule(tools.lsp.session, by = product.system.language_server) {
+      must {{ make an open document's text the loader's overlay for its identity, never a second copy of the file, and drop the overlay when the document closes }}
+      then {{ every tree that includes or imports the file sees the unsaved text, and the file on disk again once it's closed }}
+    }
+
+    outermost_entry: rule(tools.lsp.session, by = product.system.language_server) {
+      must {{ check an open document in its [owner entry](#tools.lsp.session.owner_entry), and find it again when its tree no longer includes the document }}
+      example {{ spec/language/grammar/lexical.heron is checked in spec/index.heron, not in spec/language/index.heron, so its links into the rest of spec/ resolve }}
+    }
+
+    recheck_all_open: rule(tools.lsp.session, by = product.system.language_server) {
+      when {{ a document opens, changes, closes or is saved, a command runs, or a watched file changes on disk }}
+      must {{ recheck the [owner entry](#tools.lsp.session.owner_entry) of every open document, with the check memo serving unchanged files and nodes, and lint each tree with every lint and prose provider the registry holds }}
+      then {{ a break in an imported file shows in its importer, open or not }}
+    }
+
+    debounce: rule(tools.lsp.session, by = product.system.language_server) {
+      when {{ an edit arrives }}
+      must {{ wait for the debounce, 150 ms unless `--debounce` or `Options.Debounce` sets another, before rechecking, and restart the wait on each further edit }}
+      unless {{ a request arrives first, which rechecks at once }}
+    }
+
+    watched_files: rule(tools.lsp.session, by = product.system.language_server) {
+      where {{ the client registers file watchers dynamically }}
+      must {{ register watchers for `**/*.heron`, `**/*.heron.md`, `**/.vale.ini`, `**/*.txt` and `**/*.yml` once initialized, and on a change reread every file that isn't open and find every [owner entry](#tools.lsp.session.owner_entry) again }}
+      then {{ a vocabulary or a Vale style edited outside the editor re-lints }}
+    }
+
+    workspace_root: rule(tools.lsp.session, by = product.system.language_server) {
+      must {{ take the workspace roots from the `initialize` request's workspace folders, then its root URI, then its root path, then `Options.Dir` }}
+    }
+  }
+
+  diagnostics: section {
+    | Each diagnostic reaches the client with the name of what reported it, so the
+    | editor's hover can say whether the checker, a lint or Vale found it.
+
+    | | Reported by                   | Code sent        | Source         |
+    | | ----------------------------- | ---------------- | -------------- |
+    | | the type checker              | the check's code | `heron check`  |
+    | | a prose provider such as Vale | `Vale.<check>`   | its name       |
+    | | any other lint                | the lint's code  | `heron lint`   |
+
+    publish_per_file: rule(tools.lsp.diagnostics, by = product.system.language_server) {
+      must {{ publish each file's diagnostics, sorted, after every recheck: to every URI the client opened it by, with the document's version, and to the file's canonical URI for files of the trees that aren't open }}
+      then {{ an editor shows problems in files nobody opened, such as an importer the edit broke }}
+    }
+
+    clear_fixed: rule(tools.lsp.diagnostics, by = product.system.language_server) {
+      when {{ a URI that had diagnostics has none after a recheck }}
+      must {{ publish an empty list for it once }}
+    }
+
+    no_std_diagnostics: rule(tools.lsp.diagnostics, by = product.system.language_server) {
+      mustNot {{ publish a diagnostic in a standard package's file }}
+    }
+
+    diagnostic_source: rule(tools.lsp.diagnostics, by = product.system.language_server) {
+      must {{ give each diagnostic the code and source the table gives, its severity as error, warning or hint (info and hint both send hint), and its related sites as related information }}
+    }
+  }
+
+  completion: section {
+    | Completion offers what fits where the cursor stands, from the [schemas](#language.schemas.kinds.schema) in scope.
+    | It's triggered by `.`, `:`, `@`, `<`, `$`, `#`, `"`, `/` and `{`; in prose a plain word
+    | never completes.
+
+    | | Where the cursor is                    | Items                                                           |
+    | | -------------------------------------- | --------------------------------------------------------------- |
+    | | in an `import` string                  | the standard packages                                           |
+    | | in an `include` string                 | the files and folders beside the including file                 |
+    | | after `@`                              | the annotations in scope                                        |
+    | | after `<`, or in a flag list           | the flags in scope                                              |
+    | | after `name.`                          | the children of what `name` names                               |
+    | | after `:` or in a type                 | the kinds the enclosing body accepts, and the types             |
+    | | at the start of a member               | the fields the enclosing kind declares, then the names in scope |
+    | | in prose, after `$` or `${`            | the names in scope                                              |
+    | | in prose, in a link's `(#…)`           | the paths, segment by segment                                   |
+    | | in prose, after `<` or `</`            | the kinds in scope, as tags                                     |
+
+    completion_items: rule(tools.lsp.completion, by = product.system.language_server) {
+      must {{ offer the items the table gives for the cursor's place, each with its kind, its type or kind as detail and its `///` docs, replacing the word before the cursor }}
+    }
+
+    completion_list: rule(tools.lsp.completion, by = product.system.language_server) {
+      mustNot {{ offer an item with an empty label, or two with one label }}
+      instead {{ keep the first, and sort the fields of the enclosing kind before the names in scope }}
+    }
+
+    prose_word_quiet: rule(tools.lsp.completion, by = product.system.language_server) {
+      where {{ the cursor is in prose, outside a link target, an insert and a tag }}
+      mustNot {{ offer any item }}
+    }
+  }
+
+  hover: section {
+    hover_node: rule(tools.lsp.hover, by = product.system.language_server) {
+      where {{ the word under the cursor names a node }}
+      must {{ show the node's declaration as a Heron signature without its docs and body, then its `///` docs from every site as Markdown, then its kind, its path and the file it's declared in }}
+    }
+
+    hover_local: rule(tools.lsp.hover, by = product.system.language_server) {
+      where {{ the word names a `let` or a parameter }}
+      must {{ show its declaration and whether it's a let or a parameter }}
+    }
+
+    hover_file: rule(tools.lsp.hover, by = product.system.language_server) {
+      where {{ the cursor is on an `import` or `include` string }}
+      must {{ show the file it names, a standard file as `std/<path>` }}
+    }
+  }
+
+  definition: section {
+    definition_target: rule(tools.lsp.definition, by = product.system.language_server) {
+      must {{ answer with where the target is declared: a node's declaring member, a local's declaration, or the start of the file an `import` or `include` string names }}
+    }
+
+    definition_into_std: rule(tools.lsp.definition, by = product.system.language_server) {
+      where {{ the target is declared in a standard package }}
+      must {{ answer with its `heron:/std/<path>` URI, whose text the client reads with [heron/source](#tools.lsp.extensions.source_request) }}
+      example {{ go to definition on `"std/doc@1"`, or on `section`, opens heron:/std/doc/package.heron }}
+    }
+  }
+
+  references: section {
+    references_everywhere: rule(tools.lsp.references, by = product.system.language_server) {
+      must {{ list every word that names the node: its declaration, every amend, every path and every link and insert in prose, across the trees of the open documents and the local packages they import }}
+    }
+  }
+
+  rename: section {
+    rename_by_path: rule(tools.lsp.rename, by = product.system.language_server) {
+      must {{ rename a node by its path: replace every word [references](#tools.lsp.references.references_everywhere) lists, in one workspace edit }}
+    }
+
+    rename_refused: rule(tools.lsp.rename, by = product.system.language_server) {
+      if {{ the word isn't a node's name, the node is declared in a standard package, the new name isn't an identifier, or the node's parent already has a member of the new name }}
+      must {{ refuse it with an invalid-parameters error that says which, as "nothing to rename here" or "‹parent› already has a member ‹name›" }}
+    }
+
+    prepare_rename: rule(tools.lsp.rename, by = product.system.language_server) {
+      must {{ answer `prepareRename` with the word's range and the word as the [placeholder](#language.core_format.expressions.placeholder), or the refusal `rename` would give }}
+    }
+  }
+
+  formatting: section {
+    format_whole_file: rule(tools.lsp.formatting, by = product.system.language_server) {
+      must {{ answer with one edit that replaces the whole text by `heron fmt`'s output, or no edit when the text is already formatted }}
+      unless {{ the file has a syntax error, and then it answers no edit }}
+    }
+  }
+
+  semantic_tokens: section {
+    | The legend's token types are `namespace`, `type`, `class`, `enum`, `interface`, `struct`,
+    | `typeParameter`, `parameter`, `variable`, `property`, `enumMember`, `event`, `function`,
+    | `method`, `macro`, `keyword`, `modifier`, `comment`, `string`, `number`, `regexp`,
+    | `operator` and `decorator`, in that order; its modifiers are `declaration`,
+    | `definition`, `readonly`, `documentation` and `defaultLibrary`.
+
+    full_tokens: rule(language.schemas.highlighting.semantic_highlighting, by = product.system.language_server) {
+      must {{ answer `semanticTokens/full` with the legend above, classifying names as [the semantic layer](#language.schemas.highlighting.semantic_layer) says, and keywords, strings, numbers, comments, `@`, prose marks and link and tag punctuation by their token }}
+    }
+  }
+
+  symbols: section {
+    document_symbols: rule(tools.lsp.symbols, by = product.system.language_server) {
+      must {{ answer with the file's named nodes as a tree, each with its kind or type as detail and a symbol kind: class for a kind, enum, interface, struct for a type, function for a func, task or op, property for a value and namespace for a heading or section }}
+    }
+  }
+
+  folding: section {
+    folding_ranges: rule(tools.lsp.folding, by = product.system.language_server) {
+      must {{ fold every body, prose block, `do` block, map, list, parameter list, argument list, run of [prose lines](#language.core_format.prose_layer.prose_lines) and fence that spans more than one line, and `///` docs as a comment }}
+    }
+  }
+
+  code_actions: section {
+    fixes_as_quick_fixes: rule(tools.lsp.code_actions, by = product.system.language_server) {
+      must {{ offer each fix of each diagnostic in the range as a `quickfix` with its edits, marking the first preferred unless it's a [suggestion](#tools.prose.vale.suggestion_fix) }}
+      then {{ an editor's "fix all" never applies a guess }}
+    }
+
+    vocabulary_actions: rule(tools.lsp.code_actions, by = product.system.language_server) {
+      where {{ a diagnostic is a Vale alert on a single word }}
+      must {{ also offer, per vocabulary the .vale.ini names, to accept the word or reject it, as the commands `heron.vale.accept` and `heron.vale.reject` }}
+    }
+  }
+
+  commands: section {
+    run_command: rule(tools.lsp.commands, by = product.system.language_server) {
+      when {{ `workspace/executeCommand` names a vocabulary command }}
+      must {{ run it through [the prose package](#tools.prose.vale.vocabulary_edit), then recheck and publish before answering }}
+      then {{ the word's alert is gone when the command returns }}
+    }
+
+    sync_command: rule(tools.lsp.commands, by = product.system.language_server) {
+      when {{ `workspace/executeCommand` names `heron.sync` }}
+      must {{ do nothing beyond the recheck every request makes, and answer null }}
+      then {{ a client that waits for the answer has every diagnostic published so far }}
+    }
+  }
+
+  extensions: section {
+    | Beyond the protocol, a session answers one request and serves one URI scheme.
+
+    source_request: rule(tools.lsp.extensions, by = product.system.language_server) {
+      when {{ a client sends `heron/source` with a `uri` }}
+      must {{ answer `{ "text": … }` with the file's current text: the open document, the file as last loaded, or the disk }}
+      unless {{ there's no such file, which answers an invalid-parameters error "no file ‹uri›" }}
+      example {{ an editor opens heron:/std/doc/package.heron read-only from the text `heron/source` returns }}
+    }
+
+    std_scheme: rule(tools.lsp.extensions, by = product.system.language_server) {
+      must {{ name a standard package's embedded file `heron:/std/<package>/<file>`, and read `heron:std/<path>` as the same file }}
+    }
+
+    capabilities: rule(tools.lsp.extensions, by = product.system.language_server) {
+      must {{ announce UTF-16 positions, incremental sync with open, close and save, the completion triggers, hover, definition, references, rename with prepare, formatting, document symbols, folding, quick-fix code actions, the commands and full semantic tokens, and serve nothing else }}
+    }
+  }
+}

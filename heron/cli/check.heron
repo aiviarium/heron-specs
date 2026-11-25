@@ -1,0 +1,45 @@
+check: command("heron check") {
+  usage = ["heron check [--json] [--watch] [entry points…]"]
+
+  | Parses, resolves and type-checks the tree of each [entry point](#language.core_format.files.entry_point), and prints every
+  | diagnostic of the tree and the packages it imports, one per line, as
+  | `file:line:col: severity: message [code]` with paths relative to the working folder.
+  | Options come before the [entry points](#language.core_format.files.entry_point), and take one
+  | dash or two.
+
+  entries: argument("entry points", type = String, optional = true, variadic = true) {
+    | Files, or folders whose `index.heron` is the [entry point](#language.core_format.files.entry_point), relative to the working
+    | folder. With none, `.`.
+  }
+
+  json: option("--json", type = Bool, default = false) {
+    | Prints, instead of lines, one JSON array with an object per [entry point](#language.core_format.files.entry_point): `entry`,
+    | `diagnostics` (each with `file`, `start`, `end`, `severity`, `code`, `message`,
+    | `related`, `fixes`, `line` and `column`) and `tree`, the resolved node tree with each
+    | node's `name`, `path`, `kind` or `type`, `file`, `line`, literal `value` and `children`.
+  }
+
+  watch: option("--watch", type = Bool, default = false) {
+    | Checks once, then polls the size and modification time of every file the trees read
+    | every 200 ms and checks again when one changes, reusing the session's memo. It
+    | writes `heron check: watching ‹n› files` and, after each recheck,
+    | `heron check: ‹errors› errors, ‹n› nodes rechecked` to standard error, and runs until
+    | it's stopped.
+  }
+
+  exit(0) {{ No [entry point](#language.core_format.files.entry_point) has an error; warnings and hints don't count. }}
+  exit(1) {{ An [entry point](#language.core_format.files.entry_point) has an error. }}
+  exit(2) {{ An unknown option, or an [entry point](#language.core_format.files.entry_point) that doesn't exist. }}
+
+  example {{ `heron check spec petstore` checks two trees in one session, so the standard packages are parsed once. }}
+
+  errors_fail: rule(check, by = product.system.command_line) {
+    must {{ exit with status 1 when any diagnostic of a checked tree is an error, and 0 when every one is a warning or a hint }}
+  }
+
+  watch_rechecks_edit: rule(check.watch, by = product.system.command_line) {
+    when {{ a file of a watched tree changes }}
+    must {{ check again, rechecking only the nodes the edit touched }}
+  }
+
+}

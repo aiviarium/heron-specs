@@ -1,0 +1,115 @@
+@display("Declaring foreign code")
+declaring: section {
+  | Behaviour that needs a real language is written in that language and called through a
+  | typed boundary. The signature stays in Heron, so documentation, type checking, agent
+  | tool definitions and the spec browser see a [foreign func](#language.interop.declaring.foreign_func) like any other, and callers
+  | can't tell the difference. [A foreign func](#language.interop.declaring.interop_foreign_func)
+  | is declared in Heron and [implemented in TS](#language.interop.declaring.interop_foreign_func_ts).
+
+  module_kind: term {{
+    A node of `std/js`'s `module` kind that names an implementation: `tools: module =
+    js("./tools/orders.ts")` for a file of the repository, relative to the declaring file's
+    folder, or `js("@acme/heron-grpc")` for an npm package.
+  }}
+
+  foreign_func: term(aliases = ["foreign func"]) {{
+    A func bound with `=` to an export of a module, as
+    `export_orders(pet_id: Int): func(String) = tools.exportOrders`.
+  }}
+
+  extension_point: term(aliases = ["extension point"]) {{
+    A kind whose declarations code in another language implements: `func`, `macro`,
+    `transport`, `lint`, `resource`, `generator`, and a docs `renderers` module. The
+    protocol's `Point` enum lists them, and the point of a declaration follows from its
+    kind.
+  }}
+
+  binding: section {
+    | A declaration is bound to foreign code in one of three ways. `= module.export` binds
+    | it to one export of a [module](#language.interop.declaring.module_kind), `= js("…")`
+    | binds it to a module's default export, and `@extern(ext)` above a declaration with no
+    | body hands it to an [extension process](#language.schemas.extensions.extension_process).
+
+    export_binding: rule(foreign_func, by = product.system.interpreter) {
+      where {{ a func's value is a path of two names, the first a module and the second no child of it }}
+      must {{ bind the func to that export through the host registered for the module's kind, once per run, and call it with its arguments by parameter name }}
+    }
+
+    module_relative_paths: rule(module_kind, by = product.system.interpreter) {
+      must {{ give the host a module's text as written, with the folder of the file that declares the module to resolve a relative one from }}
+    }
+
+    no_host: rule(foreign_func, by = product.system.interpreter) {
+      if {{ no host is registered for the module's kind }}
+      must {{ fail with [no host](#language.interop.declaring.diagnostics.no_host) }}
+    }
+
+    every_point_binds: rule(extension_point, by = product.system.extension_host) {
+      must {{ find every declaration bound to a module, by `= module.export` or `= js(…)`, and every `@extern(…)` declaration, in the tree and the packages it imports, and group them by the process that serves them: the [JS host](#language.interop.host.js_host) for modules, the named extension for `@extern` }}
+    }
+
+    point_from_kind: rule(extension_point, by = product.system.extension_host) {
+      must {{ send each declaration with its path, its point, its module and export, its parameters, [result type](#language.apis.responses.result_type), `@throws` types and whether it's `<pure>`, so the other side knows what it implements }}
+    }
+
+    registered_by_path: rule(extension_point, by = product.system.extension_host) {
+      must {{ register what a process implements in the registry under the path of its declaration, the same way built-in parts are }}
+      then {{ code calls a [foreign func](#language.interop.declaring.foreign_func), an op through a foreign transport or a foreign lint exactly as a built-in one }}
+    }
+  }
+
+  errors: section {
+    declared_throws: rule(foreign_func, by = product.system.extension_host) {
+      where {{ foreign code throws an error of a type its declaration names in `@throws` }}
+      must {{ raise it in Heron as a [thrown error](#language.scripting.code.thrown_error) of that type, with its fields }}
+      then {{ `attempt(…)` keeps it, and `is` tests its type }}
+    }
+
+    foreign_error: rule(foreign_func, by = product.system.extension_host) {
+      where {{ foreign code fails in any other way, or its process exits, can't start or breaks the protocol }}
+      must {{ raise a [thrown error](#language.scripting.code.thrown_error) of the prelude's type `ForeignError`, with the message and the protocol's error code as `code` }}
+      then {{ a failure of foreign code is a value `attempt(…)` can keep, never a [code fault](#language.scripting.code.code_fault), and `result.error is ForeignError` checks in any tree }}
+    }
+  }
+
+  diagnostics: section {
+    @display("No host")
+    no_host: diagnostic("fault", by = product.system.interpreter) {
+      message = "‹func› is bound to ‹module›.‹export›, but no host for ‹kind› modules is registered"
+    }
+  }
+
+  @display("A foreign func")
+  interop_foreign_func: example {
+    | ```heron
+    | import = ["std/js@1"]
+    |
+    | tools: module = js("./tools/orders.ts")
+    |
+    | /// Writes every order of a pet to a CSV file and returns its path.
+    | export_orders(pet_id: Int): func(String) = tools.exportOrders
+    |
+    | export_pet_orders(pet_id: Int): task do {
+    |   let path = export_orders(pet_id = pet_id)
+    |   log("Wrote $path")
+    | }
+    | ```
+  }
+
+  @display("Its TS implementation")
+  interop_foreign_func_ts: example {
+    | ```ts
+    | // tools/orders.ts
+    | import { writeFile } from "node:fs/promises";
+    | import { bind } from "../.heron/bindings";
+    | import { toCsv } from "./csv";
+    |
+    | export const exportOrders = bind.export_orders(async ({ pet_id }, ctx) => {
+    |   const orders = await ctx.call("store.list_orders", { pet_id });
+    |   const path = ctx.temp("orders.csv");
+    |   await writeFile(path, toCsv(orders));
+    |   return path;
+    | });
+    | ```
+  }
+}

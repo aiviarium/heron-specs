@@ -1,0 +1,41 @@
+@display("Layout of a spec tree")
+layout: section {
+  | A spec is a tree of [Heron files](#language.core_format.files.heron_file) like any
+  | other, so its layout is the core format's: an entry file includes the rest, and a
+  | folder included as `./name/` becomes a scope of that name. What a spec adds is where
+  | each kind goes, so that an implementer loads one subtree and the surface of what it
+  | targets, and nothing else until a link leads there. Heron's own spec follows this
+  | layout, as its [guide](#guide.layout) says.
+
+  feature_subtree: term {{
+    A feature's section in its entry file, with its terms, guidance and scenarios in
+    sibling files the entry includes, as [a feature's entry file](#language.specifications.layout.specifications_feature_layout)
+    does, so a tool can load or leave out each part.
+  }}
+
+  entry_file_holds_section: rule(feature_subtree, by = product.actors.author) {
+    should {{ hold a feature's section in its folder's entry file, and its terms, guidance and scenarios in sibling files the entry includes }}
+  }
+
+  one_subtree: rule(feature_subtree, by = product.actors.implementer) {
+    should {{ load one [feature subtree](#language.specifications.layout.feature_subtree) and the surface of its targets, and load anything else only when a link leads there }}
+  }
+
+  planning_apart: rule(feature_subtree, by = product.actors.author) {
+    mustNot {{ put an open question where the [entry point](#language.core_format.files.entry_point) of an implementer reaches it on the way to the requirements }}
+    instead {{ keep it in a [planning tree](#language.specifications.planning.planning_tree) }}
+  }
+
+  @display("A feature's entry file")
+  specifications_feature_layout: example {
+    | ```heron
+    | // refunds/index.heron
+    | include = [
+    |   "./window.heron",      // refund_window and its requirements
+    |   "./scenarios.heron",
+    |   "./terms.heron",
+    |   "./guidance.heron",
+    | ]
+    | ```
+  }
+}

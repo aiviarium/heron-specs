@@ -1,0 +1,202 @@
+requirements: section {
+  | A requirement says what must hold, of whom and when. Every one has the same root, a
+  | name, its kind and its targets, `name: kind(targets)`: a strength node says what it
+  | requires, condition nodes say when it applies and what follows, and `by` names whose
+  | behaviour it is. Behaviour is a `rule`; a [lifecycle](#language.specifications.lifecycles.lifecycle)
+  | and a bound on a metric are kinds of their own, so each is checked the way it needs.
+  | [The refund window](#language.specifications.requirements.specifications_example) is
+  | a complete feature written this way.
+  |
+  | | Strength    | Polarity | Reads     |
+  | | ----------- | -------- | --------- |
+  | | `must`      | positive | must      |
+  | | `should`    | positive | should    |
+  | | `may`       | positive | may       |
+  | | `mustNot`   | negative | must not  |
+  | | `shouldNot` | negative | should not |
+  |
+  | | Condition | Says                                                        |
+  | | --------- | ----------------------------------------------------------- |
+  | | `when`    | the trigger that makes the rule apply                        |
+  | | `while`   | the state the rule applies in                                |
+  | | `where`   | the optional feature the rule applies with                   |
+  | | `if`      | the unwanted situation the rule answers                      |
+  | | `unless`  | the exception in which the rule doesn't apply                |
+  | | `then`    | the consequence guaranteed once the rule has applied          |
+  | | `instead` | under a negative strength only, the intended alternative     |
+
+  rule_kind: term {{
+    `rule(targets, by = subject) { … }`, one behaviour in one strength node and the
+    conditions that say when it applies. Its targets are the nodes it binds, and a change
+    to one of them finds the rule.
+  }}
+
+  rule_strength: term {{
+    The node that says what a requirement asks and holds the behaviour as text, as in
+    ``must {{ reject the request with `RefundWindowExpired` }}``. The renderer puts the
+    strength's words in front of the text, so the text starts with the verb.
+  }}
+
+  rule_condition: term {{
+    A child of a rule from `std/spec`'s `condition` category: one of the seven in the
+    table, or one another package adds to the category.
+  }}
+
+  rule_subject: term {{
+    What a rule's `by` names: an actor or a persona, a component or a term, whose
+    behaviour the rule states. A rule without `by` binds the system as a whole, or the
+    instances of a type it targets.
+  }}
+
+  state_property: term {{
+    A rule whose target is a type and that has no trigger, such as `single_sale: rule(Pet)`:
+    it holds at every point a value of the type can be observed.
+  }}
+
+  one_strength: rule(rule_kind, by = product.system.checker) {
+    must {{ report [accepts at most](#language.schemas.accept.diagnostics.accepts_at_most) at a rule's second strength node }}
+    example {{ a rule with `must` and `should` reports "rule accepts at most 1 strength node" }}
+  }
+
+  conditions_once: rule(rule_condition, by = product.system.checker) {
+    must {{ report [accepts at most](#language.schemas.accept.diagnostics.accepts_at_most) at the second of any of `std/spec`'s seven conditions in one rule }}
+    then {{ conditions of another package's and examples repeat freely, and a rule with no condition always applies }}
+  }
+
+  instead_only_negative: rule(rule_condition, by = product.system.checker) {
+    if {{ `instead` stands in a rule whose strength is positive, or that has no strength }}
+    must {{ report [instead under a positive strength](#language.specifications.requirements.diagnostics.instead_positive) at the `instead` }}
+  }
+
+  prose_only_rules: rule(rule_kind, by = product.system.checker) {
+    may {{ hold only prose, as `rule(targets) {{ The system must … }}` }}
+    then {{ it checks clean and renders as its text, with no sentence built from nodes }}
+  }
+
+  ears_sentence: rule(rule_kind, by = product.system.docs_generator) {
+    must {{ render a rule's strength and conditions as one sentence: `when`, `while`, `where` and `if` in that order, then the subject and the strength's words with the behaviour, then `unless` }}
+    example {{ "When a refund is requested, if the capture date is past, `desk` must reject the request, unless the payment is under review." }}
+  }
+
+  subject_words: rule(rule_subject, by = product.system.docs_generator) {
+    must {{ name a component by its name as code, an actor, a persona or a term as "the" and its name, a targeted type as "a" or "an" and its name in words, and anything else as "the system" }}
+  }
+
+  consequences_listed: rule(rule_kind, by = product.system.docs_generator) {
+    must {{ list a rule's `then`, `instead`, examples and `verify` links under its sentence, and each condition another package adds by its kind's name }}
+  }
+
+  conditions_used_for_their_sense: rule(rule_condition, by = product.actors.author) {
+    must {{ write a consequence as `then` and an exception as `unless`, and put a clarification in an `example` or in prose }}
+  }
+
+  one_behaviour: rule(rule_kind, by = product.actors.author) {
+    should {{ state one behaviour in a rule, and two obligations as two rules }}
+  }
+
+  structural_strength: rule(rule_strength, by = product.system.generator) {
+    must {{ list positive rules as what an implementer builds, ask negative rules of deciders as questions with `instead` as the expected answer, and turn examples into cases when verification is generated }}
+  }
+
+  diagnostics: section {
+    @display("Instead under a positive strength")
+    instead_positive: diagnostic("instead", by = product.system.checker) {
+      message = "instead stands only under a negative strength, and ‹strength› is positive"
+      | An `instead` in a rule whose strength is `must`, `should` or `may`; with no strength, the message ends "`mustNot` or `shouldNot`".
+    }
+  }
+
+  @display("The refund window")
+  specifications_example: example {
+    | ```heron
+    | import = ["std/doc@1", "std/types@1", "std/spec@1"]
+    |
+    | capture_date: term(aliases = ["captured at"]) {{
+    |   The moment a payment was captured. Partial refunds don't change it.
+    | }}
+    |
+    | refund_window: section {
+    |   | Customers can request a refund for a captured payment within *30 days*
+    |   | of its [capture date](#capture_date), without contacting support.
+    |
+    |   outOfScope {{ Refunds into a different currency than the capture. }}
+    |
+    |   @display("Reject late refunds")
+    |   late_rejected: rule(payments.create_refund) {
+    |     if {{ it arrives more than 30 days after the [capture date](#capture_date) }}
+    |     must {{ reject the request with `RefundWindowExpired` }}
+    |     unless {{ the payment is under a chargeback or fraud review }}
+    |
+    |     example {{ requested on day 30: accepted }}
+    |     example {{ requested on day 31: rejected }}
+    |   }
+    |
+    |   late_creates_nothing: rule(payments.create_refund) {
+    |     if {{ the request arrives more than 30 days after capture }}
+    |     mustNot {{ create a refund }}
+    |     instead {{ leave the payment unchanged }}
+    |   }
+    |
+    |   disputes_to_support: rule(payments.create_refund) {
+    |     when {{ the payment is under a chargeback or fraud review }}
+    |     must {{ hand the request to support }}
+    |     then {{ the customer gets a ticket number in the response }}
+    |   }
+    | }
+    |
+    | refund_bounded: rule(Payment) {
+    |   must {{ the refunded total stays at or below the captured amount }}
+    | }
+    |
+    | payment_lifecycle: states(Payment.status) {
+    |   initial = PaymentStatus.PENDING
+    |   terminal = [PaymentStatus.REFUNDED, PaymentStatus.FAILED]
+    |
+    |   captured: transition(PaymentStatus.PENDING, PaymentStatus.CAPTURED)
+    |   failed: transition(PaymentStatus.PENDING, PaymentStatus.FAILED)
+    |
+    |   refunded_in_part: transition(PaymentStatus.CAPTURED, PaymentStatus.PARTIALLY_REFUNDED) {
+    |     when {{ a refund covers part of the remaining amount }}
+    |   }
+    |
+    |   refunded: transition(PaymentStatus.CAPTURED, PaymentStatus.REFUNDED) {
+    |     when {{ a refund covers the whole remaining amount }}
+    |   }
+    |
+    |   refunded_rest: transition(PaymentStatus.PARTIALLY_REFUNDED, PaymentStatus.REFUNDED) {
+    |     when {{ a refund covers the rest }}
+    |   }
+    | }
+    |
+    | refund_latency: metric(Duration) {{
+    |   Time from receiving a refund request until its response is sent.
+    | }}
+    |
+    | refund_speed: quality(payments.create_refund) {
+    |   should {{ answer refund requests quickly }}
+    |   metric = refund_latency
+    |   at_most = "200ms"
+    |   percentile = 99
+    | }
+    |
+    | guidance(payments.create_refund) {{
+    |   Use the existing ledger client; it already handles idempotency keys.
+    | }}
+    |
+    | payments: api {
+    |   @performs(payment_lifecycle.captured, payment_lifecycle.failed)
+    |   capture(payment_id: String): op(Payment)
+    |
+    |   @throws(RefundError)
+    |   @performs(
+    |     payment_lifecycle.refunded_in_part,
+    |     payment_lifecycle.refunded,
+    |     payment_lifecycle.refunded_rest,
+    |   )
+    |   create_refund(request: RefundRequest): op(Refund) {{
+    |     Creates a refund for a captured payment, subject to the [refund window](#refund_window).
+    |   }}
+    | }
+    | ```
+  }
+}

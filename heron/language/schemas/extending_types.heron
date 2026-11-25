@@ -1,0 +1,61 @@
+@display("Example: extending std/types from std/http")
+extending_types: section {
+  | Part of `std/types` infers its members: a type's body accepts `member`, a kind with
+  | `typed = true`, so `amount: Money?` needs no kind written. `std/http` then attaches its
+  | flags and annotations to `std/types`' kinds from its own side, and an api that imports
+  | both reads as one vocabulary.
+
+  @display("Part of std/types")
+  std_types_schema: example {
+    | ```heron
+    | // Part of std/types: members are inferred, and their : holds a type.
+    | types: package(version = "1.0") {
+    |   type: kind {
+    |     accept(kind = member, infer = true)
+    |   }
+    |
+    |   member: kind(typed = true)
+    |
+    |   op(returns?: Any): kind {
+    |     accept(prose)
+    |     accept(kind = example)
+    |   }
+    |
+    |   // An example sets its op's parameters as fields and states the outcome,
+    |   // or is only text, as in example {{ … }}.
+    |   example: kind(fields_from = op, modes = [structure]) {
+    |     accept(prose)
+    |     accept(binding = returns, max = 1)
+    |     accept(binding = throws, max = 1)
+    |   }
+    | }
+    | ```
+  }
+
+  @display("std/http")
+  std_http_schema: example {
+    | ```heron
+    | import = ["std/schema@1", "std/types@1"]
+    |
+    | http: package(version = "1.0", requires = ["std/types@1"]) {
+    |   get: flag(group = "method", on = [http])
+    |   post: flag(group = "method", on = [http])
+    |   put: flag(group = "method", on = [http])
+    |   patch: flag(group = "method", on = [http])
+    |   delete: flag(group = "method", on = [http])
+    |
+    |   /// The base path of an api, or the method flag and path of an op,
+    |   /// with path parameters written :name.
+    |   http(path?: String, base_path?: String): annotation(on = [types.api, types.op])
+    |
+    |   path: annotation(on = [types.param])
+    |   query: annotation(on = [types.param])
+    |   header(name?: String): annotation(on = [types.param])
+    |   body: annotation(on = [types.param])
+    |
+    |   /// The status code an error is returned with, on a type that implements Error.
+    |   status(code: Int): annotation(on = [types.type])
+    | }
+    | ```
+  }
+}

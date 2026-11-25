@@ -1,0 +1,133 @@
+@display("The JS host")
+host: section {
+  | Foreign code in JS and TS runs in one long-lived process that heron starts and
+  | supervises, the [JS host](#language.interop.host.js_host). It speaks [the protocol](#language.interop.protocol) that
+  | extensions speak, so what's said here of starting, restarting and failing holds for
+  | an [extension process](#language.schemas.extensions.extension_process) too, which in
+  | addition runs with limits and asks to be trusted first.
+
+  js_host: term(aliases = ["JS host"]) {{
+    The process that runs a tree's JS and TS implementations: Node running
+    `@heron/runtime`'s `dist/host-main.js`, which loads each module a declaration names and
+    serves it over the protocol on its standard input and output.
+  }}
+
+  ctx_term: term {{
+    The way back into Heron from foreign code, the second argument of every
+    implementation: `ctx.node(path)` reads the tree lazily, `ctx.call(target, args)` calls a
+    func or op, `ctx.resource(name)` gets a resource's instance, `ctx.temp(name)` gives a
+    run-scoped path, `ctx.secret(name)` resolves a secret, and `ctx.log` and `ctx.progress`
+    report. `ctx.signal` is aborted when the call is cancelled or times out.
+  }}
+
+  starting: section {
+    one_host_per_tree: rule(js_host, by = product.system.extension_host) {
+      must {{ start one host for every module declaration of a tree, on the first call that needs it, in the project's root }}
+    }
+
+    host_command: rule(js_host, by = product.system.extension_host) {
+      must {{ run the host with `HERON_NODE`, or `node`, found on `PATH`, adding `--inspect` when `HERON_JS_INSPECT` is set, and the script `HERON_JS_HOST` names or else the first `node_modules/@heron/runtime/dist/host-main.js` found in the project's root, the folder of an absolute module, or a folder above either }}
+      then {{ a project gets the host as a dev dependency, and debugging is ordinary Node debugging }}
+    }
+
+    host_missing: rule(js_host, by = product.system.extension_host) {
+      if {{ there's no Node, or no host script is found }}
+      must {{ fail each call that needs the host with [host not installed](#language.interop.host.diagnostics.host_missing) }}
+    }
+
+    ts_modules: rule(js_host, by = product.system.extension_host) {
+      must {{ load a TS module through Node's type stripping, and resolve a relative import without an extension to its `.ts`, `.js`, `/index.ts` or `/index.js` file }}
+      example {{ `import { bind } from "../.heron/bindings"` finds `.heron/bindings.ts` }}
+    }
+
+    js_host_untrusted_never: rule(js_host, by = product.system.extension_host) {
+      mustNot {{ ask to trust the [JS host](#language.interop.host.js_host) or run it with limits }}
+      instead {{ treat the modules it loads as the project's own code, as [the extension limits](#language.schemas.extensions.limits.js_host_unlimited) say, and ask only before an extension's first run }}
+    }
+  }
+
+  supervising: section {
+    crash_fails_in_flight: rule(js_host, by = product.system.extension_host) {
+      if {{ the host exits while calls are in flight }}
+      must {{ fail each of them with `ForeignError`, naming the method and why the connection ended }}
+    }
+
+    restart_on_next_call: rule(js_host, by = product.system.extension_host) {
+      when {{ a call needs a host that has exited }}
+      must {{ start it again and run the handshake before the call }}
+    }
+
+    restart_limit: rule(js_host, by = product.system.extension_host) {
+      if {{ a process has been started 5 times within the last minute }}
+      must {{ fail the call with [keeps exiting](#language.interop.host.diagnostics.keeps_exiting) without starting it again }}
+    }
+
+    stderr_prefixed: rule(js_host, by = product.system.extension_host) {
+      must {{ pass each line a process writes on standard error, and each `$/log` it sends as `‹level›: ‹message›`, to heron's standard error after the process's name }}
+    }
+
+    shutdown: rule(js_host, by = product.system.extension_host) {
+      when {{ the command that started a process ends }}
+      must {{ send `shutdown`, and kill the process when it hasn't exited 2 seconds later }}
+    }
+
+    progress_shown: rule(ctx_term, by = product.system.extension_host) {
+      when {{ foreign code reports `$/progress` for a call }}
+      must {{ show it beside the call in the run's output and the editor }}
+    }
+  }
+
+  services: section {
+    | What the host serves foreign code, through [ctx](#language.interop.host.ctx_term).
+
+    ctx_call_in_run: rule(ctx_term, by = product.system.extension_host) {
+      where {{ foreign code calls `ctx.call` during a `heron run` }}
+      must {{ run the target through the run's interpreter, a func by its code and an op through its transport, recorded in the same run }}
+      then {{ calls back into Heron run one at a time, while the interpreter waits for the foreign call that made them, and can nest }}
+    }
+
+    ctx_call_targets: rule(ctx_term, by = product.system.interpreter) {
+      if {{ the target names nothing, or something other than a func or op }}
+      must {{ fail the call back with an invalid-params error naming the target }}
+    }
+
+    ctx_call_outside_run: rule(ctx_term, by = product.system.extension_host) {
+      if {{ foreign code calls `ctx.call` outside a run, as a lint or a generator does, with no registered func of that path }}
+      must {{ fail it with `‹target› can be called from an extension only during a heron run` }}
+    }
+
+    ctx_node: rule(ctx_term, by = product.system.extension_host) {
+      must {{ answer `ctx.node(path)` with the node of the checked tree or an imported package at that path, as `heron check --json` writes it, to the depth asked, and with null when nothing is there }}
+    }
+
+    ctx_temp: rule(ctx_term, by = product.system.extension_host) {
+      must {{ answer `ctx.temp(name)` with `‹temp›/‹run›/‹name›`, the run's id, or `local` outside a run, making the folder, and with `name` kept inside it }}
+      example {{ `ctx.temp("../x")` is `‹temp›/‹run›/x` }}
+    }
+
+    ctx_secret: rule(ctx_term, by = product.system.extension_host) {
+      must {{ resolve `ctx.secret(name)` when it's called, from the environment variable `HERON_SECRET_` followed by the name in upper case with `.` and `-` as `_`, and fail with `no secret ‹name›: set ‹variable›` when it isn't set }}
+      example {{ `ctx.secret("stripe.api-key")` reads `HERON_SECRET_STRIPE_API_KEY` }}
+      then {{ a secret is never part of a declaration, an argument or a record }}
+    }
+
+    secret_stores: rule(ctx_term, by = product.system.extension_host) {
+      may {{ resolve a secret from a store a package registers, such as a cloud secret manager, before the environment }}
+    }
+  }
+
+  diagnostics: section {
+    @display("Host not installed")
+    host_missing: diagnostic("extension", by = product.system.extension_host) {
+      message = "the JS host isn't installed: add @heron/runtime to the project's dev dependencies, or set HERON_JS_HOST"
+      | Or `the JS host needs Node: ‹error›` when there's no runtime. Thrown as a
+      | `ForeignError` from the call.
+    }
+
+    @display("Keeps exiting")
+    keeps_exiting: diagnostic("extension", by = product.system.extension_host) {
+      message = "‹process›: the extension exited 5 times in 1m0s; not starting it again"
+      | Thrown as a `ForeignError` from the call.
+    }
+  }
+}

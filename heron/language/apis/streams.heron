@@ -1,0 +1,42 @@
+@display("Streams and sockets")
+streams: section {
+  | A value that flows rather than arrives once is a `Stream(T)`. Where it stands says who
+  | sends it, and each transport carries it the way it can: HTTP streams results as
+  | server-sent events, a WebSocket carries both directions as messages, and gRPC has
+  | server, client and bidirectional streams.
+
+  stream_type: term {{
+    `Stream(T)`, from `std/types`: values of `T` sent one after another. As an op's result
+    the server streams them, as a parameter the client does, and as both the op is a
+    two-way exchange.
+  }}
+
+  ws_socket: term {{
+    A WebSocket opened at a path by `@ws(path)` of `std/ws`, on an api for all of its ops or
+    on one op. Each op becomes a message type on the socket.
+  }}
+
+  stream_directions: rule(stream_type, by = product.system.docs_generator) {
+    where {{ an op streams its result, a parameter or both }}
+    must {{ show its messages by direction, client to server for a streamed parameter and server to client for a streamed result, framed as server-sent events over HTTP and as WebSocket messages on a socket }}
+  }
+
+  op_socket_overrides: rule(ws_socket, by = product.system.docs_generator) {
+    where {{ both an op and its api carry `@ws` }}
+    must {{ open the op's socket at the op's path }}
+  }
+
+  no_streamed_http_params: rule(stream_type, by = product.system.checker) {
+    if {{ an op bound only to `std/http` takes a streamed parameter }}
+    must {{ report [streamed parameter over HTTP](#language.apis.streams.diagnostics.streamed_http_param) at the parameter }}
+    then {{ server-sent events carry only results, and a client stream needs a socket or gRPC }}
+  }
+
+  diagnostics: section {
+    @display("Streamed parameter over HTTP")
+    streamed_http_param: diagnostic("stream", by = product.system.checker) {
+      message = "‹op› is bound only to HTTP, which can't stream ‹param› from the client"
+      | A `Stream(T)` parameter on an op with no binding that streams from the client.
+    }
+  }
+}

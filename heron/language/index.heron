@@ -1,0 +1,21 @@
+// The language: its format, grammar and packages.
+include = [
+  "./core_format/",
+  "./grammar/",
+  "./schemas/",
+  "./markup/",
+  "./data/",
+  "./apis/",
+  "./specifications/",
+  "./scripting/",
+  "./interop/",
+  "./std/",
+]
+
+@display("APIs")
+apis {}
+
+@display("Standard packages")
+std {}
+
+| The Heron language: the core format and its grammar, the packages that give it kinds, and the standard packages.

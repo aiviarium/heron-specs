@@ -1,0 +1,63 @@
+tags: section {
+  | A tag writes a node inside text: `<warning>…</warning>`, `<kbd>R</kbd>` or
+  | `<toc depth={2} />`. It names a kind, and its attributes are the kind's arguments. There's
+  | no raw HTML: a tag that names no kind is an error, never markup passed through.
+
+  component_tag: term {{
+    A tag in [prose text](#language.markup.writing.prose_text) naming a kind in scope: `<kind attr="text" other={expr} flag>content</kind>`,
+    or `<kind … />` with no content. On lines of its own it's a block; inside a sentence it's
+    inline. Either may span several lines and nest.
+  }}
+
+  tag_attribute: term {{
+    `name="text"`, `name={expr}` or a bare `name` in a tag's head: an argument of the tag's
+    kind by name. A bare attribute is `true`; a string may hold inserts.
+  }}
+
+  tags_are_kinds: rule(component_tag, by = product.system.checker) {
+    must {{ resolve a tag's name as a kind in scope, and report [unknown tag](#language.core_format.prose_layer.diagnostics.unknown_tag) with the closest kind where it names nothing }}
+    then {{ prose holds no raw HTML: `<div>` is an error unless a package declares `div` }}
+  }
+
+  tag_names_a_kind: rule(component_tag, by = product.system.linter) {
+    must {{ report [tag not a kind](#language.schemas.modes.diagnostics.tag_not_a_kind) where a tag's name resolves to something that isn't a kind, and [structure-only tag](#language.schemas.modes.diagnostics.structure_only_tag) where its kind is declared `modes = [structure]` }}
+  }
+
+  attributes_are_arguments: rule(tag_attribute, by = product.system.checker) {
+    must {{ match each attribute to the parameter of the tag's kind with its name, and report [unknown attribute](#language.core_format.prose_layer.diagnostics.unknown_attribute) with the closest parameter where none has it }}
+  }
+
+  attribute_values: rule(tag_attribute, by = product.system.checker) {
+    must {{ check an attribute written `{expr}` against its parameter's type, as an argument, and an attribute written as a string against `String` or `Prose` }}
+    unless {{ the parameter's type is another primitive, such as `Int` or `Bool`, when the string is the value's text and only its inserts are checked }}
+    example {{ `<toc depth="2" />` and `<toc depth={2} />` both set `depth` to 2, and `<toc depth={true} />` reports [wrong type](#language.core_format.values.diagnostics.wrong_type) }}
+  }
+
+  required_attributes: rule(tag_attribute, by = product.system.checker) {
+    if {{ a tag leaves out an attribute whose parameter has no default and isn't optional }}
+    must {{ report [missing attribute](#language.markup.tags.diagnostics.missing_attribute) }}
+  }
+
+  tag_closing: rule(component_tag, by = product.system.parser) {
+    must {{ close a tag at `</name>` with its own name, and report [tag mismatch](#language.grammar.recovery.diagnostics.tag_mismatch) or [tag unclosed](#language.grammar.recovery.diagnostics.tag_unclosed) otherwise }}
+  }
+
+  slots: rule(component_tag, by = product.system.checker) {
+    must {{ admit tags nested in a tag's content by its kind's `accept` entries, and report [tag not accepted](#language.markup.tags.diagnostics.tag_not_accepted) for one it doesn't take }}
+    example {{ `<details><title>…</title>…</details>`, where `details` accepts one `title` }}
+  }
+
+  tags_render: rule(component_tag, by = product.system.docs_generator) {
+    must {{ render a tag through the renderer registered for its kind, with its content rendered as prose and its attributes as text, and as a span classed by the kind's name where none is registered }}
+  }
+
+  diagnostics: section {
+    missing_attribute: diagnostic("missing-argument", by = product.system.checker) {
+      message = "<‹kind›> needs the attribute ‹name›"
+    }
+
+    tag_not_accepted: diagnostic("accept", by = product.system.checker) {
+      message = "<‹kind›> doesn't accept <‹child›>; it accepts ‹kinds›"
+    }
+  }
+}

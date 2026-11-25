@@ -1,0 +1,90 @@
+@display("Technical kinds")
+tech_kinds: section {
+  | `std/tech` gives a spec the technical shape of a system, for whoever builds it:
+  | components with their contracts, a tool's commands, a language's grammar, an app's
+  | screens and the diagnostics its tools report. Requirements on them are `std/spec`'s
+  | rules with `by` naming the component, and `verify` links any of them to its test.
+  |
+  | | Kind                           | Holds                                                                       |
+  | | ------------------------------ | --------------------------------------------------------------------------- |
+  | | `component(path, lang)`        | `uses`, responsibilities, surface, invariants, `raises`, obligations and `verify` |
+  | | `command(name)`                | `usage` lines, arguments, options, exit codes, examples, `verify` and subcommands |
+  | | `grammar(notation, source)`    | `start`, productions and tokens                                              |
+  | | `screen(route)`                | regions, nested as the layout nests                                         |
+  | | `diagnostic(code, severity, by)` | `message`, `related`, examples and `verify`                                 |
+
+  component_kind: term {{
+    `name: component(path = "src/parser", lang = "go") { … }`, a unit of code
+    with one contract at a path from the repository's root. `uses` lists the components it
+    may import; a `surface` holds part of its exported interface verbatim, and an
+    `invariant` holds at every call, with one strength like a rule.
+  }}
+
+  command_kind: term {{
+    `name: command("heron check") { … }`, a command of a command-line tool: one usage line
+    per form, `argument(name, type, optional, variadic)`, `option(name, type, default,
+    short, env)` and `exit(code)`.
+  }}
+
+  grammar_kind: term {{
+    `name: grammar(notation = …, source = …) { … }`, a language's syntax as productions
+    and tokens whose text is kept verbatim, in a notation whose operators are `|`, `?`,
+    `*`, `+` and grouping. `source` is a file the grammar is kept equal to.
+  }}
+
+  screen_kind: term {{
+    `name: screen(route = "/docs/<op>") { … }`, a view of an app and its regions, each
+    region holding what it shows and the regions inside it.
+  }}
+
+  diagnostic_kind: term {{
+    `name: diagnostic("code", severity = warning, by = component) { … }`, one problem a
+    tool reports: its code, its severity, from `error`, the default, to `hint`, its
+    `message` with ‹name› for each part filled in at the site, `related` for the message
+    at a second site, and `by` for the component that reports it. One code may name
+    several diagnostics, each a node of its own.
+  }}
+
+  component_view: rule(component_kind, by = product.system.docs_generator) {
+    must {{ show a component with its path, the components it uses and those that use it under "Used by", its invariants as sentences with the component as their subject, its obligations with their tests, and the rules elsewhere whose `by` names it, counted by the section they sit in }}
+  }
+
+  command_view: rule(command_kind, by = product.system.docs_generator) {
+    must {{ show a command under its name as the page title, with its arguments and its options as tables of name, type and default }}
+  }
+
+  grammar_view: rule(grammar_kind, by = product.system.docs_generator) {
+    must {{ show each production with every name in its text linked to the production or token it names, and under each the productions that use it }}
+  }
+
+  grammar_source: rule(grammar_kind, by = product.system.docs_generator) {
+    where {{ a grammar names a `source` }}
+    must {{ fail the spec's grammar test unless the grammar's productions and tokens equal the source's }}
+  }
+
+  screen_view: rule(screen_kind, by = product.system.docs_generator) {
+    must {{ show a screen's route as a fact and its regions nested, each with an anchor }}
+  }
+
+  diagnostic_view: rule(diagnostic_kind, by = product.system.docs_generator) {
+    must {{ show a diagnostic as a card with its code, its severity, its message with each ‹name› marked, its related message and the component that reports it, and list it in an index by code that links to its page }}
+  }
+
+  uses_enforced: rule(component_kind, by = product.system.linter) {
+    if {{ a component's code imports a component its `uses` doesn't list }}
+    should {{ report [import outside uses](#language.specifications.tech_kinds.diagnostics.import_outside_uses) at the component }}
+  }
+
+  diagnostic_message_required: rule(diagnostic_kind, by = product.system.checker) {
+    if {{ a diagnostic sets no `message` }}
+    must {{ report the missing field, as for any member declared without a default }}
+  }
+
+  diagnostics: section {
+    @display("Import outside uses")
+    import_outside_uses: diagnostic("component-uses", severity = warning, by = product.system.linter) {
+      message = "‹component› imports ‹other›, which its uses doesn't list"
+      | An import that breaks a component's contract.
+    }
+  }
+}

@@ -1,11 +1,37 @@
-// The Heron system's spec: the language, the product and the command line,
-// as a sealed package. Implementations import it at a version and can't
-// amend it; the content moves here from the implementation's spec/ tree.
-import = ["std/schema@1", "std/doc@1", "std/spec@1", "std/product@1", "std/tech@1"]
+// The Heron system's spec, as a sealed package: the language, the product,
+// the command line and the tools' behaviour. Implementations import it at a
+// version and add only their own project tree; they can't amend it. Every
+// folder is mounted as the scope of its name, as the guide says.
+import = [
+  "std/schema@1",
+  "std/doc@1",
+  "std/spec@1",
+  "std/product@1",
+  "std/tech@1",
+  "std/lint@1",
+  "std/docs@1",
+]
 
-/// The Heron language and the system that reads, checks, runs and documents
-/// it, as seen from outside.
 heron: package(version = "0.1.0", sealed = true) {
-  | What Heron is, who it's for and how each part of the system behaves. Nothing in this
-  | package names how the system is built.
+  include = [
+    "./guide.heron",
+    "./product/",
+    "./language/",
+    "./cli/",
+    "./tools/",
+  ]
+
+  // A folder's scope is named after the folder, so a name that's an acronym
+  // gets its display name here, where the folder is included.
+  @display("CLI")
+  cli {}
+
+  | Version 0.1.0 of the Heron spec: the language, its format, [schemas](#language.schemas.kinds.schema), markup,
+  | data, APIs, specifications, interop and scripting, and the system that reads, checks, runs
+  | and documents it, as seen from outside. Nothing in this package names how the system is
+  | built.
+}
+
+docs {
+  depth = 3
 }

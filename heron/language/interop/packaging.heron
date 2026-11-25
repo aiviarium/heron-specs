@@ -1,0 +1,126 @@
+@display("Packaging and the SDK")
+packaging: section {
+  | A TS implementation is an ordinary module of the project or of an npm package, written
+  | with `@heron/runtime` and checked by `tsc` against types generated from Heron. `std/apis`
+  | declares [the `Transport` point](#language.interop.packaging.interop_transport), and a
+  | package [implements it in TS](#language.interop.packaging.interop_transport_ts).
+
+  heron_runtime: term {{
+    The npm package `@heron/runtime`: the SDK implementations import, its `./apis` entry for
+    transports, its `./protocol` entry with the generated messages, and the
+    [JS host](#language.interop.host.js_host), `dist/host-main.js`, also installed as the
+    command `heron-js-host`. A project adds it as a dev dependency.
+  }}
+
+  define_functions: term {{
+    The SDK's `defineFunc`, `defineMacro`, `defineTransport`, `defineLint`,
+    `defineResource`, `defineGenerator` and `defineRenderer`: each wraps an implementation
+    and tags it with its [extension point](#language.interop.declaring.extension_point).
+  }}
+
+  generated_bindings: term {{
+    The two files the `ts` target of `heron generate` writes under `.heron/`:
+    `types.ts`, with an interface for each record type and a union of names for each enum,
+    in namespaces by path, and `bindings.ts`, whose `bind` has one member per declaration
+    bound to a module, typed with its arguments, result and instance types.
+  }}
+
+  sdk: section {
+    tagged_implementations: rule(define_functions, by = product.system.extension_host) {
+      must {{ serve an export as the implementation of a declaration only when it was made with a `define…` function of the declaration's point, or is a plain function for a func }}
+    }
+
+    wrong_point: rule(define_functions, by = product.system.extension_host) {
+      if {{ an export is tagged with another point than its declaration's, or stamped for another declaration }}
+      must {{ fail the handshake with `‹path› is declared as a ‹point› but implemented as a ‹point›`, or `‹path› is bound to the implementation generated for ‹other›` }}
+    }
+
+    not_an_implementation: rule(define_functions, by = product.system.extension_host) {
+      if {{ the export a declaration names is missing or isn't an implementation }}
+      must {{ fail with `‹module›: export ‹name› isn't an implementation made with @heron/runtime` }}
+    }
+
+    async_results: rule(define_functions, by = product.system.extension_host) {
+      must {{ accept a result returned, as a promise, or for a func as an `AsyncIterable` whose items are sent as `$/stream` }}
+    }
+
+    ctx_signal: rule(define_functions, by = product.system.extension_host) {
+      must {{ abort `ctx.signal` of a call when heron cancels it or its time runs out }}
+    }
+
+    renderer_modules: rule(define_functions, by = product.system.extension_host) {
+      must {{ serve a docs `renderers` module as every renderer its exports hold, by kind, and report those kinds in the handshake }}
+    }
+  }
+
+  types: section {
+    ts_target: rule(generated_bindings, by = product.system.generator) {
+      must {{ write [the bindings](#language.interop.packaging.generated_bindings) as the `ts` target of `heron generate`, `heron generate ts`, with every type, enum and module binding of the tree and the packages it imports }}
+    }
+
+    bindings_stamp: rule(generated_bindings, by = product.system.generator) {
+      must {{ make each member of `bind` wrap its implementation with its point's `define…` function and stamp it with the declaration's path }}
+      example {{ `export_orders: (fn: (args: { pet_id: number; orders?: Array<T.Order> }, ctx: Ctx) => string | Promise<string>) => stamp(defineFunc(fn), "export_orders")` }}
+    }
+
+    heron_owns_signatures: rule(generated_bindings, by = product.system.generator) {
+      must {{ type the bindings from the Heron declarations alone, so `tsc` checks each implementation against them }}
+      then {{ a signature that drifts from its implementation is a compile error, not a runtime failure }}
+    }
+
+    bindings_are_build_outputs: rule(generated_bindings, by = product.system.generator) {
+      must {{ list `.heron/` in the managed ignore block, so the bindings stay out of the repository }}
+    }
+
+    bindings_on_setup: rule(generated_bindings, by = product.system.interpreter) {
+      must {{ write the bindings during `heron run setup` and again after every change to the tree }}
+    }
+  }
+
+  distribution: section {
+    npm_packages: rule(heron_runtime, by = product.system.interpreter) {
+      must {{ resolve a package whose `package.json` has a `heron` field through the project's package manager and lockfile, and pin it in `heron.lock` }}
+    }
+
+    heron_dev: rule(generated_bindings, by = product.system.command_line) {
+      when {{ `heron dev` runs }}
+      must {{ watch the specs and the TS sources together and regenerate the bindings as either changes }}
+    }
+
+    testing_package: rule(heron_runtime, by = product.system.extension_host) {
+      must {{ offer `@heron/testing`, which gives Vitest a mock tree and `ctx`, so an implementation is tested without heron }}
+    }
+
+    | Other runtimes follow the same protocol with their own SDKs, such as `py(…)` or
+    | `go(…)` bindings, once there's a need: each needs a CBOR library, a generator over the
+    | protocol's messages and about two hundred lines.
+  }
+
+  @display("The Transport point")
+  interop_transport: example {
+    | ```heron
+    | // std/apis declares the point
+    | Transport: interface {
+    |   /// Sends one request of an op and returns its response.
+    |   send(op: Ref(op), request: Any): func(Response)
+    | }
+    |
+    | // a package binds an implementation
+    | grpc: transport = js("@acme/heron-grpc")
+    | ```
+  }
+
+  @display("A transport in TS")
+  interop_transport_ts: example {
+    | ```ts
+    | import { defineTransport } from "@heron/runtime/apis";
+    |
+    | export default defineTransport({
+    |   async send(op, request, ctx) {
+    |     const client = await ctx.resource("grpc_client");
+    |     return client.unary(op.path, request);
+    |   },
+    | });
+    | ```
+  }
+}

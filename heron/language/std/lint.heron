@@ -1,0 +1,13 @@
+@display("std/lint")
+lint: component(path = "std/lint", lang = "heron") {
+  | The configuration of `heron lint` and the spec-aware prose lints, which importing the package turns on.
+  |
+  | Its surface is declared in `std/lint/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                         | Specified in                        |
+  | | ------------------------------ | ----------------------------------- |
+  | | `Lint`, `lint`, `Vale`, `Rule` | [the prose linter](#product.system.prose_linter) |
+
+  uses = [language.std.types]
+}

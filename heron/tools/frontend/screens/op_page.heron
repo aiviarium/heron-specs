@@ -1,0 +1,84 @@
+@display("API op page")
+op_page: screen(route = "/<api>.<op>.html") {
+  | Each op is a full reference page, built from its signature, annotations and examples, so
+  | nothing about it is written twice. Mintlify's API pages are the reference for its look.
+
+  top_bar: region {
+    | The site's top bar, sticky: the logo, the [site areas](#tools.docs.site.site_area), search with its shortcut, the version
+    | switch and the theme switch.
+  }
+
+  sidebar: region {
+    | The API reference's navigation: the API's ops, each with its method in a fixed-width
+    | mono column, then its types, [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
+
+    ops_by_resource: rule(tools.frontend.screens.op_page.sidebar, by = product.system.docs_generator) {
+      must {{ list each api's ops under it, in the order written, each with its method and its [display name](#language.core_format.naming.display_name), then the tree's types and errors as groups of their own }}
+    }
+  }
+
+  header: region {
+    | The breadcrumb, the op's [display name](#language.core_format.naming.display_name), and the bar with the method, the path and a copy
+    | button.
+
+    op_header: rule(tools.frontend.screens.op_page.header, by = product.system.docs_generator) {
+      must {{ show the method, and the path with the api's base path dimmed before the op's own, and a copy button for the whole path }}
+    }
+  }
+
+  body: region {
+    | The op's docs, its facts, its parameters, its responses and its errors.
+
+    facts: region {
+      | A short list of what the op does beyond its signature.
+
+      performs_shown: rule(tools.frontend.screens.op_page.body.facts, by = product.system.docs_generator) {
+        must {{ list the transitions the op's `@performs` names, each linked to its [lifecycle](#language.specifications.lifecycles.lifecycle) }}
+      }
+
+      cross_cutting_shown: rule(tools.frontend.screens.op_page.body.facts, by = product.system.docs_generator) {
+        must {{ show the cross-cutting annotations that apply to the op, its own or its api's, such as authentication, rate limits, pagination and idempotency, by their [display names](#language.core_format.naming.display_name) with their arguments }}
+      }
+    }
+
+    parameters: region {
+      grouped_params: rule(tools.frontend.screens.op_page.body.parameters, by = product.system.docs_generator) {
+        must {{ group the parameters by where they go, path, query, header and body, a header by its wire name, each row with its name, its type linked to the type's page, whether it's required, its default, its constraints and its docs }}
+        unless {{ the op takes no parameter with a location, and then the rows sit under one heading }}
+      }
+
+      schema_trees: rule(tools.frontend.screens.op_page.body.parameters, by = product.system.docs_generator) {
+        must {{ show a body as an expandable tree of its type, nested types opening in place, a union's variants as tabs, optional and nullable fields marked, and a type already open above shown as a link instead of expanding again }}
+      }
+    }
+
+    responses: region {
+      responses_by_outcome: rule(tools.frontend.screens.op_page.body.responses, by = product.system.docs_generator) {
+        must {{ list the success response first with status 200, then each error the op or its api throws, an interface by each type that implements it, with its `@status` and the rule or condition behind it }}
+      }
+
+      streams_shown: rule(tools.frontend.screens.op_page.body.responses, by = product.system.docs_generator) {
+        where {{ the op takes or returns a `Stream`, or is a WebSocket }}
+        must {{ show the message types in each direction and how they're framed: server-sent events for a stream, frames for a socket }}
+      }
+    }
+
+    pager: region {
+      | Links to the previous and the next op.
+    }
+  }
+
+  examples: region {
+    | The sticky right column: the request example with its language tabs, the example
+    | picker, copy and Try it, the response for the selected status, and the page's outline.
+
+    example_forms: rule(language.apis.examples.op_example, by = product.system.docs_generator) {
+      must {{ show each op example's request as curl against `$BASE_URL`, as a call of the TS client by the op's parameters, and as raw HTTP, all the same request, and its response with its status }}
+    }
+
+    error_bodies: rule(language.apis.examples.op_example, by = product.system.docs_generator) {
+      where {{ an example's response is a [thrown error](#language.scripting.code.thrown_error) }}
+      must {{ answer it with the error's `@status` and a body of the error type's defaults }}
+    }
+  }
+}

@@ -1,0 +1,157 @@
+long_form: section {
+  | Prefixing every line suits text that sits between structure, not a page that's mostly
+  | text. A [`{{ }}` body](#language.core_format.prose_layer.prose_body) and a [prose file](#language.core_format.prose_layer.prose_file) hold the same prose without prefixes. In a
+  | [prose file](#language.core_format.prose_layer.prose_file), headings declare sections named from the heading text, which becomes the
+  | [display name](#language.core_format.naming.display_name), `{#name}` names one explicitly, and fenced blocks marked `heron` hold
+  | structure, read in place as members of the current section.
+  |
+  | [A prose file](#language.markup.long_form.markup_prose_file) and [the same page in structure](#language.markup.long_form.markup_page_structure) build the same tree.
+
+  heading_extent: rule(language.core_format.prose_layer.prose_file, by = product.system.checker) {
+    must {{ run a heading's section to the next heading of the same or a higher level, and nest a deeper heading's section inside it }}
+  }
+
+  heading_names: rule(language.core_format.prose_layer.prose_file, by = product.system.checker) {
+    must {{ name a heading's section by its `{#name}`, or by its text in lower case, with each run of characters other than letters and digits between two words written as one `_` and dropped at the ends }}
+    example {{ `## Before you start` declares `before_you_start`, and `## Limits {#refund_limits}` declares `refund_limits` }}
+    then {{ the heading text is the section's [display name](#language.core_format.naming.display_name) either way }}
+  }
+
+  sections_are_structure: rule(language.markup.writing.prose_text, by = product.actors.author) {
+    mustNot {{ give prose outside a [prose file](#language.core_format.prose_layer.prose_file) headings of its own }}
+    instead {{ title a part with a section node, whose [display name](#language.core_format.naming.display_name) is its heading and whose nesting sets the level }}
+  }
+
+  @display("A prose file")
+  markup_prose_file: example {
+    | ```heron.md
+    | ~~~heron
+    | import = ["std/doc@1"]
+    | ~~~
+    |
+    | # Refund guide
+    |
+    | How support issues a refund from the console. Every refund follows
+    | the [refund window](#window).
+    |
+    | <toc depth={2} />
+    |
+    | ## Before you start
+    |
+    | You need the **Refunds** role, under *Settings → Roles*.
+    |
+    | <warning>A refund can't be undone once the payment provider confirms it.</warning>
+    |
+    | ## Disputes
+    |
+    | A [dispute](#dispute) locks the payment until the provider resolves it.
+    |
+    | ~~~heron
+    | dispute: term =| A customer's challenge of a payment through their bank.
+    | ~~~
+    | ```
+  }
+
+  @display("The same page in structure")
+  markup_page_structure: example {
+    | ```heron
+    | refund_guide: section {
+    |   | How support issues a refund from the console. Every refund follows
+    |   | the [refund window](#window).
+    |   |
+    |   | <toc depth={2} />
+    |
+    |   before_you_start: section {{
+    |     You need the **Refunds** role, under *Settings → Roles*.
+    |
+    |     <warning>A refund can't be undone once the payment provider confirms it.</warning>
+    |   }}
+    |
+    |   disputes: section {{
+    |     A [dispute](#dispute) locks the payment until the provider resolves it.
+    |   }}
+    |
+    |   dispute: term =| A customer's challenge of a payment through their bank.
+    | }
+    | ```
+  }
+
+  @display("A documentation page")
+  markup_documentation_page: example {
+    | The fenced block inside is shown with `~~~` only because the example's own fence uses
+    | backticks; in a [Heron file](#language.core_format.files.heron_file) it's written with triple backticks. Its braces are text,
+    | because fenced code is verbatim.
+    |
+    | ```heron
+    | import = ["std/doc@1"]
+    |
+    | refund_guide: section {
+    |   | How support issues a refund from the console. Every refund follows
+    |   | the [refund window](#window).
+    |   |
+    |   | <toc depth={2} />
+    |
+    |   before_you_start: section {
+    |     | You need the **Refunds** role, under *Settings → Roles*.
+    |     |
+    |     | <warning>A refund can't be undone once the payment provider confirms it.</warning>
+    |   }
+    |
+    |   issue_a_refund: section {
+    |     | 1. Open the payment and press <kbd>R</kbd>.
+    |     | 2. Enter the amount, or leave it empty to refund everything still refundable.
+    |     | 3. Pick a reason and confirm.
+    |     |
+    |     | <figure caption="The refund dialog.">
+    |     |   ![The refund dialog with amount and reason filled in](img/refund-dialog.png)
+    |     | </figure>
+    |   }
+    |
+    |   reasons: section {
+    |     | | Reason      | When to use                                        |
+    |     | |-------------|----------------------------------------------------|
+    |     | | `duplicate` | The customer was charged twice.                    |
+    |     | | `fraud`     | Hand it to support, see [exceptions](#exceptions). |
+    |   }
+    |
+    |   from_the_api: section {
+    |     | The console calls `POST /v1/refunds`<footnote>Older consoles still call `/v0/refunds`.</footnote>:
+    |     |
+    |     | ~~~json
+    |     | {"payment_id": "pay_123", "amount": "40.00 EUR"}
+    |     | ~~~
+    |   }
+    |
+    |   questions: section {
+    |     | <details>
+    |     |   <title>Can I refund a disputed payment?</title>
+    |     |   No. A [dispute](#dispute) locks the payment until the provider resolves it.
+    |     | </details>
+    |   }
+    |
+    |   dispute: term =| A customer's challenge of a payment through their bank.
+    | }
+    | ```
+  }
+
+  @display("A prompt")
+  markup_prompt: example {
+    | Prompts use the same prose. Promptlets are functions that return prose, so they're
+    | inserted with `$`.
+    |
+    | ```heron
+    | review_change(diff: Diff): prompt {
+    |   | $tone("direct")
+    |   |
+    |   | Review $data(diff) against the [ordering rules](#ordering). Report each
+    |   | rule it breaks with the line that shows it.
+    |   |
+    |   | <if test={diff.touches(store.place_order)}>
+    |   | Check the pet's row is locked while the order is placed.
+    |   | </if>
+    |   |
+    |   | $checklist("review")
+    | }
+    | ```
+  }
+}

@@ -1,0 +1,22 @@
+@display("Tree-sitter grammar")
+tree_sitter: section {
+  | [The editor grammar](#product.system.editor_grammar): editors get [static highlighting](#language.schemas.highlighting.static_highlighting),
+  | folding and structural selection from it without starting `heron`; everything semantic
+  | comes from [the language server](#product.system.language_server).
+
+  query_files: section {
+    | | Query             | Captures                                                                                                  |
+    | | ----------------- | --------------------------------------------------------------------------------------------------------- |
+    | | `highlights.scm`  | comments, `///` docs, strings, code spans, numbers, booleans, escapes, URLs, keywords, operators and punctuation, annotations, flags, tags, links, parameters, members and types |
+    | | `folds.scm`       | bodies, prose blocks, [prose lines](#language.core_format.prose_layer.prose_lines), `do` blocks, `///` docs, argument lists, lists and maps |
+    | | `textobjects.scm` | a declaration or an entered node and its body as a class, a call and its arguments, a value or a set as an assignment, a parameter, a `do` block and its code as a function, prose and comments as comments, a link and a tag |
+
+    queries_compile: rule(tools.tree_sitter.query_files, by = product.system.editor_grammar) {
+      must {{ keep every query compiling against the grammar and capturing something on a fixture }}
+    }
+
+    highlight_scope: rule(tools.tree_sitter.query_files, by = product.system.editor_grammar) {
+      must {{ register the grammar for the file type `heron` under the scope `source.heron`, with its highlight and fold queries }}
+    }
+  }
+}

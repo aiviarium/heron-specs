@@ -1,0 +1,46 @@
+links: section {
+  | A link names a node by path, `[text](#path)`, or a page by URL, `[text](url)`. A link to
+  | a node is checked, so it can't go stale silently, and it renders by what it points at.
+
+  node_link: term {{
+    `[text](#path)`, a link to a node by its path, resolved in the scope of the text it's
+    written in. `[](#path)` takes the node's [display name](#language.core_format.naming.display_name) as its text.
+  }}
+
+  url_link: term {{
+    `[text](url)`, a link to a page outside the tree. Its URL may hold inserts, as
+    `[issue](https://example.com/issues/$id)`.
+  }}
+
+  node_links_resolve: rule(node_link, by = product.system.checker) {
+    must {{ resolve a node link's path from the scope of its text outward, as any path is resolved, and report [broken link](#language.core_format.prose_layer.diagnostics.broken_link) with the closest name where it names nothing }}
+    example {{ in a section `guide` with a child `window`, `[the window](#window)` links to `guide.window` }}
+  }
+
+  node_links_render: rule(node_link, by = product.system.docs_generator) {
+    must {{ render a [node link](#language.markup.links.node_link) as a link to the page or anchor of the node it resolves to }}
+  }
+
+  imported_declarations: rule(node_link, by = product.system.checker) {
+    must {{ resolve a [node link](#language.markup.links.node_link) to a declaration of a package the file imports, by the path the package's names are visible under }}
+    example {{ `[rule](#spec.rule)` in a file that imports `std/spec@1` links to `std/spec`'s `rule` kind }}
+  }
+
+  imported_links_render: rule(imported_declarations, by = product.system.docs_generator) {
+    must {{ render a link to a declaration outside the tree as a reference with no page }}
+  }
+
+  link_shows_kind: rule(node_link, by = product.system.docs_generator) {
+    must {{ render a link to a term as a defined term, and a link to a rule with the rule's strength }}
+  }
+
+  empty_link_text: rule(node_link, by = product.system.docs_generator) {
+    where {{ a node link's text is empty, `[](#path)` }}
+    must {{ render the node's [display name](#language.core_format.naming.display_name) as its text }}
+  }
+
+  url_links_unchecked: rule(url_link, by = product.system.checker) {
+    mustNot {{ fetch or check a [URL link](#language.markup.links.url_link) }}
+    instead {{ check only the inserts its URL holds, as names in scope }}
+  }
+}

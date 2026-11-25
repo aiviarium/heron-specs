@@ -1,0 +1,12 @@
+// The grammar of the core format, as productions.
+include = [
+  "./lexical.heron",
+  "./structure.heron",
+  "./prose.heron",
+  "./code.heron",
+  "./strings.heron",
+  "./recovery.heron",
+  "./productions.heron",
+]
+
+| The grammar of the core format: how a line says what it is, the modes a file is read in, the productions of the tree the parser builds, and how it recovers from errors.

@@ -1,0 +1,82 @@
+@display("Prose")
+prose_layer: section {
+  | Prose is written in lines that start with `|`, in `{{ }}` blocks, or in whole [prose files](#language.core_format.prose_layer.prose_file), and documentation in lines that start with `///`. All of them hold the same
+  | text, which the [Markup](#language.markup) section covers; the [grammar](#language.grammar.prose)
+  | says how it's read.
+
+  prose_body: term {{
+    A body written as `{{ … }}` in place of `{ … }`. Its content is prose without
+    prefixes, with the common indentation removed, up to the closing `}}`, and it's the
+    same text as the equivalent `|` lines. It also works as a value,
+    `rationale = {{ … }}`, and as a bare member, where it's the node's own text.
+  }}
+
+  prose_file: term {{
+    A file ending in `.heron.md`, with a prose root. It reads as Markdown with links,
+    `$` [insertions](#language.markup.inserts.insertion) and tags. Its headings are sections,
+    `## Limits {#refund_limits}` names one, and fenced blocks marked `heron` are read in
+    place as members of the current section.
+  }}
+
+  prose_lines: term {{
+    A node's own text, in lines starting with `|` among its other members. Consecutive
+    lines form one text, and a bare `|` separates paragraphs. After `=`, `|` starts a
+    prose value of the core type `Prose`.
+  }}
+
+  doc_lines: term {{
+    Consecutive `///` lines before a member. They join into its `@doc`, with the same text
+    rules as `|` lines, and a blank line ends them.
+  }}
+
+  docs_are_doc: rule(doc_lines, by = product.system.checker) {
+    must {{ attach [doc lines](#language.core_format.prose_layer.doc_lines) to the member after them as its `@doc` }}
+  }
+
+  prose_needs_a_kind: rule(prose_lines, by = product.system.checker) {
+    if {{ a node whose kind accepts no prose holds `|` lines or a `{{ }}` body }}
+    must {{ report [takes no prose](#language.schemas.accept.diagnostics.takes_no_prose) }}
+  }
+
+  links_resolve: rule(prose_lines, by = product.system.checker) {
+    if {{ a link's `#path` names no node }}
+    must {{ report [broken link](#language.core_format.prose_layer.diagnostics.broken_link) with the closest name }}
+  }
+
+  tags_name_kinds: rule(prose_lines, by = product.system.checker) {
+    if {{ a tag names no kind in scope, or an attribute names no parameter of its kind }}
+    must {{ report [unknown tag](#language.core_format.prose_layer.diagnostics.unknown_tag), or [unknown attribute](#language.core_format.prose_layer.diagnostics.unknown_attribute) with the closest parameter }}
+  }
+
+  inserts_resolve: rule(prose_lines, by = product.system.checker) {
+    must {{ resolve an insert's path in the scope of the text it's written in, and report one that doesn't resolve as [unknown name](#language.core_format.naming.diagnostics.unknown_name) }}
+  }
+
+  headings_need_a_kind: rule(prose_file, by = product.system.checker) {
+    if {{ a [prose file](#language.core_format.prose_layer.prose_file) has a heading and no kind with `heading = true` is in scope }}
+    must {{ report [heading needs a kind](#language.core_format.prose_layer.diagnostics.heading_needs_kind) }}
+  }
+
+  all_prose_input: rule(prose_lines, by = product.system.server) {
+    when {{ input is all prose, such as a chat message to the prompt workbench }}
+    must {{ read it as if every line started with `|` }}
+  }
+
+  diagnostics: section {
+    broken_link: diagnostic("unresolved", by = product.system.checker) {
+      message = "the link to #‹path› doesn't resolve"
+    }
+
+    unknown_tag: diagnostic("unresolved", by = product.system.checker) {
+      message = "unknown tag <‹name›>: a tag names a kind in scope"
+    }
+
+    unknown_attribute: diagnostic("unknown-argument", by = product.system.checker) {
+      message = "<‹kind›> takes no attribute ‹name›"
+    }
+
+    heading_needs_kind: diagnostic("unresolved", by = product.system.checker) {
+      message = "a heading needs a kind with heading = true in scope, such as section from std/doc"
+    }
+  }
+}

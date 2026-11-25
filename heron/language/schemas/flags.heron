@@ -1,0 +1,44 @@
+flags: section {
+  | A package declares a flag with `flag(on, group)`. Where a flag may stand is the
+  | declaring package's choice, made from its own side: `on` can name another package's
+  | kinds, valid wherever both are imported.
+
+  declaring_flags: rule(language.core_format.nodes.flags.flag_term, by = product.system.checker) {
+    must {{ make a flag known where it's declared or imported, by its name, as `slow: flag(on = [case])` makes `<slow>` }}
+  }
+
+  flag_on: rule(language.core_format.nodes.flags.flag_term, by = product.system.linter) {
+    where {{ a flag is declared with `on`, a list of kinds and categories }}
+    should {{ report [flag placement](#language.schemas.flags.diagnostics.flag_misplaced) where it stands on a node whose kind is none of them and in none of the categories }}
+    unless {{ `on` is left out or empty, when the flag may stand on any node }}
+  }
+
+  flag_on_annotation: rule(language.core_format.nodes.flags.flag_term, by = product.system.linter) {
+    where {{ a flag's `on` names an annotation, as `raw: flag(on = [insert])` }}
+    should {{ report [flag on annotation](#language.schemas.flags.diagnostics.flag_misplaced_on_annotation) where it stands on any other annotation }}
+  }
+
+  flag_groups: rule(language.core_format.nodes.flags.flag_term, by = product.system.linter) {
+    where {{ flags are declared with the same `group`, as `std/http` declares `get`, `post`, `put`, `patch` and `delete` in the group `"method"` }}
+    should {{ report [flags of one group](#language.schemas.flags.diagnostics.flag_group_twice) where a node carries two flags of one group }}
+  }
+
+  diagnostics: section {
+    flag_group_twice: diagnostic("flag-group", severity = warning, by = product.system.linter) {
+      message = "<‹flag›> and <‹other›> are both in the group ‹group›; a node carries one of them"
+    }
+
+    flag_misplaced: diagnostic("flag-placement", severity = warning, by = product.system.linter) {
+      message = "<‹flag›> doesn't attach to ‹kind›; it attaches to ‹kinds›"
+    }
+
+    flag_misplaced_on_annotation: diagnostic("flag-placement", severity = warning, by = product.system.linter) {
+      message = "<‹flag›> doesn't attach to @‹annotation›; it attaches to ‹kinds›"
+    }
+
+    not_a_flag: diagnostic("not-a-flag", by = product.system.checker) {
+      message = "‹name› is not a flag"
+      | A flag names something in scope that isn't a flag.
+    }
+  }
+}

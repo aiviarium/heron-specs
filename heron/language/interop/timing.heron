@@ -1,0 +1,59 @@
+@display("When foreign code runs")
+timing: section {
+  | Foreign code runs when Heron code calls it, and at no other time, except a
+  | [pure func](#language.scripting.funcs_and_templates.pure_func), which may also run
+  | while the tree is evaluated. What it holds onto lives as long as the run that called it.
+
+  run_scope: term {{
+    The run a foreign call belongs to: a `heron run`, with an id that sorts by time, or the
+    session of a command such as `heron lint` that isn't a run. Every request carries its
+    run's id.
+  }}
+
+  run_time_anything: rule(language.interop.declaring.foreign_func, by = product.system.interpreter) {
+    may {{ call a [foreign func](#language.interop.declaring.foreign_func) of any kind at run time, from tasks, funcs, [hooks](#language.scripting.code.hook) and the steps of a test }}
+  }
+
+  evaluation_only_pure: rule(language.interop.declaring.foreign_func, by = product.system.interpreter) {
+    while {{ the tree is [evaluated](#language.scripting.funcs_and_templates.evaluation) }}
+    must {{ run only [pure funcs](#language.scripting.funcs_and_templates.pure_func), each answered from [the cache](#language.scripting.funcs_and_templates.funcs.pure_cache) when its inputs were seen before }}
+    then {{ a build and the selection of tests stay reproducible }}
+  }
+
+  foreign_calls_recorded: rule(language.interop.declaring.foreign_func, by = product.system.interpreter) {
+    must {{ record every foreign call with its arguments, its result or error and how long it took by the run's clock }}
+  }
+
+  replay_from_record: rule(language.interop.declaring.foreign_func, by = product.system.interpreter) {
+    when {{ a run is replayed }}
+    must {{ answer each foreign call from the recorded result instead of calling the foreign code }}
+    then {{ the replay is deterministic whatever the foreign code would do now }}
+  }
+
+  embedded_pure: rule(language.scripting.funcs_and_templates.pure_func, by = product.system.interpreter) {
+    may {{ run a pure JS func embedded, in QuickJS inside the binary, so evaluating a tree needs no Node }}
+  }
+
+  resources: section {
+    | A resource's instance, such as a database client, belongs to one
+    | [run](#language.interop.timing.run_scope), so two runs never share state through
+    | foreign code.
+
+    instance_per_run: rule(run_scope, by = product.system.extension_host) {
+      must {{ set a resource up the first time its run uses it, from code or from `ctx.resource`, and give every later use in that run the same instance }}
+    }
+
+    runs_apart: rule(run_scope, by = product.system.extension_host) {
+      mustNot {{ give one run's instance to another run }}
+    }
+
+    teardown_at_end: rule(run_scope, by = product.system.extension_host) {
+      when {{ a run ends }}
+      must {{ tear down every instance it set up, newest first, and refuse to set up another for it }}
+    }
+
+    run_id_travels: rule(run_scope, by = product.system.extension_host) {
+      must {{ send the run's id with each request of a run, and serve what foreign code asks back, `ctx.call` and `ctx.resource`, in the run whose id the request carries }}
+    }
+  }
+}

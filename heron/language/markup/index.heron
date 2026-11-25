@@ -1,0 +1,16 @@
+// Markup: what prose means, wherever it's written. The grammar says how it's
+// read; this folder says what each form builds, what renders and what the
+// prose view projects.
+include = [
+  "./writing.heron",
+  "./text.heron",
+  "./links.heron",
+  "./inserts.heron",
+  "./tags.heron",
+  "./components.heron",
+  "./from_markdown.heron",
+  "./long_form.heron",
+  "./prose_view.heron",
+]
+
+| Markup is the prose layer of the format: Markdown's inline text with links to nodes, `$` inserts and [component tags](#language.markup.tags.component_tag), the `std/doc` components it places, and the projection text linters read. The [grammar](#language.grammar.prose) says how each form is read; this section says what it means.

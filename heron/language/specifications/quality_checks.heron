@@ -1,0 +1,95 @@
+@display("Quality checks")
+quality_checks: section {
+  | The lints check what ISO/IEC/IEEE 29148 asks of a set of requirements: each one
+  | singular, unambiguous and verifiable, and the set complete, consistent and separated
+  | from planning. The spec-aware prose lints run in `heron lint` and in editors through
+  | the prose provider, and report warnings coded `Spec.` and the check's name.
+  |
+  | | Property     | Checked by                                                                    |
+  | | ------------ | ----------------------------------------------------------------------------- |
+  | | Unambiguous  | unlinked terms, ruled-out synonyms, terms in two senses, weak modals and vague words |
+  | | Singular     | one strength per rule, from its kind's [schema](#language.schemas.kinds.schema) |
+  | | Verifiable   | the spec's status test, and the [coverage](#language.specifications.traceability.coverage) still planned                         |
+  | | Complete     | the [lifecycle](#language.specifications.lifecycles.lifecycle) checks still planned |
+  | | Consistent   | links and targets that resolve, and the overlap check still planned           |
+  | | Separated    | the layout's rule on planning                                                 |
+
+  unambiguous_wording: rule(language.specifications.requirements.rule_strength, by = product.system.prose_linter) {
+    should {{ report [weak modal](#language.specifications.quality_checks.diagnostics.weak_modal) where the text under `must` or `mustNot` says "should", "may", "might", "could" or "ideally", and [vague word](#language.specifications.quality_checks.diagnostics.vague_word) where a rule no quality measures uses a word such as "fast", "robust" or "several" }}
+    unless {{ the word is quoted, in code or masked, so it's mentioned rather than used }}
+  }
+
+  nodes_linked: rule(language.specifications.context.term_kind, by = product.system.prose_linter) {
+    should {{ report [unlinked node](#language.specifications.quality_checks.diagnostics.unlinked_node) where prose names a node of the tree by its identifier without linking it, and [dead link](#language.specifications.quality_checks.diagnostics.dead_link) where a link to a file has no target }}
+    then {{ a fix offered with it links the name when one node has it }}
+  }
+
+  double_negative: rule(language.specifications.requirements.rule_strength, by = product.system.prose_linter) {
+    if {{ the text under `mustNot` or `shouldNot` is itself negative }}
+    should {{ report a double negative }}
+  }
+
+  singular_check: rule(language.specifications.requirements.rule_kind, by = product.system.prose_linter) {
+    if {{ a rule's text joins two behaviours with "and" or "or" }}
+    should {{ report it as not singular }}
+  }
+
+  verifiable_check: rule(language.specifications.requirements.rule_kind, by = product.system.linter) {
+    if {{ nothing covers a `must` rule, or a bounded condition lacks an example on each side of the bound }}
+    should {{ report it as not verifiable }}
+  }
+
+  consistent_check: rule(language.specifications.requirements.rule_kind, by = product.system.linter) {
+    if {{ rules on one target overlap in their conditions and oppose in polarity }}
+    should {{ report them as inconsistent, found structurally and confirmed by a decider }}
+  }
+
+  separated_check: rule(language.specifications.planning.planning_tree, by = product.system.linter) {
+    if {{ an `open` is reachable from the [entry point](#language.core_format.files.entry_point) of an implementer }}
+    should {{ report it as not separated }}
+  }
+
+  diagnostics: section {
+    @display("Unlinked term")
+    unlinked_term: diagnostic("Spec.UnlinkedTerm", severity = warning, by = product.system.prose_linter) {
+      message = "\"‹phrase›\" is the term ‹path›; link it"
+      | A term's phrase in prose outside the term, not linked.
+    }
+
+    @display("Ruled-out synonym")
+    ruled_out_synonym: diagnostic("Spec.Synonym", severity = warning, by = product.system.prose_linter) {
+      message = "\"‹alias›\" is a synonym the term ‹path› rules out; use the term"
+      | One of a term's [aliases](#language.data.values.alias), used where the term should be.
+    }
+
+    @display("Two senses")
+    two_senses: diagnostic("Spec.TwoSenses", severity = warning, by = product.system.prose_linter) {
+      message = "\"‹phrase›\" is defined by two terms, here and ‹path›, so it's used in two senses"
+      | A phrase two terms define, reported at each.
+    }
+
+    @display("Unlinked node")
+    unlinked_node: diagnostic("Spec.UnlinkedNode", severity = warning, by = product.system.prose_linter) {
+      message = "‹name› names a node without linking it"
+      | An identifier of the tree, with an underscore or an inner capital, written as plain text.
+    }
+
+    @display("Dead link")
+    dead_link: diagnostic("Spec.DeadLink", severity = warning, by = product.system.prose_linter) {
+      message = "the link's target ‹target› doesn't exist"
+      | A link to a file that isn't there.
+    }
+
+    @display("Weak modal")
+    weak_modal: diagnostic("Spec.MustSaysShould", severity = warning, by = product.system.prose_linter) {
+      message = "a ‹strength› requirement says \"‹word›\"; state it as ‹strength›"
+      | A weak modal verb under a mandatory strength.
+    }
+
+    @display("Vague word")
+    vague_word: diagnostic("Spec.VagueWord", severity = warning, by = product.system.prose_linter) {
+      message = "\"‹word›\" is vague in a rule without a metric; measure it or say exactly"
+      | A word that can't be checked, in a rule no quality bounds.
+    }
+  }
+}

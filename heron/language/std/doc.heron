@@ -1,0 +1,20 @@
+@display("std/doc")
+doc: component(path = "std/doc", lang = "heron") {
+  | Sections, terms and the components documentation needs, so Markdown's forms and tags build the same nodes.
+  |
+  | Its surface is declared in `std/doc/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                                                                                                               | Specified in                                                                                 |
+  | | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+  | | `block`, `inline`                                                                                                    | [Categories](#language.schemas.categories)                                                   |
+  | | `section`, `term`                                                                                                    | [Long form](#language.markup.long_form), [terms](#language.specifications.context.term_kind) |
+  | | `p`, `em`, `strong`, `strike`, `list`, `item`, `quote`, `code`, `divider`                                            | [From Markdown](#language.markup.from_markdown)                                              |
+  | | `table`, `row`, `cell`, `figure`, `image`, `caption`, `link`                                                         | [Components](#language.markup.components), [links](#language.markup.links)                   |
+  | | `note`, `NoteKind`, `tip`, `warning`, `danger`, `details`, `tabs`, `tab`, `definitions`, `diagram`, `toc`, `excerpt` | [Components](#language.markup.components)                                                    |
+  | | `math`, `span`, `kbd`, `abbr`, `sub`, `sup`, `footnote`                                                              | [Text](#language.markup.text)                                                                |
+  | | `if`, `else`, `for`                                                                                                  | [Logic tags](#language.markup.components.logic_tags)                                         |
+  | | `doc`                                                                                                                | [Inserts](#language.markup.inserts)                                                          |
+
+  uses = [language.std.schema, language.std.types]
+}

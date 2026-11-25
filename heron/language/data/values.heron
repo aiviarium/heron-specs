@@ -1,0 +1,79 @@
+values: section {
+  | Every value has a type, from its literal or from what's expected where it's written.
+  | The [core format](#language.core_format.values) says which literal reads as which type;
+  | this section names the types and what [absence](#language.data.values.absence) means.
+  |
+  | | Type                      | Holds                                   | Written as                                   |
+  | | ------------------------- | --------------------------------------- | -------------------------------------------- |
+  | | `String`                  | text                                    | `"…"`, `"""…"""`, `` `…` ``                  |
+  | | `Bool`                    | `true` or `false`                       | `true`                                       |
+  | | `Int`                     | a whole number, arbitrary precision     | `30`, `-1`                                   |
+  | | `Float`                   | a 64-bit binary float                   | `1.5`, `2e3`                                 |
+  | | `Decimal`                 | an exact decimal fraction               | `40.00` where `Decimal` is expected          |
+  | | `Bytes`                   | binary data                             | a value a func returns                       |
+  | | `Prose`                   | markup text                             | `=\|` or `= {{ }}`                           |
+  | | `List(T)`, `Set(T)`       | values in order, or without repeats     | `[a, b]`                                     |
+  | | `Map(K, V)`               | values by key                           | `{ key = value }`                            |
+  | | a declared type           | a [record value](#language.data.values.record_value)                          | `Refund(id = "r1")`, or `{ id = "r1" }` where it's expected |
+  | | `Any`                     | any value                               | anything                                     |
+  | | `Null`                    | only `null`                             | `null`                                       |
+
+  scalar: term {{
+    `String`, `Bool`, `Int`, `Float`, `Decimal` and `Bytes`. `Int(bits = 32, signed = false)`
+    and `Float(bits = 32)` set a size; a plain `Int` has arbitrary precision and a plain
+    `Float` is 64-bit.
+  }}
+
+  absence: term {{
+    A member or parameter marked `name?:` may be absent. Absence belongs to the member,
+    never to a value, while `T?` is shorthand for `T | Null`, so `note?: String?` is
+    absent, null or a string.
+  }}
+
+  any_and_object: term {{
+    `Any` holds any value, and `Object` is an untyped map.
+  }}
+
+  record_value: term {{
+    A constructor call, `BranchPolicy(branch = "main", tests = all)`; an untyped record
+    is a map, `{ key = value }`. An array of records of one type is a table, and
+    renderers show it as one.
+  }}
+
+  alias: term {{
+    A name for a type, `u8 = Int(bits = 8, signed = false)`. `std/types` predefines
+    `u8` to `u64`, `i8` to `i64`, `f32` and `f64`.
+  }}
+
+  required_members: rule(absence, by = product.system.checker) {
+    if {{ a [record value](#language.data.values.record_value) leaves out a member that has no `?` and no default }}
+    must {{ report [missing member](#language.data.values.diagnostics.missing_member) }}
+  }
+
+  absent_read: rule(absence, by = product.system.interpreter) {
+    if {{ code reads a member that is absent }}
+    must {{ throw, naming the member }}
+    example {{ code checks presence first with `payment.has(note)` }}
+  }
+
+  defaults_present: rule(absence, by = product.system.interpreter) {
+    where {{ a member has a default, as in `currency: String = "EUR"` }}
+    must {{ treat it as optional on input and present, with its default, on every value read }}
+  }
+
+  sized_numbers: rule(scalar, by = product.system.checker) {
+    if {{ an integer literal doesn't fit the `bits` and `signed` of the `Int` expected }}
+    must {{ report [out of range](#language.data.values.diagnostics.out_of_range) }}
+    example {{ `-1` where a `u8` is expected, and `256` where one is }}
+  }
+
+  diagnostics: section {
+    missing_member: diagnostic("missing-argument", by = product.system.checker) {
+      message = "‹Type› needs the member ‹name›"
+    }
+
+    out_of_range: diagnostic("type", by = product.system.checker) {
+      message = "‹value› doesn't fit ‹Type›, which holds ‹min› to ‹max›"
+    }
+  }
+}

@@ -14,6 +14,13 @@ scripts/ci.sh                         # builds heron from ../heron, or ../specs-
 HERON_BIN=/path/to/heron scripts/ci.sh
 ```
 
-It checks, lints and format-checks the workspace and each package, and renders each
-package's docs under `<package>/.heron/docs/`. Sealed packages need a heron build with
-sealed-package support.
+It checks, lints (with the prose lints and Vale, configured by each package's `.vale.ini`)
+and format-checks the workspace and each package, and renders each package's docs under
+`<package>/.heron/docs/`. Vale is installed from the Go proxy when it isn't on `PATH`.
+
+## Examples are fixtures
+
+Every `example` node's code block is a complete tree or file. The implementation extracts
+its parser and checker fixtures from the package's examples, so changing an example
+changes what the implementation is tested against. Nothing in this repository checks them
+against a copy.

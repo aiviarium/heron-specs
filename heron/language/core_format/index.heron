@@ -1,0 +1,18 @@
+// The core format: the structured document syntax every Heron file is written in.
+include = [
+  "./files.heron",
+  "./nodes.heron",
+  "./naming.heron",
+  "./imports.heron",
+  "./mounts.heron",
+  "./exports.heron",
+  "./amends.heron",
+  "./conflicts.heron",
+  "./values.heron",
+  "./expressions.heron",
+  "./prose_layer.heron",
+  "./code_layer.heron",
+  "./tour.heron",
+]
+
+| The structured document syntax every [Heron file](#language.core_format.files.heron_file) is written in. It defines no kinds of its own: **Heron**, the specification language, builds on it with packages for types, APIs, rules, scenarios and prompts. Its files end in `.heron` and its tool is the `heron` binary.

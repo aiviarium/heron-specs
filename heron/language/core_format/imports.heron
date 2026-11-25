@@ -1,0 +1,137 @@
+imports: section {
+  | `include` joins a tree's own files to it; `import` makes packages and helper files
+  | visible without making them part of it. Both are set at a file's root or in a scope,
+  | and both take a list of plain strings.
+
+  include_term: term {{
+    How a tree's own files join it. At a file's root an included file's nodes join that
+    root flat; inside a scope, `refunds.{ include = […] }`, they're mounted under
+    `refunds` and see its names. `include = ["./refunds/"]` [mounts](#language.core_format.mounts.mount) the folder's
+    `index.heron` under a node named after the folder, and entries can be globs,
+    `"./refunds/**/*.heron"`, with `"!./refunds/draft.heron"` excluding one.
+  }}
+
+  import_term: term {{
+    How a tree uses packages and helper files without exporting them. Their nodes
+    resolve in this scope and below but aren't part of the tree, so they aren't
+    rendered, generated or reachable by path, except a package's nodes flagged
+    `<export>`.
+  }}
+
+  includes: section {
+    include_order: rule(include_term, by = product.system.checker) {
+      must {{ use include order as the document order when rendering and as the layering order for amends }}
+    }
+
+    include_paths: rule(include_term, by = product.system.checker) {
+      must {{ resolve an include entry relative to the file that writes it }}
+    }
+
+    missing_include: rule(include_term, by = product.system.checker) {
+      if {{ no file or folder is at an include entry's path }}
+      must {{ report [no such include](#language.core_format.imports.diagnostics.no_such_include) and include nothing for the entry }}
+    }
+
+    includes_are_guarded: rule(include_term, by = product.system.checker) {
+      when {{ a file is included a second time, by any spelling }}
+      mustNot {{ copy it or declare anything twice }}
+      instead {{ only let the file see that scope too }}
+    }
+
+    include_cycles: rule(include_term, by = product.system.checker) {
+      must {{ accept includes that reach each other in a cycle, reading each file once }}
+    }
+
+    globs_are_deterministic: rule(include_term, by = product.system.checker) {
+      must {{ use the matches of a glob in path order, include a file matched twice once, keep the place of a file listed explicitly, and drop the files a `!` entry matches }}
+    }
+
+    rounds: rule(include_term, by = product.system.checker) {
+      must {{ resolve names declared further down or in a later include }}
+      then {{ ordering matters only where two amends set the same path, and then the later one wins }}
+    }
+  }
+
+  packages: section {
+    | A package is named by its path and a major version, as `std/doc@1`. The
+    | [standard packages](#language.std) are built into the binary; the registry, npm and git
+    | are sources `heron run setup` installs from.
+
+    imports_are_scoped: rule(import_term, by = product.system.checker) {
+      must {{ make a package imported in a file visible there and in everything that file includes, and nowhere else }}
+    }
+
+    package_versions: rule(import_term, by = product.system.checker) {
+      must {{ resolve a package by its name and major version, and report an entry it can't resolve with one of the import [diagnostics](#language.core_format.imports.diagnostics) }}
+      example {{ `std/ci@1`: the newest `1.x` }}
+    }
+
+    lock_pins: rule(import_term, by = product.system.interpreter) {
+      must {{ write `heron.lock` with the exact version and checksum of every package and extension `heron run setup` installs }}
+    }
+
+    file_imports: rule(import_term, by = product.system.checker) {
+      must {{ resolve an entry that starts with `./` or `../` as a file or folder relative to the importing file, and a folder import as its `index.heron`, visible both directly and under the folder's name }}
+    }
+
+    prelude: rule(import_term, by = product.system.checker) {
+      must {{ make `std/core` visible in every tree without an import, and the primitive types `String`, `Bool`, `Int`, `Float`, `Decimal`, `Bytes`, `Any`, `Object`, `Null`, `Prose`, `List`, `Set`, `Map` and `Self` as the outermost scope }}
+    }
+
+    import_cycle: rule(import_term, by = product.system.checker) {
+      if {{ imports form a cycle that isn't among standard packages only }}
+      must {{ report [import cycle](#language.core_format.imports.diagnostics.import_cycle), naming each file of the cycle }}
+    }
+
+    repeated_import: rule(import_term, by = product.system.linter) {
+      if {{ a file imports a package that the scope it's included in already imports }}
+      should {{ report [repeated import](#language.core_format.imports.diagnostics.repeated_import) }}
+    }
+  }
+
+  diagnostics: section {
+    repeated_import: diagnostic("repeated-import", severity = warning, by = product.system.linter) {
+      message = "‹package› is already imported where this file is included, so it needs no import here"
+    }
+
+    unknown_package: diagnostic("import", by = product.system.checker) {
+      message = "unknown package ‹name›"
+      | `std/nosuch@1`: no package of that name is built in or installed.
+    }
+
+    no_major: diagnostic("import", by = product.system.checker) {
+      message = "‹entry›: a package import names a major version, as in ‹entry›@1"
+      | `std/doc`: the entry has no `@`.
+    }
+
+    bad_major: diagnostic("import", by = product.system.checker) {
+      message = "‹entry›: the version after @ is a major version number"
+      | `std/doc@x`: what follows `@` isn't a whole number.
+    }
+
+    wrong_major: diagnostic("import", by = product.system.checker) {
+      message = "‹name›@‹major›: the package is version ‹version›"
+      | `std/doc@2` when the package is version 1.0.
+    }
+
+    not_installed: diagnostic("import", by = product.system.checker) {
+      message = "‹entry›: packages from npm and git are installed by `heron run setup`, which isn't available yet"
+      | `npm:foo@1` or a `git:` entry.
+    }
+
+    no_such_import: diagnostic("import", by = product.system.checker) {
+      message = "cannot import ‹path›: no such file"
+      | `./nofile.heron`: a file import whose file doesn't exist.
+    }
+
+    no_such_include: diagnostic("include", by = product.system.checker) {
+      message = "cannot include ‹path›: no such file"
+      | An include entry whose file or folder doesn't exist.
+    }
+
+    import_cycle: diagnostic("import-cycle", by = product.system.checker) {
+      message = "import cycle: ‹a› → ‹b› → ‹a›"
+      | Imports that form a cycle not among standard packages only.
+    }
+  }
+}

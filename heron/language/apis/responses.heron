@@ -1,0 +1,61 @@
+@display("Responses and errors")
+responses: section {
+  | An op's [result type](#language.apis.responses.result_type) is its success, and its errors are declared beside it with
+  | `@throws`, so the [result type](#language.apis.responses.result_type) never has to wrap a failure. How each outcome travels is
+  | the transport's: an HTTP status, a gRPC status or a WebSocket error frame.
+
+  result_type: term {{
+    The type an op returns on success, its first argument as in `op(Refund)`. A
+    `Stream(T)` result is a [stream](#language.apis.streams.stream_type) of `T`.
+  }}
+
+  throws_annotation: term {{
+    The annotation of `std/types` for the errors an op may throw, `@throws(RefundError)` above
+    the op, or above an api for all of its ops. It takes any number of errors and may be
+    written more than once.
+  }}
+
+  status_annotation: term {{
+    `std/http`'s annotation for the status code an error is answered with over HTTP,
+    `@status(422)` above a type that implements `Error`.
+  }}
+
+  api_errors_add: rule(throws_annotation, by = product.system.docs_generator) {
+    must {{ add the errors of an api's `@throws` to each of its ops' own, the op's first }}
+  }
+
+  interface_errors: rule(throws_annotation, by = product.system.docs_generator) {
+    where {{ `@throws` names an interface }}
+    must {{ read it as every type that implements the interface }}
+    example {{ `@throws(StoreError)` lists `NotFound` with 404 and `Conflict` with 409 when both implement `StoreError` }}
+  }
+
+  responses_shown: rule(result_type, by = product.system.docs_generator) {
+    must {{ show an op's responses as its success, with status 200 when it's bound to HTTP, and then each error it declares, with its `@status` }}
+    then {{ an op with no [result type](#language.apis.responses.result_type) shows no success body }}
+  }
+
+  thrown_types_are_errors: rule(throws_annotation, by = product.system.checker) {
+    if {{ `@throws` names a type that doesn't implement `Error` }}
+    must {{ report [not an error](#language.data.types.diagnostics.not_an_error) at the name }}
+  }
+
+  status_on_errors: rule(status_annotation, by = product.system.linter) {
+    if {{ `@status` stands on a type that doesn't implement `Error`, or gives a code outside 400 to 599 }}
+    should {{ report [status outside an error](#language.apis.responses.diagnostics.status_misplaced) at the annotation }}
+  }
+
+  transport_errors: rule(throws_annotation, by = product.system.interpreter) {
+    when {{ a transport answers a call with a declared error }}
+    must {{ throw it in the caller as a Heron error of that type, with its fields }}
+    then {{ `attempt(…)` catches it like any [thrown error](#language.scripting.code.thrown_error) }}
+  }
+
+  diagnostics: section {
+    @display("Status outside an error")
+    status_misplaced: diagnostic("status", severity = warning, by = product.system.linter) {
+      message = "@status(‹code›) stands on ‹type›, which isn't an error with a 4xx or 5xx code"
+      | A status code on a type no op can throw, or one that doesn't signal an error.
+    }
+  }
+}

@@ -1,0 +1,13 @@
+// The development tools' behaviour: the language server, prose linting, the
+// editor grammar, the docs, the server and the frontend.
+include = [
+  "./lsp.heron",
+  "./prose.heron",
+  "./tree_sitter.heron",
+  "./docs.heron",
+  "./server.heron",
+  "./frontend/",
+]
+
+| What the development tools do, as their users see it: the language server, prose linting,
+| the editor grammar, the docs, the server and the frontend.

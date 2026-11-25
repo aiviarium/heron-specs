@@ -1,0 +1,23 @@
+lsp: command("heron lsp") {
+  usage = ["heron lsp [--debounce duration] [--stdio]"]
+
+  | Serves the language server over standard input and output, for an editor to start. It
+  | checks and lints with every lint and prose provider registered, whoever registered
+  | them, and logs to standard error. What it serves is [the language server](#product.system.language_server).
+
+  debounce: option("--debounce", type = String, default = "150ms") {
+    | How long to wait after an edit before checking again, as a Go duration such as
+    | `300ms`. Zero, the value it starts from, means the default.
+  }
+
+  stdio: option("--stdio", type = Bool, default = true) {
+    | Accepted for editors that pass it; standard input and output are the only transport.
+  }
+
+  exit(0) {{ The editor shut the server down. }}
+  exit(1) {{ The connection failed. }}
+  exit(2) {{ An unknown option. }}
+
+  example {{ An editor's client starts `heron lsp --stdio` in the project's folder and speaks LSP over the pipe. }}
+
+}

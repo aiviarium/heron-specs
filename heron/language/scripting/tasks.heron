@@ -1,0 +1,249 @@
+tasks: section {
+  | A task is something run on purpose: generate files, lint, set up a checkout, deploy,
+  | roll back, fix a flaky test. The framework, DevOps and agent workflows declare them the
+  | same way, so one command, `heron run`, runs all of them.
+  | [Two tasks](#language.scripting.tasks.scripting_tasks) show `@needs` and a flag.
+
+  task_kind: term {{
+    `name(params): task do { … }`, the prelude's kind for code run by its path. Like a func
+    it can return a value, `task(T)`. Its typed parameters become command-line options and
+    form fields: types decide parsing, defaults prefill them and `///` lines explain them.
+  }}
+
+  task_flags: term {{
+    What a task carries besides its parameters: `<confirm>` asks before it runs,
+    `<command>` also exposes it to agent harnesses as a command, `@needs(a, b)` runs other
+    tasks first and `@undo(t)` names the task that reverses it, such as a deploy's rollback.
+  }}
+
+  finding: section {
+    run_by_path: rule(task_kind, by = product.system.command_line) {
+      must {{ run a task by its path from the root, as in `heron run seed_local` or `heron run development.production.deploy` }}
+    }
+
+    repository_tasks: rule(task_kind, by = product.system.command_line) {
+      where {{ no task has the path from the root, and the tree enters `std/repo`'s `repository` }}
+      must {{ look the path up inside `repository` }}
+      then {{ `heron run setup` runs `repository.setup` }}
+    }
+
+    no_such_task: rule(task_kind, by = product.system.command_line) {
+      if {{ the path names nothing, or a node that isn't a task }}
+      must {{ report [no task](#language.scripting.tasks.diagnostics.no_task) and exit with status 2 }}
+    }
+
+    checked_first: rule(task_kind, by = product.system.command_line) {
+      if {{ the tree has an error }}
+      must {{ print its errors, run nothing and exit with status 1 }}
+    }
+  }
+
+  @display("Parameters")
+  params: section {
+    | A task's parameters are given as `--name value` or `--name=value` after its path,
+    | with a `-` in the name read as `_`.
+
+    params_by_type: rule(task_kind, by = product.system.command_line) {
+      must {{ parse each option by its parameter's type: an `Int` as a whole number, a `Float` or `Decimal` as a number, a `Bool` as `true` or `false`, an enum as one of its variants' names, a list or set from repeated options and comma-separated values, a record or map from JSON, and anything else as the text given }}
+      example {{ `--count 50 --color=BLUE --tags a,b --tags c` gives `50`, `BLUE` and `["a", "b", "c"]` }}
+    }
+
+    bool_switch: rule(task_kind, by = product.system.command_line) {
+      where {{ a `Bool` option is last or followed by another option }}
+      must {{ read it as `true` }}
+      example {{ `--dry` }}
+    }
+
+    bad_params: rule(task_kind, by = product.system.command_line) {
+      if {{ an option names no parameter, has no value, doesn't parse as its type, is given twice for a parameter that isn't a list, or an argument isn't an option }}
+      must {{ report [bad parameter](#language.scripting.tasks.diagnostics.bad_param), run nothing and exit with status 2 }}
+    }
+
+    missing_params_asked: rule(task_kind, by = product.system.command_line) {
+      when {{ a required parameter without a default isn't given and standard input is a terminal }}
+      must {{ ask for it by name and type, as `color (Color): `, and ask again after an answer that doesn't parse, before anything runs }}
+    }
+
+    missing_params_fail: rule(task_kind, by = product.system.command_line) {
+      if {{ a required parameter isn't given and there's no terminal to ask on, or the input ends before an answer }}
+      must {{ report [needs a parameter](#language.scripting.tasks.diagnostics.needs_param) and exit with status 2 }}
+    }
+
+    defaults_and_optionals: rule(task_kind, by = product.system.interpreter) {
+      must {{ give a parameter that isn't given its default, and an optional one without a default null }}
+    }
+  }
+
+  ordering: section {
+    needs_annotation: rule(task_flags, by = product.system.command_line) {
+      where {{ a task has `@needs(…)` }}
+      must {{ run each task it names, and theirs in turn, once and before it, in the order the annotations name them, and the asked task last }}
+      example {{ `setup` needing `left` and `right`, which both need `base`, runs `base`, `left`, `right`, `setup` }}
+    }
+
+    one_at_a_time: rule(task_flags, by = product.system.command_line) {
+      must {{ run the tasks of a run one at a time, in that order }}
+      then {{ tasks with no path between them may later run in parallel without changing any result a run can rely on }}
+    }
+
+    needed_without_args: rule(task_flags, by = product.system.command_line) {
+      must {{ run a needed task with its defaults, the options given belonging to the asked task alone }}
+      then {{ a needed task with a required parameter fails with [wrong arguments](#language.scripting.code.diagnostics.wrong_arguments) }}
+    }
+
+    needs_cycle: rule(task_flags, by = product.system.command_line) {
+      if {{ `@needs` leads back to a task on the way to it }}
+      must {{ report [needs a cycle](#language.scripting.tasks.diagnostics.needs_cycle), run nothing and exit with status 2 }}
+    }
+
+    needs_non_task: rule(task_flags, by = product.system.command_line) {
+      if {{ `@needs` names a node that isn't a task }}
+      must {{ report [needs no task](#language.scripting.tasks.diagnostics.needs_non_task), run nothing and exit with status 2 }}
+    }
+
+    task_refs_checked: rule(task_flags, by = product.system.checker) {
+      if {{ `@needs` or `@undo` names a node that isn't a task }}
+      must {{ report a type error at the argument, since both take a `Ref(task)` }}
+      then {{ the mistake shows in `heron check` and the editor, not only when the task runs }}
+    }
+
+    task_calls: rule(task_kind, by = product.system.interpreter) {
+      may {{ call another task like a func, in the same run record, and use its return value }}
+      then {{ a task called this way runs each time it's called, unlike one it needs }}
+    }
+  }
+
+  confirming: section {
+    confirm_asks: rule(task_flags, by = product.system.command_line) {
+      when {{ a task to run, or one it needs, is `<confirm>` }}
+      must {{ ask `Run ‹task›? [y/N]` on a terminal before any task runs, and run only on `y` or `yes`, in any case }}
+    }
+
+    declined: rule(task_flags, by = product.system.command_line) {
+      if {{ the answer is anything else }}
+      must {{ report [not confirmed](#language.scripting.tasks.diagnostics.not_confirmed), run nothing and exit with status 1 }}
+    }
+
+    confirm_without_terminal: rule(task_flags, by = product.system.command_line) {
+      if {{ a `<confirm>` task would run, standard input isn't a terminal and `--yes` isn't given }}
+      must {{ report [asks before it runs](#language.scripting.tasks.diagnostics.needs_yes), run nothing and exit with status 2 }}
+    }
+
+    yes_flag: rule(task_flags, by = product.system.command_line) {
+      where {{ `--yes` is given }}
+      must {{ run `<confirm>` tasks without asking }}
+    }
+
+    command_flag: rule(task_flags, by = product.system.command_line) {
+      where {{ a task is `<command>` }}
+      must {{ list it among the commands an agent harness is given, by its path, with its parameters and their `///` lines }}
+    }
+  }
+
+  failing: section {
+    uncaught_throw: rule(task_kind, by = product.system.command_line) {
+      if {{ a task throws an error nothing catches, or faults }}
+      must {{ print `‹task› failed: ‹error›`, run none of the tasks after it and exit with status 1 }}
+    }
+
+    undo_on_failure: rule(task_flags, by = product.system.command_line) {
+      when {{ a run started with `--undo-on-failure` fails }}
+      must {{ run the `@undo` task of every task that already finished in that run, newest first, printing `undoing ‹task› with ‹undo›` for each }}
+    }
+
+    undo_keeps_going: rule(task_flags, by = product.system.command_line) {
+      if {{ an undo task fails }}
+      must {{ print its failure and go on with the next undo }}
+      then {{ the run still exits with status 1, for the task that failed first }}
+    }
+
+    no_undo_by_default: rule(task_flags, by = product.system.command_line) {
+      mustNot {{ undo anything when `--undo-on-failure` isn't given }}
+    }
+
+    stage_undo: rule(task_flags, by = product.system.command_line) {
+      when {{ a stage of a pipeline fails }}
+      must {{ undo the tasks it finished, as `--undo-on-failure` does }}
+    }
+  }
+
+  results: section {
+    task_results: rule(task_kind, by = product.system.command_line) {
+      must {{ print a task's return value on standard output once every task has finished: a `String` as it is, anything else as indented JSON, and nothing for null }}
+    }
+
+    json_results: rule(task_kind, by = product.system.command_line) {
+      where {{ `--json` is given }}
+      must {{ print the return value as indented JSON, a `String` and null included }}
+    }
+
+    runs_recorded: rule(task_kind, by = product.system.interpreter) {
+      must {{ write a `run` record after every run that started, with the task, the entry file, its arguments, each task it ran with its role (needed, task or undo), status and timing, the steps, processes, logs and calls, and its result or error and exit status }}
+    }
+
+    record_failure_warns: rule(task_kind, by = product.system.command_line) {
+      if {{ the record can't be written }}
+      must {{ print `the run wasn't recorded: ‹reason›` and keep the run's own exit status }}
+    }
+  }
+
+  | Packages contribute tasks, such as `generate`, `lint` and `setup`, and a repository
+  | amends them like any node.
+
+  diagnostics: section {
+    | `heron run` prints each of these on standard error after `heron run: `.
+
+    @display("No task")
+    no_task: diagnostic("run", by = product.system.command_line) {
+      message = "no task ‹path›"
+    }
+
+    @display("Bad parameter")
+    bad_param: diagnostic("run", by = product.system.command_line) {
+      message = "--‹param› takes an Int, not \"‹text›\""
+      | Or the message for the type, such as `takes one of RED, BLUE`, or `‹task› takes no
+      | parameter --‹name›`, `--‹name› needs a value`, `--‹name› is given more than once` and
+      | `unexpected argument ‹arg›; parameters are given as --name value`.
+    }
+
+    @display("Needs a parameter")
+    needs_param: diagnostic("run", by = product.system.command_line) {
+      message = "‹task› needs --‹param› (‹type›)"
+    }
+
+    @display("Needs a cycle")
+    needs_cycle: diagnostic("run", by = product.system.command_line) {
+      message = "@needs forms a cycle: ‹task› → … → ‹task›"
+    }
+
+    @display("Needs no task")
+    needs_non_task: diagnostic("run", by = product.system.command_line) {
+      message = "‹task› needs ‹path›, which is no task"
+    }
+
+    @display("Not confirmed")
+    not_confirmed: diagnostic("run", by = product.system.command_line) {
+      message = "‹task› was not confirmed"
+    }
+
+    @display("Asks before it runs")
+    needs_yes: diagnostic("run", by = product.system.command_line) {
+      message = "‹task› asks before it runs; pass --yes to run it without a terminal"
+    }
+  }
+
+  @display("Two tasks")
+  scripting_tasks: example {
+    | ```heron
+    | /// Seeds a local store with available pets.
+    | seed_local(count: Int = 20): task do {
+    |   run("./scripts/seed-pets", args = ["--count", count])
+    | }
+    |
+    | @needs(seed_local)
+    | demo: task<confirm> do {
+    |   run("pnpm", args = ["dev"])
+    | }
+    | ```
+  }
+}

@@ -1,0 +1,23 @@
+// The command-line reference: one file per subcommand of the heron binary.
+include = [
+  "./check.heron",
+  "./fmt.heron",
+  "./lint.heron",
+  "./run.heron",
+  "./generate.heron",
+  "./lsp.heron",
+  "./serve.heron",
+  "./help.heron",
+]
+
+| The `heron` binary's subcommands, one reference each: usage, arguments, options, exit
+| codes and examples. Extensions may register more.
+|
+| The commands share their conventions. Options come before the positional arguments and
+| take one dash or two, except `heron run`'s, which take two. No option has a short form
+| or reads an environment variable; the variables the extension host reads are listed
+| with [the extension host](#product.system.extension_host). `check` and `lint` print diagnostics to standard output, one per
+| line, with paths relative to the working folder; `run` and `generate`, which check the
+| tree before they work, print its errors to standard error. Messages about the command
+| itself go to standard error, prefixed with `heron ‹command›:`. Exit status 2 is a usage error, 1 a failure of
+| what the command did, and 0 success.

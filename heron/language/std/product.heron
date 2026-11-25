@@ -1,0 +1,17 @@
+@display("std/product")
+product: component(path = "std/product", lang = "heron") {
+  | Who a system is for and what they need, in the forms a team plans with: actors and personas, epics of stories with criteria, use cases, increments, milestones and what done means, and the [status flags](#language.specifications.traceability.status_flag).
+  |
+  | Its surface is declared in `std/product/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                                                                     | Specified in                                                     |
+  | | -------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+  | | `ActorKind`, `actor`, `persona`                                            | [Actors](#language.specifications.product_kinds.actor_kind)      |
+  | | `epic`, `story`, `criterion`, `given`                                      | [Stories](#language.specifications.product_kinds.story_kind)     |
+  | | `usecase`, `precondition`, `postcondition`, `alternate`, `failure`, `step` | [Use cases](#language.specifications.product_kinds.usecase_kind) |
+  | | `increment`, `milestone`, `done`                                           | [Product kinds](#language.specifications.product_kinds)          |
+  | | `<planned>`, `<started>`, `<delivered>`, `<deferred>`                      | [Status](#language.specifications.traceability.status_flag)      |
+
+  uses = [language.std.doc, language.std.spec, language.std.tech]
+}

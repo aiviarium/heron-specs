@@ -1,0 +1,10 @@
+// Scripting: code in do blocks, processes and files, tasks, and funcs,
+// macros and templates.
+include = [
+  "./code.heron",
+  "./processes_and_files.heron",
+  "./tasks.heron",
+  "./funcs_and_templates.heron",
+]
+
+| The small executable layer: what code in `do` blocks does, processes and files, tasks run by path, and funcs, macros and templates. It's kept small on purpose: code decides, combines and calls, real work runs in the language a system is built in, and what stays is deterministic, so every run is replayable.

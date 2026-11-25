@@ -1,0 +1,46 @@
+@display("Bindings and amends")
+amends: section {
+  | `=` sets what exists. `metadata.title = "Hello"` sets one field and keeps the others,
+  | while `metadata = { … }` replaces the whole value. Across files, a later amend wins, in
+  | reading order.
+
+  open_node: term {{
+    A node whose fields aren't fixed by a type: a file's [implicit root](#language.core_format.files.implicit_root), a map, an untyped
+    node, or a node of a kind or type flagged `<open>`. Setting or entering any name in it
+    creates that field.
+  }}
+
+  set_declared_fields: rule(language.core_format.amends, by = product.system.checker) {
+    if {{ `=` or an entered body in a typed node names a field its type doesn't declare }}
+    must {{ report [no field](#language.core_format.amends.diagnostics.no_field) with the closest field }}
+    unless {{ the node is an [open node](#language.core_format.amends.open_node) }}
+  }
+
+  set_one_field: rule(language.core_format.amends, by = product.system.checker) {
+    must {{ set only the field a path names, keeping the node's other fields, and replace the whole value when the path names the node itself }}
+    example {{ `ci.retries.staging = 0` after `ci.{ retries = { main = 0 } }`: both keys are set }}
+  }
+
+  flag_as_boolean: rule(language.core_format.amends, by = product.system.checker) {
+    where {{ the node has no field of that name but its kind declares the flag }}
+    must {{ read `name = true` as setting the flag and `name = false` as clearing it }}
+    example {{ `development.work.selection.speculative = true`: the same as `selection<speculative>` }}
+  }
+
+  lists_change_by_calls: rule(language.core_format.amends, by = product.system.interpreter) {
+    mustNot {{ concatenate or merge a list implicitly }}
+    instead {{ replace it on assignment, and change it in place only through calls such as `requires.add(checks.e2e)`, `steps.remove(test_first)` and `types.insert(after = "fix", "perf")` }}
+  }
+
+  reading_order: rule(language.core_format.amends, by = product.system.checker) {
+    must {{ apply settings top to bottom and left to right within a file, and a file on top of the files it includes, in include order }}
+    then {{ an amend in a file wins over the same path set in a file it includes }}
+  }
+
+  diagnostics: section {
+    no_field: diagnostic("unknown-field", by = product.system.checker) {
+      message = "‹node› (a ‹kind›) has no field ‹name›"
+      | ‹node› is the node's path, or "the root"; ‹kind› is its kind or type.
+    }
+  }
+}

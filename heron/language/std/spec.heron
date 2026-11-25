@@ -1,0 +1,21 @@
+@display("std/spec")
+spec: component(path = "std/spec", lang = "heron") {
+  | Projects, requirements, [lifecycles](#language.specifications.lifecycles.lifecycle), qualities and planning: the kinds a specification is written in, this one included.
+  |
+  | Its surface is declared in `std/spec/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                                                                        | Specified in                                              |
+  | | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
+  | | `project`, `<external>`, `<shared>`, `Source`, `git`                          | [Projects](#language.specifications.projects)             |
+  | | `Versioning`, `Bumps`, `FromSpec`, `Releases`                                 | [Projects](#language.specifications.projects)             |
+  | | `<security>`, `<privacy>`, `<operations>`, `outOfScope`                       | [Context](#language.specifications.context)               |
+  | | `rule`, `strength`, `condition`, `must` … `instead`, `example`                | [Requirements](#language.specifications.requirements)     |
+  | | `verify`                                                                      | [Traceability](#language.specifications.traceability)     |
+  | | `states`, `transition`, `@performs`                                           | [Lifecycles](#language.specifications.lifecycles)         |
+  | | `metric`, `quality`, `applies`                                                | [Qualities](#language.specifications.qualities)           |
+  | | `guidance`                                                                    | [Context](#language.specifications.context.guidance_kind) |
+  | | `open`                                                                        | [Open questions](#language.specifications.planning)       |
+
+  uses = [language.std.doc, language.std.types]
+}

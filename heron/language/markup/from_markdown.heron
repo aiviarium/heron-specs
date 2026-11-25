@@ -1,0 +1,48 @@
+from_markdown: section {
+  | Prose accepts Markdown's inline and block forms, and each form is a `std/doc` node, so
+  | the tree is the same whichever is written.
+  |
+  | | Markdown                          | Node                                                   |
+  | | --------------------------------- | ------------------------------------------------------ |
+  | | A bare `\|` between paragraphs    | `p`                                                    |
+  | | `*text*`, `**text**`, `~~text~~`  | `em`, `strong`, `strike`                               |
+  | | `` `x` ``                         | inline `code`                                          |
+  | | `- item`, `1. item`               | `list` with `item`s; `1.` sets `list(ordered = true)` |
+  | | `- [ ] task`, `- [x] task`        | `item(done = false)`, `item(done = true)`              |
+  | | `> text`                          | `quote`                                                |
+  | | Triple backticks with a language  | `code(lang)`, verbatim                                 |
+  | | Pipe table                        | `table` with `row`s and `cell`s; the first row is the header |
+  | | `![alt](src)`                     | `image`                                                |
+  | | `[text](#path)`, `[text](url)`    | `link`                                                 |
+  | | `---` on its own line             | `divider`                                              |
+
+  blocks_render: rule(language.markup.writing.prose_text, by = product.system.docs_generator) {
+    must {{ render lines starting `- ` or `* ` as a list, lines starting with a number and `.` or `)` as a numbered list, lines starting `>` as one quote, and a line of `|` cells followed by a line of dashes as a table whose first row is the header }}
+  }
+
+  forms_are_nodes: rule(language.markup.writing.prose_text, by = product.system.checker) {
+    must {{ build each Markdown form as the `std/doc` node the table names, so a query, a renderer or a lint sees `list`, `item` and `table` nodes }}
+  }
+
+  more_forms: rule(language.markup.writing.prose_text, by = product.system.docs_generator) {
+    must {{ render task items, images and `---` dividers as the table's nodes }}
+  }
+
+  markdown_not_carried: rule(language.markup.writing.prose_text, by = product.actors.author) {
+    mustNot {{ write `# Heading` in `|` lines or a `{{ }}` body, `[^1]` footnotes, `$…$` math or raw HTML }}
+    instead {{ use a section, `<footnote>`, `<math>` or a component }}
+  }
+
+  markdown_forms_reported: rule(language.markup.writing.prose_text, by = product.system.linter) {
+    if {{ prose outside a [prose file](#language.core_format.prose_layer.prose_file) holds a heading, a footnote reference or `$…$` math }}
+    should {{ report [Markdown form](#language.markup.from_markdown.diagnostics.markdown_form), naming what to use instead }}
+  }
+
+  diagnostics: section {
+    markdown_form: diagnostic("markdown-form", severity = warning, by = product.system.linter) {
+      message = "‹form› isn't markup here; use ‹instead›"
+      | ‹form› is "a heading", "a footnote reference" or "`$…$` math"; ‹instead› is a section,
+      | `<footnote>` or `<math>`.
+    }
+  }
+}

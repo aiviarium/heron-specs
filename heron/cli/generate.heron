@@ -1,0 +1,42 @@
+generate: command("heron generate") {
+  usage = ["heron generate [--entry file] [targets…]"]
+
+  | Checks the tree, loads what its extensions implement, and runs the adapters of the
+  | generation targets asked for, or of every registered target for none, writing their
+  | files under the working folder and printing `wrote ‹path›` for each file it changed.
+  | Run with no targets, it also writes its section of the managed ignore block in the
+  | working folder's `.gitignore`: `/.heron/` and every file an adapter marks as a build
+  | output. Options come before the targets.
+
+  targets: argument("targets", type = String, optional = true, variadic = true) {
+    | The targets to run. The built-in ones:
+    |
+    | | Target | Writes                                                                  |
+    | | ------ | ----------------------------------------------------------------------- |
+    | | `ts`   | `.heron/types.ts` and `.heron/bindings.ts`, the TS types and `bind` of the tree's declarations |
+    | | `docs` | the documentation site, under `.heron/docs/`                            |
+    |
+    | An extension's generators add their targets the same way.
+  }
+
+  entry: option("--entry", type = String, default = ".") {
+    | The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
+    | folder. Files are still written under the working folder.
+  }
+
+  exit(0) {{ Every target ran; unchanged files aren't rewritten. }}
+  exit(1) {{ The tree doesn't check, an extension couldn't load, a target has no adapter, or an adapter failed or returned a path outside the working folder. }}
+  exit(2) {{ An unknown option, or an [entry point](#language.core_format.files.entry_point) whose path can't be resolved. }}
+
+  example {{ `heron generate --entry example ts` writes the TS types of the inventory sample, which its TS code imports, as CI runs it. }}
+
+  unknown_target: rule(generate.targets, by = product.system.generator) {
+    when {{ a target has no adapter }}
+    must {{ fail naming it and listing the targets that have one, as `no adapter is registered for target "‹target›"; targets: docs, ts` }}
+  }
+
+  block_only_for_all: rule(generate, by = product.system.generator) {
+    mustNot {{ write the managed ignore block when it runs only the targets it was given }}
+  }
+
+}

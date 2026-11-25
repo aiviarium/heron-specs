@@ -1,0 +1,15 @@
+@display("std/json")
+json: component(path = "std/json", lang = "heron") {
+  | JSON as an embedded language and as an encoding code reads and writes.
+  |
+  | Its surface is declared in `std/json/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                       | Specified in                                                                                                |
+  | | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
+  | | `json`                       | [Typed strings](#language.data.typed_strings)                                                               |
+  | | `decode`, `encode`           | [JSON](#language.data.encodings.json)                                                                       |
+  | | `DecodeError`, `EncodeError` | [JSON](#language.data.encodings.json), [declared errors](#language.scripting.code.failures.declared_errors) |
+
+  uses = [language.std.types]
+}

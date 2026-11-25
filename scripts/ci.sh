@@ -27,6 +27,12 @@ if [ -z "$heron" ]; then
 fi
 echo "heron: $heron"
 
+# Vale, for the prose lints: pinned, from the Go proxy. heron lint fails
+# rather than skipping when it's missing.
+export PATH="$PATH:$(go env GOPATH)/bin"
+command -v vale >/dev/null || go install github.com/vale-cli/vale/v3/cmd/vale@v3.28.1
+export HERON_REQUIRE_VALE=1
+
 # A package is a top-level folder whose index.heron declares one.
 packages=()
 for f in */index.heron; do

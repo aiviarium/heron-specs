@@ -1,0 +1,110 @@
+@display("Code editor")
+editor: section {
+  | There is one editor, the code editor, because Heron's prose already reads well as
+  | source. It's Monaco, connected to [the language server](#product.system.language_server) over the server's `/lsp`
+  | socket: diagnostics, completion from [schemas](#language.schemas.kinds.schema), hover, go to definition, rename by path,
+  | fixes as code actions, formatting and [semantic highlighting](#language.schemas.highlighting.semantic_highlighting) on top of a static grammar.
+
+  monaco_features: rule(tools.frontend.editor, by = product.system.editor) {
+    must {{ answer Monaco's diagnostics, completion, hover, definition, rename, code actions, formatting and semantic tokens for every Heron model from the language server }}
+  }
+
+  models: section {
+    one_model_per_file: rule(tools.frontend.editor.models, by = product.system.editor) {
+      must {{ keep one Monaco model per file, switch models when the file shown switches, and never reuse a model for another file's text }}
+      then {{ every file's undo history, cursor and markers stay its own }}
+    }
+
+    real_uris: rule(tools.frontend.editor.models, by = product.system.editor) {
+      must {{ sync the tree's files with the language server under their real `file:` URIs, and keep generated previews under the `heron-generated` scheme, which never reaches it }}
+    }
+
+    markers_match_check: rule(tools.frontend.editor.models, by = product.system.editor) {
+      when {{ files are opened in any order }}
+      must {{ show on each the markers `heron check` reports for it, with no false "already defined" }}
+    }
+
+    minimal_merge: rule(tools.frontend.editor.models, by = product.system.editor) {
+      when {{ a model's text is replaced from outside the editor, such as by formatting or a reload from disk }}
+      must {{ apply it as the one edit between the common prefix and the common suffix of the old and new text, and change nothing when they're equal }}
+      then {{ cursors and selections outside the changed span don't move }}
+    }
+
+    typing_intact: rule(tools.frontend.editor.models, by = product.system.editor) {
+      when {{ a person types while the server answers with diagnostics, outlines and previews }}
+      must {{ keep the text exactly as typed and the cursor where typing left it }}
+    }
+
+    std_read_only: rule(tools.frontend.editor.models, by = product.system.editor) {
+      where {{ go to definition leads into a standard package }}
+      must {{ open its file read-only, from the text [heron/source](#tools.lsp.extensions.source_request) returns }}
+    }
+  }
+
+  language: section {
+    | | Setting           | Value                                                                    |
+    | | ----------------- | ------------------------------------------------------------------------ |
+    | | comments          | `//`                                                                     |
+    | | brackets          | `{{ }}`, `{ }`, `[ ]`, `( )`                                             |
+    | | auto-closing      | `{`, `[`, `(`, and `"` and a backtick outside strings and comments        |
+    | | indent            | two spaces, as `heron fmt` writes                                        |
+    | | words             | `[A-Za-z_][A-Za-z0-9_]*`                                                 |
+
+    enter_rules: rule(tools.frontend.editor.language, by = product.system.editor) {
+      must {{ indent the line after one that ends with `{`, `{{`, `[` or `(`, put a closer typed right after the opener on its own line one level back, and move a line that starts with a closer one level back }}
+    }
+
+    completion_triggers: rule(tools.frontend.editor.language, by = product.system.editor) {
+      must {{ ask the language server for completion on `.`, `@`, `<`, `#`, `$`, `(` and `:`, and as a word is typed }}
+      unless {{ the cursor is in prose, a `|` line or a `{{ }}` body, outside a link's `(#…)` and a `$` insert, which asks nothing }}
+    }
+
+    prose_coloured_as_text: rule(tools.frontend.editor.language, by = product.system.editor) {
+      must {{ colour prose as body text, never as a comment, in a static grammar that names its tokens `string.prose` }}
+    }
+  }
+
+  connection: section {
+    | The language client's states are connecting, connected, reconnecting with a reason,
+    | and failed with a reason; it never stays on connecting.
+
+    reconnect: rule(tools.frontend.editor.connection, by = product.system.editor) {
+      when {{ the socket closes }}
+      must {{ reject the requests in flight, wait 250 ms doubled on each attempt up to 5 s, reconnect, initialize again and re-open every synced document with its current text and version }}
+    }
+
+    give_up: rule(tools.frontend.editor.connection, by = product.system.editor) {
+      if {{ eight attempts in a row fail }}
+      must {{ stop and report failed with the last reason, until the reader retries, which starts over from the first attempt }}
+    }
+
+    request_timeout: rule(tools.frontend.editor.connection, by = product.system.editor) {
+      if {{ a request has no answer after 15 s }}
+      must {{ cancel it with `$/cancelRequest` and fail it }}
+    }
+  }
+
+  first_run: rule(tools.frontend.editor, by = product.system.editor) {
+    when {{ a browser with no saved state opens `/` }}
+    must {{ open the file in the URL or else the [entry point](#language.core_format.files.entry_point), and make every file, the outline, the palette, the preview, the problems and a run from the gutter reachable from what's visible, with no console error, failed request or page error }}
+  }
+
+  fix_a_diagnostic: usecase(product.actors.author) {
+    goal =| A file of the tree with no problem left.
+    precondition {{ `heron serve` runs on the tree and the editor is open. }}
+    see: step {{ The editor underlines the problem and counts it in the file tree and the status bar. }}
+    hover: step {{ The author hovers the underline; the hover shows the problem, its source and its fixes. }}
+    apply: step {{ The author chooses a fix; the editor applies its edits. }}
+    recheck: step {{ The language server rechecks within its debounce and clears the underline and the counts. }}
+    alternate(at = tools.frontend.editor.fix_a_diagnostic.hover, rejoins = tools.frontend.editor.fix_a_diagnostic.recheck) {
+      step {{ The problem has no fix; the author edits the text by hand. }}
+    }
+    alternate(at = tools.frontend.editor.fix_a_diagnostic.apply, rejoins = tools.frontend.editor.fix_a_diagnostic.recheck) {
+      step {{ The problem is a Vale alert on a word; the author accepts the word in the vocabulary. }}
+    }
+    failure(at = tools.frontend.editor.fix_a_diagnostic.see) {
+      step {{ The language server isn't connected; the status bar shows why, with a retry action. }}
+    }
+    postcondition {{ The file and its importers show no problem, and the problems panel no longer lists it. }}
+  }
+}

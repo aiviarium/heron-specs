@@ -1,0 +1,22 @@
+@display("std/core")
+core: component(path = "std/core", lang = "heron") {
+  | The [prelude](#language.core_format.imports.packages.prelude): the flags, annotations, code kinds and names every tree sees without importing anything.
+  |
+  | Its surface is declared in `std/core/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                                              | Specified in                                                                                                         |
+  | | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+  | | `variadic`, `export`                                | [Flags](#language.core_format.nodes.flags), [Exports](#language.core_format.exports)                                 |
+  | | `@doc`, `@display`                                  | [Doc lines](#language.core_format.prose_layer.doc_lines), [display names](#language.core_format.naming.display_name) |
+  | | `@lint`                                             | [repeated import](#language.core_format.imports.packages.repeated_import)                                            |
+  | | `func`, `<pure>`                                    | [Funcs and templates](#language.scripting.funcs_and_templates)                                                       |
+  | | `macro`, `emit`, `heron`                            | [Macros](#language.scripting.funcs_and_templates.macros)                                                             |
+  | | `task`, `<confirm>`, `<command>`, `@needs`, `@undo` | [Tasks](#language.scripting.tasks)                                                                                   |
+  | | `clock`, `Clock`, `log`                             | [Calls](#language.scripting.code.calls)                                                                              |
+  | | `attempt`                                           | [Failures](#language.scripting.code.failures)                                                                        |
+  | | `ParseError`                                        | [Conversions](#language.scripting.code.values.conversions)                                                           |
+  | | `ForeignError`                                      | [Foreign errors](#language.interop.declaring.errors)                                                                 |
+
+  uses = [language.std.schema, language.std.types]
+}

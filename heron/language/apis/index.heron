@@ -1,0 +1,13 @@
+// APIs: apis and ops, their params, responses and streams, the annotations
+// that cut across them, the transports that carry them, and examples.
+include = [
+  "./apis_and_ops.heron",
+  "./params.heron",
+  "./responses.heron",
+  "./streams.heron",
+  "./cross_cutting.heron",
+  "./transports.heron",
+  "./examples.heron",
+]
+
+| APIs and their ops, where their parameters travel, what they answer, how they stream, the annotations that cut across them, the transports that carry them and their examples.

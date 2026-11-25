@@ -1,0 +1,3 @@
+authoring: section {
+  | Writing [Heron files](#language.core_format.files.heron_file): the format, markup and data.
+}

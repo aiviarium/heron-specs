@@ -1,0 +1,13 @@
+# Plain words over inflated ones.
+extends: substitution
+message: "Use '%s' instead of '%s'."
+level: warning
+ignorecase: true
+action:
+  name: replace
+swap:
+  utilize: use
+  utilise: use
+  in order to: to
+  leverage: use
+  a number of: some

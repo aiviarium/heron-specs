@@ -1,0 +1,17 @@
+@display("std/tech")
+tech: component(path = "std/tech", lang = "heron") {
+  | The technical shape of a system: components with their contracts, a tool's commands and diagnostics, a language's grammar and an interface's screens.
+  |
+  | Its surface is declared in `std/tech/package.heron`, whose types the API
+  | reference renders; each export is specified where its behaviour is:
+  |
+  | | Export                                                                        | Specified in                                                       |
+  | | ----------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+  | | `component`, `responsibility`, `surface`, `invariant`, `raises`, `obligation` | [Components](#language.specifications.tech_kinds.component_kind)   |
+  | | `diagnostic`, `Severity`                                                      | [Diagnostics](#language.specifications.tech_kinds.diagnostic_kind) |
+  | | `command`, `argument`, `option`, `exit`                                       | [Commands](#language.specifications.tech_kinds.command_kind)       |
+  | | `grammar`, `production`, `token`                                              | [Grammars](#language.specifications.tech_kinds.grammar_kind)       |
+  | | `screen`, `region`                                                            | [Screens](#language.specifications.tech_kinds.screen_kind)         |
+
+  uses = [language.std.doc, language.std.spec]
+}

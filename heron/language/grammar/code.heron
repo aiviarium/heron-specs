@@ -1,0 +1,158 @@
+code: section {
+  | Code is what a `do { … }` block holds: statements, one to a line. Expressions are
+  | read in code and wherever structure takes a value: after `=` and `:`, in arguments,
+  | in annotations, in `${ }` and in [tag attributes](#language.markup.tags.tag_attribute). Types are read after `:`, in
+  | [casts](#language.grammar.code.expressions.cast) and in type arguments.
+
+  statements: section {
+    | A code block holds a fixed set of statements; anything else on a line of code is an
+    | expression.
+
+    statement_shapes: rule(tree.Stmt, by = product.system.parser) {
+      must {{ read a line of code as `let` and a binding, `return` with an optional value on the same line, an assignment when an expression is followed by `=` and not `==`, a comment, or else an expression statement }}
+    }
+
+    trailing_blocks: rule(tree.ExprStmt, by = product.system.parser) {
+      must {{ attach a `{ … }` that follows an expression statement on the same line to it as a code block, and never read `{{` there as one }}
+      example {{ `check("x") { expect(a) }`: a call with a trailing block }}
+    }
+
+    assignment_targets: rule(tree.AssignStmt, by = product.system.parser) {
+      must {{ keep the target of an assignment as a `Path`, not as an expression }}
+      example {{ `node.field = 1`: the path `node.field` set to `1` }}
+    }
+
+    else_placement: rule(tree.IfExpr, by = product.system.parser) {
+      must {{ read `else` after an `if` block on the same line as its `}` or at the start of the next line, and `else if` as a nested `IfExpr` }}
+      then {{ both layouts give the same tree, and the formatter keeps the one written }}
+    }
+
+    for_loops: rule(tree.ForExpr, by = product.system.parser) {
+      must {{ read `for name in expr` followed by a code block as a loop over the value of `expr` }}
+    }
+  }
+
+  expressions: section {
+    | One expression grammar serves code and structure. Binary operators bind by the
+    | table below, tightest last, and associate to the left.
+    |
+    | | Level | Operators                              |
+    | | ----- | -------------------------------------- |
+    | | 1     | `or`                                   |
+    | | 2     | `and`                                  |
+    | | 3     | `==` `!=` `<` `<=` `>` `>=` `in` `is`  |
+    | | 4     | `+` `-`                                |
+    | | 5     | `*` `/` `%`                            |
+
+    operator_precedence: rule(tree.BinaryExpr, by = product.system.parser) {
+      must {{ group binary operators by the levels of the table, a higher level first, and operators of one level from the left }}
+      example {{ `a or b and c` is `a or (b and c)`; `1 + 2 * 3` is `1 + (2 * 3)`; `a - b - c` is `(a - b) - c` }}
+    }
+
+    unary_operators: rule(tree.UnaryExpr, by = product.system.parser) {
+      must {{ apply `not` to an operand read at level 3 and above, and `-` to the operand directly after it }}
+      example {{ `not a == b` is `not (a == b)`; `-a.b` negates `a.b` }}
+    }
+
+    postfix_binds_tightest: rule(tree.CallExpr, tree.FieldExpr, by = product.system.parser) {
+      must {{ attach a call's flags and arguments and a field access to the value directly before them, with no space between, before any operator applies }}
+      example {{ `f (x)` isn't a call, and `list.contains(x)` calls `contains` on `list` }}
+    }
+
+    operator_continues_line: rule(tree.BinaryExpr, by = product.system.parser) {
+      must {{ continue an expression onto the next line after an operator that ends a line }}
+    }
+
+    unspaced_operators: rule(tree.BinaryExpr, by = product.system.parser) {
+      must {{ read an operator with or without spaces around it, except that `<` directly after a name and followed by a flag list is a flag list }}
+      example {{ `a<b` and `a < b`: comparisons; `f<pure>(1)`: a call with a flag }}
+    }
+
+    word_logic: rule(tree.BinaryExpr, by = product.system.parser) {
+      must {{ write logic with the words `and`, `or` and `not`, and membership and type tests with `in` and `is` }}
+      then {{ `|` and `&` keep their type meaning, a union and an intersection, and never combine values }}
+    }
+
+    union_not_prose: rule(tree.Expr, by = product.system.parser) {
+      mustNot {{ read a `|` after a value as an operator or as the start of prose }}
+      instead {{ report the rest of the line, since a prose value starts only right after `=` }}
+      example {{ `x = a | b`: `x = a` and an error at `|` }}
+    }
+
+    cast: term {{
+      A parenthesised type directly in front of a value, which converts or tags it, as in
+      `(u8)12`, `(hex)"deadbeef"` or `(Set)[…]`. In front of a string it makes a
+      [embedded string](#language.grammar.strings.embedded.embedded_string).
+    }}
+
+    cast_lookahead: rule(cast, by = product.system.parser) {
+      must {{ read `(` as a [cast](#language.grammar.code.expressions.cast) when its bracket closes before any string, line end, brace, `|` or `=`, and a string, a raw string, `[`, `{`, `(`, a digit or a name follows the `)` with no space }}
+      unless {{ the bracket or what follows it is anything else, when `(` opens a parenthesised expression }}
+      example {{ `(a) + 1` adds, while `(u8)12` converts }}
+    }
+
+    collection_literals: rule(tree.ArrayExpr, tree.MapExpr, by = product.system.parser) {
+      must {{ separate an array's items with `,`, and a map's entries with `,` or a line end, allowing line ends anywhere between items and one trailing comma }}
+      example {{ `{ a = 1, b = [2]` and `c = "d" }` on the next line: a map of three entries }}
+    }
+
+    map_after_eq: rule(tree.MapExpr, by = product.system.parser) {
+      must {{ read `{` where a value is expected as a map whose entries are paths set with `=`, and `{{` there as a prose value }}
+      then {{ a map can never start with `{{`, because its entries start with a name }}
+    }
+  }
+
+  types: section {
+    | A type is a path with optional flags and arguments, combined with `?`, `|` and `&`.
+
+    type_operators: rule(tree.Type, by = product.system.parser) {
+      must {{ read `?` directly after a type as optional, `|` followed by a space as a union and `&` as an intersection, the two combined from the left }}
+      example {{ `String?`; `A | B`; `Comparable & Listable` }}
+    }
+
+    type_arguments: rule(tree.NamedType, by = product.system.parser) {
+      must {{ read type arguments as an ordinary argument list after the type's name, never in `< >` }}
+      then {{ `< >` after a type holds flags only }}
+      example {{ `List(Payment)` and `task<confirm>` }}
+    }
+  }
+
+  /// The productions of code, expressions and types.
+  @display("Code productions")
+  tree: tech.grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
+    /// A block of statements.
+    Code: production {{ LBrace Stmt* RBrace }}
+    Stmt: production {{ LetStmt | AssignStmt | ReturnStmt | ExprStmt | CommentLine | ErrorNode }}
+    LetStmt: production {{ KwLet Ident Colon? Type? Eq Expr }}
+    AssignStmt: production {{ Path Eq Expr }}
+    ReturnStmt: production {{ KwReturn Expr? }}
+    /// An expression, with an optional trailing block.
+    ExprStmt: production {{ Expr Code? }}
+    Expr: production {{
+      Literal | StringLit | PathExpr | CallExpr | FieldExpr | ArrayExpr | MapExpr
+      | ParenExpr | CastExpr | BinaryExpr | UnaryExpr | IfExpr | ForExpr
+      | ProseLines | ProseBlock | ErrorNode
+    }}
+    /// A number, `true`, `false` or a raw string.
+    Literal: production {{ Number? KwTrue? KwFalse? Raw? }}
+    PathExpr: production {{ Path }}
+    CallExpr: production {{ callee:Expr Flags? Args }}
+    FieldExpr: production {{ Expr Dot Ident }}
+    ArrayExpr: production {{ LBracket Expr* Comma* RBracket }}
+    MapExpr: production {{ LBrace MapEntry* Comma* RBrace }}
+    MapEntry: production {{ Path Eq Expr }}
+    ParenExpr: production {{ LParen Expr RParen }}
+    /// A [cast](#language.grammar.code.expressions.cast), and an [embedded string](#language.grammar.strings.embedded.embedded_string) when the value is a string.
+    CastExpr: production {{ LParen Type RParen Expr }}
+    /// Two operands; the operator is the token between them.
+    BinaryExpr: production {{ lhs:Expr rhs:Expr }}
+    UnaryExpr: production {{ KwNot? Minus? Expr }}
+    IfExpr: production {{ KwIf cond:Expr then:Code KwElse? else:Code? elseIf:IfExpr? }}
+    ForExpr: production {{ KwFor Ident KwIn Expr Code }}
+    Type: production {{ NamedType | OptionalType | UnionType | IntersectionType | ErrorNode }}
+    NamedType: production {{ Path Flags? Args? }}
+    OptionalType: production {{ Type Question }}
+    UnionType: production {{ lhs:Type Bar rhs:Type }}
+    IntersectionType: production {{ lhs:Type Amp rhs:Type }}
+  }
+}

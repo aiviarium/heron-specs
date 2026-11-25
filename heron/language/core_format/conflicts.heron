@@ -1,0 +1,53 @@
+conflicts: section {
+  | Two writings of one thing conflict when nothing orders them. Every conflict is an error
+  | coded `conflict`, reported at the later site with the earlier one as a related site.
+  | Repeated things, such as `example(…)` written more than once, are child nodes of their
+  | own and never conflict.
+
+  set_once: rule(language.core_format.conflicts, by = product.system.checker) {
+    if {{ a field is set twice in one body }}
+    must {{ report [set twice](#language.core_format.conflicts.diagnostics.set_twice) at the second setting }}
+  }
+
+  unordered_conflict: rule(language.core_format.conflicts, by = product.system.checker) {
+    if {{ two files set the same path and neither includes the other, directly or through other files }}
+    must {{ report [set in two files](#language.core_format.conflicts.diagnostics.set_in_two_files) at the later setting }}
+    unless {{ one file includes the other, when the including file's setting wins without a report }}
+  }
+
+  conflicts_keep_first: rule(language.core_format.conflicts, by = product.system.checker) {
+    when {{ a conflict is reported }}
+    must {{ keep the first declaration or setting in the tree and check the rest of the tree as if the later one weren't there }}
+  }
+
+  diagnostics: section {
+    declared_twice: diagnostic("conflict", by = product.system.checker) {
+      message = "‹name› is declared twice"
+      related = "first declared here"
+      | A name declared twice in one scope.
+    }
+
+    set_twice: diagnostic("conflict", by = product.system.checker) {
+      message = "‹path› is set twice in one body"
+      related = "set here first"
+      | A field set twice in one body.
+    }
+
+    set_in_two_files: diagnostic("conflict", by = product.system.checker) {
+      message = "‹path› is set in two files, and neither includes the other"
+      related = "also set here"
+      | A path set in two files, neither including the other.
+    }
+
+    exported_twice: diagnostic("conflict", by = product.system.checker) {
+      message = "two packages export ‹name›"
+      | A name exported by two packages.
+    }
+
+    exported_and_declared: diagnostic("conflict", by = product.system.checker) {
+      message = "‹name› is exported by ‹package› and also declared in this tree"
+      related = "declared here"
+      | An exported name also declared in the tree.
+    }
+  }
+}

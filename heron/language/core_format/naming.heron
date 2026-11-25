@@ -1,0 +1,47 @@
+naming: section {
+  | Names follow code rules: `snake_case` for nodes, fields and values, `camelCase` for
+  | kinds, such as `mcpServer` or `outOfScope`, and `PascalCase` for types. A node is
+  | reached by its path, and shown by its [display name](#language.core_format.naming.display_name).
+
+  node_path: term {{
+    A node's names from the tree's root, joined by `.`, as `language.grammar.lexical`.
+    A [mount](#language.core_format.mounts.mount) adds its name; a group adds none.
+  }}
+
+  display_name: term {{
+    How a node is shown: its name in sentence case, with `_` and case changes read as
+    spaces, so `refund_window` reads "Refund window". `@display("Reject late refunds")`
+    gives a node a display name of its own, for wording or capitals a name can't hold. Docs,
+    the spec browser, diagrams and `[](#path)` links use it, while references in code and
+    files keep the name.
+  }}
+
+  lexical_lookup: rule(node_path, by = product.system.checker) {
+    must {{ resolve a path's first name in the scope it's written in, then in each enclosing scope out to the root, the prelude and the primitive types, and each further name as a child of the one before }}
+    then {{ the nearest declaration wins, so a section named `grammar` hides a kind of that name from the nodes inside it }}
+  }
+
+  unknown_names: rule(node_path, by = product.system.checker) {
+    if {{ a path's first name resolves nowhere, or a later name isn't a child of the node before it }}
+    must {{ report [unknown name](#language.core_format.naming.diagnostics.unknown_name) with the closest name in scope, or [no member](#language.core_format.naming.diagnostics.no_member) }}
+  }
+
+  closest_names: rule(node_path, by = product.system.checker) {
+    when {{ a name, field, parameter, member or annotation doesn't resolve }}
+    should {{ end the message with "; did you mean ‹name›?", naming the closest candidate in scope by edit distance, when one is close }}
+  }
+
+  display_names: rule(display_name, by = product.system.docs_generator) {
+    must {{ show a node by its `@display` text when it has one, and otherwise by its name in sentence case, keeping a type's name and a name written in capitals as written }}
+  }
+
+  diagnostics: section {
+    unknown_name: diagnostic("unresolved", by = product.system.checker) {
+      message = "unknown name ‹name›"
+    }
+
+    no_member: diagnostic("unresolved", by = product.system.checker) {
+      message = "‹path› has no member ‹name›"
+    }
+  }
+}
