@@ -12,7 +12,7 @@ import = [
   "std/docs@1",
 ]
 
-heron: package(version = "0.1.0", sealed = true) {
+heron: package(version = "0.2.0", sealed = true) {
   include = [
     "./guide.heron",
     "./product/",
@@ -26,7 +26,7 @@ heron: package(version = "0.1.0", sealed = true) {
   @display("CLI")
   cli {}
 
-  | Version 0.1.0 of the Heron spec: the language, its format, [schemas](#language.schemas.kinds.schema), markup,
+  | Version 0.2.0 of the Heron spec: the language, its format, [schemas](#language.schemas.kinds.schema), markup,
   | data, APIs, specifications, interop and scripting, and the system that reads, checks, runs
   | and documents it, as seen from outside. Nothing in this package names how the system is
   | built.
