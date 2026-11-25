@@ -1,0 +1,33 @@
+renderers: section {
+  | Renderers per kind are an [extension point](#language.interop.declaring.extension_point) the docs and the live preview share:
+  | a scenario or a prompt shows properly once its extension is installed, and as a plain node
+  | before that.
+
+  renderer_per_kind: rule(tools.docs.renderers, by = product.system.docs_generator) {
+    must {{ render a node through the renderer registered for its kind's declaration path, such as `spec.rule`, with the latest registration winning }}
+    unless {{ none is registered, and then the node shows as its title, prose, fields and children }}
+  }
+
+  tag_renderers: rule(language.markup.tags.component_tag, by = product.system.docs_generator) {
+    must {{ render a markup tag through the renderer registered for its kind, with its attributes typed by the kind's parameters, or else through the built-in components of `std/doc` }}
+  }
+
+  ts_renderer: term {{
+    A renderer written in TS: an export of a module the [docs block](#tools.docs.extending.docs_block) names in `renderers`,
+    made with `defineRenderer(kind, render)` from `@heron/runtime`, run through the
+    [JS host](#language.interop.host.js_host) when the docs are generated.
+  }}
+
+  ts_renderer_contract: rule(tools.docs.renderers.ts_renderer, by = product.system.docs_generator) {
+    must {{ register one renderer per kind a module's handshake reports, and call its `render` with plain data: the node's path, name, kind, title, heading level, anchor, rendered prose and children, its kind's arguments as typed attributes, and the components of its kind's other slots by name; for a markup tag, its rendered body and its attributes instead of a path }}
+    then {{ `render` returns HTML, or HTML with whether a tag is a block and which built-in islands it uses }}
+  }
+
+  ts_renderer_fallback: rule(tools.docs.renderers.ts_renderer, by = product.system.docs_generator) {
+    must {{ keep the built-in renderer, or the generic view, for every kind a module doesn't render }}
+  }
+
+  heron_template_renderers: rule(tools.docs.renderers, by = product.system.docs_generator) {
+    may {{ take renderers and islands written as Heron templates }}
+  }
+}

@@ -1,0 +1,17 @@
+// The docs generator: the site it writes, how each page is laid out, the
+// renderers and parts a tree extends, the islands, search, diagrams and
+// versions.
+include = [
+  "./site.heron",
+  "./page_layout.heron",
+  "./renderers.heron",
+  "./extending.heron",
+  "./islands.heron",
+  "./search.heron",
+  "./diagrams.heron",
+  "./versions.heron",
+]
+
+| What the docs generator makes of a checked tree: a documentation site of plain files that
+| work without a server, the same pages `heron serve` shows live as the spec browser, so
+| what people read and what they edit never look different.

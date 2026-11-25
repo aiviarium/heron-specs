@@ -1,0 +1,42 @@
+site: section {
+  | A site is a home page, one page per [page node](#tools.docs.site.page_node), and the pages that gather one kind
+  | across the tree. Every other node shows on the page of its nearest ancestor that has
+  | one, at its own anchor.
+
+  page_node: term {{
+    A node that gets a page of its own: a section or a documented [folder scope](#guide.layout.folder_scope) less than
+    `depth` levels down, `2` unless the [docs block](#tools.docs.extending.docs_block) sets it; at any depth, an api, an op, a type
+    declaration of the tree, a component, a command, an epic, a use case and a screen.
+  }}
+
+  site_area: term {{
+    A top-level part of the site, a tab in the top bar with its own navigation tree: Docs,
+    Reference when the tree has an api or a type, and Glossary when it has a term.
+  }}
+
+  page_files: rule(tools.docs.site, by = product.system.docs_generator) {
+    must {{ write each page as a file at the site's root named by its node's [path](#language.core_format.naming.node_path), as `orders.ordering.html`, the home page as `index.html`, the gathered pages as `_glossary.html` and `_diagnostics.html`, and the assets under `_assets/` }}
+    then {{ every link is relative and the site opens from disk }}
+  }
+
+  page_nodes: rule(tools.docs.site, by = product.system.docs_generator) {
+    must {{ give every [page node](#tools.docs.site.page_node) a page, and show every other node of the tree on the page of its nearest ancestor that has one }}
+  }
+
+  site_title: rule(tools.docs.site, by = product.system.docs_generator) {
+    must {{ title the site with the root project's [display name](#language.core_format.naming.display_name), or the entry file's folder when the tree declares no project }}
+  }
+
+  gathered_pages: rule(tools.docs.site, by = product.system.docs_generator) {
+    must {{ gather the tree's terms on a glossary page and its diagnostics by code on a diagnostics page, each only when the tree has one }}
+  }
+
+  pages_follow_tree: rule(tools.docs.site, by = product.system.docs_generator) {
+    must {{ render features with their rules, terms with hover cards wherever a term is used, qualities with their metrics, and APIs and types as the [reference screens](#tools.frontend.screens) say, all cross-linked }}
+  }
+
+  sentences_from_spec: rule(tools.docs.site, by = product.system.docs_generator) {
+    mustNot {{ add a sentence of its own to a page }}
+    instead {{ add headings, labels, navigation and values from the [string catalogue](#tools.frontend.writing.string_catalogue), and show a kind with no prose as its structure alone }}
+  }
+}

@@ -1,0 +1,31 @@
+diagrams: section {
+  | Diagrams are laid out by the docs generator when the docs are generated and written as SVG coloured
+  | from the theme's tokens, so they work without a script.
+
+  svg_layout: rule(tools.docs.diagrams, by = product.system.docs_generator) {
+    must {{ place a diagram's nodes in layers by their distance from the roots, rows in the order the tree writes them, draw forward edges as curves from right to left sides and edges back or within a layer as arcs below the boxes, behind a faint dot grid }}
+  }
+
+  diagram_style: rule(language.specifications.lifecycles.lifecycle, by = product.system.docs_generator) {
+    must {{ draw states as bordered boxes on the raised colour, mark initial and final states by their shape, label transitions with their name and the op that performs them in the [project colour](#tools.frontend.design_system.project_colour), and mark a transition nothing performs in the warning colour }}
+  }
+
+  table_view: rule(tools.docs.diagrams, by = product.system.docs_generator) {
+    must {{ give every diagram a table with the same information, and a switch between the two }}
+  }
+
+  task_graph: rule(tools.docs.diagrams, by = product.system.docs_generator) {
+    where {{ a node holds tasks and one of them `@needs` another }}
+    must {{ show its tasks and their needs as a dependency graph }}
+  }
+
+  package_graph: rule(tools.docs.diagrams, by = product.system.docs_generator) {
+    where {{ a tree imports a local package }}
+    must {{ show the packages the tree imports, with their own imports, as a dependency graph on the home page }}
+  }
+
+  coverage_graph: rule(tools.docs.diagrams, by = product.system.docs_generator) {
+    when {{ the tree has proofs linking its rules to tests }}
+    must {{ show what covers each rule as a graph }}
+  }
+}
