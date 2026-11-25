@@ -3,8 +3,8 @@ product_kinds: section {
   | `std/product` gives a spec the agile forms a team plans with: who the system is for,
   | what they need from it as epics of stories with acceptance criteria and use cases with
   | numbered flows, and when it's delivered as increments and milestones with what done
-  | means. A criterion reads given, when and then with `std/spec`'s `when` and `then`, and
-  | `verify` links it to the test that proves it.
+  | means. A criterion reads given, when and then with `std/spec`'s `when` and `then`; the
+  | test that proves it is linked from the implementation's project, never from the spec.
   |
   | | Kind                         | Holds                                                                      |
   | | ---------------------------- | -------------------------------------------------------------------------- |
@@ -12,7 +12,7 @@ product_kinds: section {
   | | `persona(of)`                | a typical person behind an actor, with `goals` and `pains`                  |
   | | `epic(owner)`                | stories, use cases, sections and at most one `done`, for one outcome         |
   | | `story(as)`                  | `want`, `so` and its criteria                                               |
-  | | `criterion`                  | any `given`, at most one `when`, any `then`, and `verify`                   |
+  | | `criterion`                  | any `given`, at most one `when` and any `then`                              |
   | | `usecase(actor, supporting)` | a `goal`, preconditions, steps, alternates, failures and the conditions it ends with    |
   | | `alternate(at, rejoins)`     | the steps of a flow that branches off `at` and still reaches the goal       |
   | | `failure(at)`                | the steps of a flow that branches off `at` and fails the goal               |

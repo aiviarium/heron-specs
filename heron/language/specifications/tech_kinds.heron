@@ -3,15 +3,16 @@ tech_kinds: section {
   | `std/tech` gives a spec the technical shape of a system, for whoever builds it:
   | components with their contracts, a tool's commands, a language's grammar, an app's
   | screens and the diagnostics its tools report. Requirements on them are `std/spec`'s
-  | rules with `by` naming the component, and `verify` links any of them to its test.
+  | rules with `by` naming the component; the tests that prove them are linked from the
+  | implementation's project.
   |
   | | Kind                           | Holds                                                                       |
   | | ------------------------------ | --------------------------------------------------------------------------- |
-  | | `component(path, lang)`        | `uses`, responsibilities, surface, invariants, `raises`, obligations and `verify` |
-  | | `command(name)`                | `usage` lines, arguments, options, exit codes, examples, `verify` and subcommands |
+  | | `component(path, lang)`        | `uses`, responsibilities, surface, invariants, `raises` and obligations |
+  | | `command(name)`                | `usage` lines, arguments, options, exit codes, examples and subcommands |
   | | `grammar(notation, source)`    | `start`, productions and tokens                                              |
   | | `screen(route)`                | regions, nested as the layout nests                                         |
-  | | `diagnostic(code, severity, by)` | `message`, `related`, examples and `verify`                                 |
+  | | `diagnostic(code, severity, by)` | `message`, `related` and examples                                           |
 
   component_kind: term {{
     `name: component(path = "src/parser", lang = "go") { … }`, a unit of code

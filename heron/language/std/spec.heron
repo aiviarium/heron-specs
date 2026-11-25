@@ -11,7 +11,6 @@ spec: component(path = "std/spec", lang = "heron") {
   | | `Versioning`, `Bumps`, `FromSpec`, `Releases`                                 | [Projects](#language.specifications.projects)             |
   | | `<security>`, `<privacy>`, `<operations>`, `outOfScope`                       | [Context](#language.specifications.context)               |
   | | `rule`, `strength`, `condition`, `must` … `instead`, `example`                | [Requirements](#language.specifications.requirements)     |
-  | | `verify`                                                                      | [Traceability](#language.specifications.traceability)     |
   | | `states`, `transition`, `@performs`                                           | [Lifecycles](#language.specifications.lifecycles)         |
   | | `metric`, `quality`, `applies`                                                | [Qualities](#language.specifications.qualities)           |
   | | `guidance`                                                                    | [Context](#language.specifications.context.guidance_kind) |

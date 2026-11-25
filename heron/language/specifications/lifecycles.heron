@@ -12,7 +12,7 @@ lifecycles: section {
   transition_kind: term {{
     `name: transition(from, to) { … }`, one allowed change between two variants of the enum
     the [lifecycle](#language.specifications.lifecycles.lifecycle) models. Its body takes the conditions a rule takes, such as `when` for what
-    causes it, and `verify`, but no strength: a transition is allowed, not required.
+    causes it, but no strength: a transition is allowed, not required.
   }}
 
   performs_annotation: term {{

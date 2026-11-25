@@ -83,7 +83,7 @@ requirements: section {
   }
 
   consequences_listed: rule(rule_kind, by = product.system.docs_generator) {
-    must {{ list a rule's `then`, `instead`, examples and `verify` links under its sentence, and each condition another package adds by its kind's name }}
+    must {{ list a rule's `then`, `instead` and examples under its sentence, and each condition another package adds by its kind's name }}
   }
 
   conditions_used_for_their_sense: rule(rule_condition, by = product.actors.author) {

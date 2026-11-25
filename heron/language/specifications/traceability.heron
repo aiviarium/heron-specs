@@ -1,15 +1,18 @@
 @display("Verify, status and coverage")
 traceability: section {
-  | A requirement is proved by the test or script its `verify` names, and one written
-  | ahead of its code says so with the [planned status](#language.specifications.traceability.status_flag). The
-  | two together say what's built, what's proved and what's still to build, so a reader
-  | never has to guess whether a rule describes the code or the plan.
+  | A requirement is proved by the test or script a `verify` names, and test links live
+  | only on the implementation's side: a project that imports the spec names the
+  | requirements each test proves, in a `proves` node of `std/project`, and the spec itself
+  | never names a test. One written ahead of its code says so with the
+  | [planned status](#language.specifications.traceability.status_flag). The two together
+  | say what's built, what's proved and what's still to build, so a reader never has to
+  | guess whether a rule describes the code or the plan.
 
   verify_kind: term {{
-    `verify(path, test = …)`, `std/spec`'s link from its parent to the file that proves
-    it, relative to the repository's root, and the test or step in it. A rule, a
-    criterion, an invariant, a transition, a diagnostic, a component and a command take
-    any number of them.
+    `verify(path, test = …)`, `std/project`'s link from a `proves` node to the file that
+    proves the requirements the node names, relative to the implementation repository's
+    root, and the test or step in it. A `proves` takes any number of them, as do the
+    project's own components and invariants; a spec names none.
   }}
 
   status_flag: term {{
@@ -25,7 +28,7 @@ traceability: section {
   }}
 
   verify_shown: rule(verify_kind, by = product.system.docs_generator) {
-    must {{ list a requirement's `verify` links under it as "Verified by", each its path and its test as code }}
+    must {{ list the `verify` links of the proofs that name a requirement under it as "Verified by", each its path and its test as code }}
   }
 
   status_shown: rule(status_flag, by = product.system.docs_generator) {
@@ -37,8 +40,8 @@ traceability: section {
   }
 
   planned_has_no_verify: rule(status_flag, by = product.actors.author) {
-    mustNot {{ give a `<planned>` rule, component or diagnostic a `verify` link }}
-    instead {{ take the flag off in the change that builds the behaviour, and link its test in that change }}
+    mustNot {{ name a `<planned>` rule, component or diagnostic in a `proves` that has a `verify` link }}
+    instead {{ take the flag off in the change that builds the behaviour, and add its proof in that change }}
   }
 
   verify_paths_exist: rule(verify_kind, by = product.system.linter) {
@@ -47,7 +50,7 @@ traceability: section {
   }
 
   traceability_page: rule(verify_kind, by = product.system.docs_generator) {
-    must {{ render a page that lists every requirement with its status and its `verify` links, and the requirements nothing proves }}
+    must {{ render a page that lists every requirement with its status and the `verify` links of its proofs, and the requirements nothing proves }}
   }
 
   uncovered_shown: rule(coverage, by = product.system.linter) {
