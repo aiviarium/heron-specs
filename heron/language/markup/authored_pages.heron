@@ -51,6 +51,12 @@ authored_pages: section {
       then {{ a link can name the step a reader is at, as `#getting_started.check` }}
     }
 
+    step_resolves_in_tasks: rule(step_kind, by = product.system.checker) {
+      where {{ a tree imports `std/docs` and another package that declares a kind named `step`, as `std/product` does for use cases }}
+      must {{ resolve `step` as the kind of a child of a how-to or a tutorial to `std/docs`'s, and as the kind of a child of a use case, an alternate or a failure to `std/product`'s }}
+      then {{ a tree that imports both writes `name: step { … }` in each, with no package prefix }}
+    }
+
     steps_only_in_tasks: rule(step_kind, by = product.system.checker) {
       if {{ a `step` of `std/docs` stands anywhere but in a how-to or a tutorial }}
       must {{ report that the parent doesn't accept it, as for any kind its parent doesn't accept }}
