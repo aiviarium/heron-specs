@@ -11,10 +11,8 @@ generate: command("heron generate") {
   targets: argument("targets", type = String, optional = true, variadic = true) {
     | The targets to run. The built-in ones:
     |
-    | | Target | Writes                                                                  |
-    | | ------ | ----------------------------------------------------------------------- |
-    | | `ts`   | `.heron/types.ts` and `.heron/bindings.ts`, the TS types and `bind` of the tree's declarations |
-    | | `docs` | the documentation site, under `.heron/docs/`                            |
+    | - `ts` writes `.heron/types.ts` and `.heron/bindings.ts`, the TS types and `bind` of the tree's declarations.
+    | - `docs` writes the documentation site, under `.heron/docs/`.
     |
     | An extension's generators add their targets the same way.
   }

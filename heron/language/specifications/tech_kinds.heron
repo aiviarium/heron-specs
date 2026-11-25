@@ -51,7 +51,7 @@ tech_kinds: section {
   }
 
   command_view: rule(command_kind, by = product.system.docs_generator) {
-    must {{ show a command under its name as the page title, with its arguments and its options as tables of name, type and default }}
+    must {{ show a command under its name as the page title, with its arguments and its options each as a table of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table) }}
   }
 
   grammar_view: rule(grammar_kind, by = product.system.docs_generator) {
@@ -68,7 +68,7 @@ tech_kinds: section {
   }
 
   diagnostic_view: rule(diagnostic_kind, by = product.system.docs_generator) {
-    must {{ show a diagnostic as a card with its code, its severity, its message with each ‹name› marked, its related message and the component that reports it, and list it in an index by code that links to its page }}
+    must {{ show a diagnostic as an entry of its section's list: its code and its message with each ‹name› marked on one line, its severity, its related message and the part that reports it as one line of facts, and its prose; and list it in an index by code that links to its anchor }}
   }
 
   uses_enforced: rule(component_kind, by = product.system.linter) {

@@ -103,6 +103,11 @@ guide: section {
       must {{ write every code block of an `example` as a complete tree or file, so an implementation can extract the examples as its parser and checker fixtures }}
     }
 
+    no_small_tables: rule(guide.kinds, by = product.actors.author) {
+      mustNot {{ write a table in prose with one column or fewer than three rows below its header }}
+      instead {{ write the rows as a list or a sentence, and keep tables for data with columns to compare }}
+    }
+
     named_instances: guidance(guide.kinds) {{
       A kind instance with a body and no arguments is written with a name, as
       `saved: criterion { … }`: without one, `criterion { … }` enters a node that must

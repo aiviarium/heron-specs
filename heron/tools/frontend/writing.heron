@@ -62,6 +62,11 @@ writing: section {
       must {{ write labels short and in sentence case, buttons as verbs such as Run, Copy or Open, and an error as one line saying what's wrong and where, with the fix as an action when there is one }}
     }
 
+    tables_earn_their_place: rule(tools.frontend.writing.composing_text, by = product.actors.implementer) {
+      mustNot {{ lay out as a table what has one column or fewer than three rows }}
+      instead {{ write a list, or one line per row, and keep tables for data with columns to compare, such as options with their types and defaults }}
+    }
+
     no_closing_summary: rule(tools.frontend.writing.composing_text, by = product.actors.implementer) {
       mustNot {{ close a page with a summary, ask a rhetorical question, or use a "Learn more" link that doesn't say where it goes }}
     }

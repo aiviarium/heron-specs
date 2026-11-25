@@ -63,6 +63,21 @@ design_system: section {
     }
   }
 
+  typography: section {
+    | The docs are read, so their text is set to be read: the sentences of the spec in the
+    | body face at full strength, and the small and faint levels kept for what a reader
+    | scans past.
+
+    sentences_at_full_strength: rule(text_levels, by = product.system.docs_generator) {
+      must {{ set every sentence that comes from the spec, a rule's, the sentences of steps, [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) and diagnostic messages included, in the body face at the docs prose size of the [type scale](#tools.frontend.design_system.tokens.type_scale) and the `text` level }}
+    }
+
+    small_text_for_facts: rule(text_levels, by = product.system.docs_generator) {
+      mustNot {{ set a sentence from the spec in `text-faint`, in `text-decor` or below the docs prose size }}
+      instead {{ keep `text-secondary` and the smaller sizes for labels, breadcrumbs, facts lines and captions }}
+    }
+  }
+
   composing: section {
     | These bind whoever builds a view of the app or the docs, and the reviewer of it.
 
@@ -73,6 +88,16 @@ design_system: section {
     hairlines_not_shadows: rule(surfaces, by = product.actors.implementer) {
       mustNot {{ separate things with shadows }}
       instead {{ separate them with hairline borders in three strengths, `border-faint`, `border` and `border-strong` }}
+    }
+
+    flows_without_hairlines: rule(surfaces, by = product.actors.implementer) {
+      mustNot {{ draw a hairline between consecutive items of one flow, such as rules, terms, steps or diagnostics }}
+      instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of tables and code blocks }}
+    }
+
+    one_level_of_indent: rule(surfaces, by = product.actors.implementer) {
+      mustNot {{ nest a bordered box inside another, or indent content more than one level from its column }}
+      instead {{ show hierarchy with headings, their levels and the navigation }}
     }
 
     overlays_cast_shadows: rule(surfaces, by = product.actors.implementer) {

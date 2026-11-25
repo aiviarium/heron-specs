@@ -50,7 +50,7 @@ product_kinds: section {
   }
 
   story_view: rule(story_kind, by = product.system.docs_generator) {
-    must {{ show a story as the sentence "As a ‹actor›, I want ‹want›, so that ‹so›.", with the actor linked, and its criteria under "Acceptance" as given, when and then, a second given or then read "And" }}
+    must {{ show a story as the sentence "As a ‹actor›, I want ‹want›, so that ‹so›.", with the actor linked, and its criteria under "Acceptance" as a list, each criterion one sentence "Given ‹given›, when ‹when›, then ‹then›.", a second given or then joined with "and" }}
   }
 
   usecase_numbering: rule(usecase_kind, by = product.system.docs_generator) {

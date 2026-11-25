@@ -74,16 +74,16 @@ requirements: section {
   }
 
   ears_sentence: rule(rule_kind, by = product.system.docs_generator) {
-    must {{ render a rule's strength and conditions as one sentence: `when`, `while`, `where` and `if` in that order, then the subject and the strength's words with the behaviour, then `unless` }}
-    example {{ "When a refund is requested, if the capture date is past, `desk` must reject the request, unless the payment is under review." }}
+    must {{ render a rule's strength, conditions and consequences as one sentence: `when`, `while`, `where` and `if` in that order, then the subject and the strength's words with the behaviour, then `unless`, then each `then` after ", so", then `instead` after ", and must instead", the clauses of one condition joined with "and" }}
+    example {{ "When a refund is requested, if the capture date is past, `desk` must reject the request, unless the payment is under review, so the customer is told at once." }}
   }
 
   subject_words: rule(rule_subject, by = product.system.docs_generator) {
     must {{ name a component by its name as code, an actor, a persona or a term as "the" and its name, a targeted type as "a" or "an" and its name in words, and anything else as "the system" }}
   }
 
-  consequences_listed: rule(rule_kind, by = product.system.docs_generator) {
-    must {{ list a rule's `then`, `instead` and examples under its sentence, and each condition another package adds by its kind's name }}
+  examples_after_sentence: rule(rule_kind, by = product.system.docs_generator) {
+    must {{ follow a rule's sentence, in the same paragraph, with each of its examples as a sentence of its own after the word the [string catalogue](#tools.frontend.writing.string_catalogue) holds for an example, and each condition another package adds as a sentence after its kind's [display name](#language.core_format.naming.display_name) }}
   }
 
   conditions_used_for_their_sense: rule(rule_condition, by = product.actors.author) {

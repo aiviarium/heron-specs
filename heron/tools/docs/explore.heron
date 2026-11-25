@@ -2,7 +2,8 @@
 explore: section {
   | The `explore` lens is the full information of the tree, the view an implementer, a
   | reviewer or an agent reads: every node, its formal parts, and which lenses each node is
-  | for. It's denser than the other lenses.
+  | for. It's denser than the other lenses and follows the same
+  | [rendering baseline](#tools.docs.rendering).
 
   formal_parts: rule(tools.docs.explore, by = product.system.docs_generator) {
     must {{ show, in the `explore` lens, under each rule's sentence one line of its facts: its path, its targets, its subject and its strength's keyword, each as inline code }}

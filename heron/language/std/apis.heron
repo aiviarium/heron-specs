@@ -2,12 +2,8 @@
 apis: component(path = "std/apis", lang = "heron") {
   | The [extension point](#language.interop.declaring.extension_point) transports implement, so a new protocol is bound with `js(…)` and needs no new build.
   |
-  | Its surface is declared in `std/apis/package.heron`, whose types the API
-  | reference renders; each export is specified where its behaviour is:
-  |
-  | | Export                               | Specified in                                              |
-  | | ------------------------------------ | --------------------------------------------------------- |
-  | | `Transport`, `Response`, `transport` | [Transports](#language.apis.transports.transport_binding) |
+  | Its surface is declared in `std/apis/package.heron`, whose types the API reference renders.
+  | `Transport`, `Response` and `transport` are specified in [Transports](#language.apis.transports.transport_binding).
 
   uses = [language.std.types]
 }

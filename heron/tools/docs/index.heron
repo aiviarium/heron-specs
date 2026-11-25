@@ -6,6 +6,7 @@ include = [
   "./standard_lenses.heron",
   "./explore.heron",
   "./page_layout.heron",
+  "./rendering.heron",
   "./renderers.heron",
   "./extending.heron",
   "./islands.heron",
