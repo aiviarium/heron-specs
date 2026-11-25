@@ -43,6 +43,12 @@ code: section {
       must {{ fail with [division by zero](#language.scripting.code.diagnostics.division_by_zero) }}
     }
 
+    int_overflow: rule(code_fault, by = product.system.interpreter) {
+      if {{ `+`, `-`, `*`, `/`, `%` or unary `-` on `Int` values gives a whole number outside the 64-bit range, or an `Int` literal is outside it }}
+      must {{ fail with [Int overflow](#language.scripting.code.diagnostics.int_overflow) rather than wrap around }}
+      example {{ `9223372036854775807 + 1` fails with `9223372036854775807 + 1 overflows Int, a 64-bit integer` }}
+    }
+
     bools_only: rule(code_fault, by = product.system.interpreter) {
       must {{ take only a `Bool` as the condition of `if` and the operand of `and`, `or` and `not`, and fail with [needs a Bool](#language.scripting.code.diagnostics.needs_bool) for anything else }}
       then {{ there's no truthiness: `if items.size` fails, and `if not items.empty` is written instead }}
@@ -298,6 +304,12 @@ code: section {
 
     division_by_zero: diagnostic("fault", by = product.system.interpreter) {
       message = "division by zero"
+    }
+
+    @display("Int overflow")
+    int_overflow: diagnostic("fault", by = product.system.interpreter) {
+      message = "‹expression› overflows Int, a 64-bit integer"
+      | `9223372036854775807 + 1`, `-(-9223372036854775808)` or a literal such as `99999999999999999999`: the expression or literal is named as written.
     }
 
     @display("Needs a Bool")

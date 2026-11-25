@@ -66,6 +66,11 @@ run: command("heron run") {
     must {{ stop, print `heron run: ‹path› failed: ‹error›` on standard error and exit with status 1, running no task after it }}
   }
 
+  install_before_check: rule(run, by = product.system.command_line) {
+    when {{ `heron run setup` runs in a repository whose tree imports a package from git that isn't installed }}
+    must {{ install the git packages `heron.lock` pins before the tree is checked, from the lock alone, so the tree that imports them then checks and its `setup` task runs }}
+  }
+
   every_run_recorded: rule(run, by = product.system.command_line) {
     must {{ write a `run` record for every run that started its first task, succeeded or not, with its task, entry, arguments, the tasks it ran with their roles, its steps, processes, logs, calls and resources, and its result or error and exit status }}
   }

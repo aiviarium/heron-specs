@@ -115,8 +115,8 @@ imports: section {
     }
 
     not_installed: diagnostic("import", by = product.system.checker) {
-      message = "‹entry›: packages from npm and git are installed by `heron run setup`, which isn't available yet"
-      | `npm:foo@1` or a `git:` entry.
+      message = "‹entry›: packages from ‹source› are installed by `heron run setup`, and this one isn't installed yet"
+      | `npm:foo@1`, or `git+https://host/repo//folder@v1`, before `heron run setup` has installed it; ‹source› is npm or git.
     }
 
     no_such_import: diagnostic("import", by = product.system.checker) {
