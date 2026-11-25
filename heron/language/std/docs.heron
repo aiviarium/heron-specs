@@ -1,14 +1,18 @@
 @display("std/docs")
 docs: component(path = "std/docs", lang = "heron") {
-  | How the docs generator is configured: its styling, the layout each section uses, the components each slot shows and the modules that render kinds. A tree enters its export once, as `docs { … }`.
+  | How the docs generator is configured and what it's given to render: its styling, the
+  | layout each section uses, the components each slot shows, the modules that render kinds,
+  | and the [authored pages](#language.markup.authored_pages.authored_page) written for its readers. A tree enters its export once,
+  | as `docs { … }`.
   |
   | Its surface is declared in `std/docs/package.heron`, whose types the API
   | reference renders; each export is specified where its behaviour is:
   |
-  | | Export           | Specified in                      |
-  | | ---------------- | --------------------------------- |
-  | | `site`, `docs`   | [the docs generator](#product.system.docs_generator) |
-  | | `layout`, `slot` | [the docs generator](#product.system.docs_generator) |
+  | | Export                                                      | Specified in                                      |
+  | | ----------------------------------------------------------- | ------------------------------------------------- |
+  | | `site`, `docs`, `layout`, `slot`                            | [the docs generator](#tools.docs.extending)       |
+  | | `authored`, `guide`, `howto`, `step`, `concept`, `tutorial` | [authored pages](#language.markup.authored_pages) |
+  | | `renderers` modules                                         | [renderers](#tools.docs.renderers)                |
 
-  uses = [language.std.doc, language.std.js]
+  uses = [language.std.doc, language.std.js, language.std.spec, language.std.tech]
 }

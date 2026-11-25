@@ -6,7 +6,8 @@ site: section {
   page_node: term {{
     A node that gets a page of its own: a section or a documented [folder scope](#guide.layout.folder_scope) less than
     `depth` levels down, `2` unless the [docs block](#tools.docs.extending.docs_block) sets it; at any depth, an api, an op, a type
-    declaration of the tree, a component, a command, an epic, a use case and a screen.
+    declaration of the tree, a component, a command, an epic, a use case, a screen and an
+    [authored page](#language.markup.authored_pages.authored_page).
   }}
 
   site_area: term {{

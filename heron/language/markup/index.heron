@@ -10,6 +10,7 @@ include = [
   "./components.heron",
   "./from_markdown.heron",
   "./long_form.heron",
+  "./authored_pages.heron",
   "./prose_view.heron",
 ]
 
