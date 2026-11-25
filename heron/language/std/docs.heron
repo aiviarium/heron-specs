@@ -2,17 +2,28 @@
 docs: component(path = "std/docs", lang = "heron") {
   | How the docs generator is configured and what it's given to render: its styling, the
   | layout each section uses, the components each slot shows, the modules that render kinds,
-  | and the [authored pages](#language.markup.authored_pages.authored_page) written for its readers. A tree enters its export once,
-  | as `docs { … }`.
+  | the [lenses](#tools.docs.lenses.lens_kind) a site is read through, and the [authored pages](#language.markup.authored_pages.authored_page) written for its readers. A
+  | tree enters its export once, as `docs { … }`.
   |
   | Its surface is declared in `std/docs/package.heron`, whose types the API
   | reference renders; each export is specified where its behaviour is:
   |
-  | | Export                                                      | Specified in                                      |
-  | | ----------------------------------------------------------- | ------------------------------------------------- |
-  | | `site`, `docs`, `layout`, `slot`                            | [the docs generator](#tools.docs.extending)       |
-  | | `authored`, `guide`, `howto`, `step`, `concept`, `tutorial` | [authored pages](#language.markup.authored_pages) |
-  | | `renderers` modules                                         | [renderers](#tools.docs.renderers)                |
+  | | Export                                                      | Specified in                                       |
+  | | ----------------------------------------------------------- | -------------------------------------------------- |
+  | | `site`, `docs`, `layout`, `slot`                            | [the docs generator](#tools.docs.extending)        |
+  | | `lens`, `LensNav`                                           | [lenses](#tools.docs.lenses)                       |
+  | | `user`, `developer`, `explore`                              | [the standard lenses](#tools.docs.standard_lenses) |
+  | | `authored`, `guide`, `howto`, `step`, `concept`, `tutorial` | [authored pages](#language.markup.authored_pages)  |
+  | | `renderers` modules                                         | [renderers](#tools.docs.renderers)                 |
 
   uses = [language.std.doc, language.std.js, language.std.spec, language.std.tech]
+
+  standard_lenses_in_std: rule(language.std.docs, by = product.system.checker) {
+    must {{ resolve `user`, `developer` and `explore` in a tree that imports `std/docs` as the lens nodes `std/docs` declares, unless the tree declares its own of that name }}
+  }
+
+  lens_mark_from_doc: rule(language.std.docs, by = product.system.checker) {
+    must {{ resolve `@lens` as `std/doc`'s annotation, whose names are references to `std/docs`'s lens nodes or a tree's own }}
+    then {{ the annotation and the kind are both called `lens`, each declared once in its own package }}
+  }
 }

@@ -1,8 +1,10 @@
-// The docs generator: the site it writes, how each page is laid out, the
-// renderers and parts a tree extends, the islands, search, diagrams and
-// versions.
+// The docs generator: the site it writes, the lenses it's read through, how
+// each page is laid out and rendered, and the parts a tree extends.
 include = [
   "./site.heron",
+  "./lenses.heron",
+  "./standard_lenses.heron",
+  "./explore.heron",
   "./page_layout.heron",
   "./renderers.heron",
   "./extending.heron",

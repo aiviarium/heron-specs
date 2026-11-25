@@ -15,6 +15,7 @@ doc: component(path = "std/doc", lang = "heron") {
   | | `math`, `span`, `kbd`, `abbr`, `sub`, `sup`, `footnote`                                                              | [Text](#language.markup.text)                                                                |
   | | `if`, `else`, `for`                                                                                                  | [Logic tags](#language.markup.components.logic_tags)                                         |
   | | `doc`                                                                                                                | [Inserts](#language.markup.inserts)                                                          |
+  | | `@lens`                                                                                                              | [Lens marks](#language.markup.lens_marks)                                                    |
 
   uses = [language.std.schema, language.std.types]
 }

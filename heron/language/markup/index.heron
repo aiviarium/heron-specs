@@ -11,6 +11,7 @@ include = [
   "./from_markdown.heron",
   "./long_form.heron",
   "./authored_pages.heron",
+  "./lens_marks.heron",
   "./prose_view.heron",
 ]
 

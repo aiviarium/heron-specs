@@ -13,6 +13,11 @@ actors: section {
     until the tests that prove the criteria of that subtree pass.
   }}
 
+  reader: actor {{
+    Someone who reads a tree's docs to use what the tree describes: to install it, run it
+    and fix what goes wrong, without building it or reading its rules.
+  }}
+
   reviewer: actor {{
     Someone who reads a change against the spec before it's accepted.
   }}

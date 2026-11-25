@@ -55,6 +55,11 @@ authored_pages: section {
       if {{ a `step` of `std/docs` stands anywhere but in a how-to or a tutorial }}
       must {{ report that the parent doesn't accept it, as for any kind its parent doesn't accept }}
     }
+
+    unmarked_in_every_lens: rule(authored_page, by = product.system.docs_generator) {
+      where {{ an [authored page](#language.markup.authored_pages.authored_page) carries no [lens mark](#tools.docs.lenses.lens_mark) }}
+      must {{ render it in every lens whose lists keep it }}
+    }
   }
 
   checked_examples: section {
@@ -130,6 +135,7 @@ authored_pages: section {
     |   }
     | }
     |
+    | @lens(user)
     | check_a_file: howto {
     |   | Check a file before you send it, so a mistake is caught on your machine.
     |

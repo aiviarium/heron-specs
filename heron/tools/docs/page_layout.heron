@@ -3,7 +3,17 @@ page_layout: section {
   | and a right column.
 
   frame: rule(tools.docs.page_layout, by = product.system.docs_generator) {
-    must {{ lay out a page as a top bar with the logo, the [site areas](#tools.docs.site.site_area), search with its shortcut, the version switch and the theme switch; the navigation tree of its [site area](#tools.docs.site.site_area) on the left; a breadcrumb and the page in the middle; and on the right the page's outline, or an op's examples, sticky as the page scrolls }}
+    must {{ lay out a page as a top bar with the logo, the [site areas](#tools.docs.site.site_area), the lens switcher, search with its shortcut, the version switch and the theme switch; the navigation tree of its [site area](#tools.docs.site.site_area) on the left; a breadcrumb and the page in the middle; and on the right the page's outline, or an op's examples, sticky as the page scrolls }}
+  }
+
+  lens_switcher: rule(tools.docs.page_layout, by = product.system.docs_generator) {
+    where {{ the site builds more than one [lens](#tools.docs.lenses.lens_kind) }}
+    must {{ show in the top bar a switcher with the `title` of each lens, in the order of the docs block's `lenses`, the current one selected, each a plain link that works without a script }}
+  }
+
+  no_switcher_alone: rule(tools.docs.page_layout, by = product.system.docs_generator) {
+    where {{ the site builds one lens }}
+    mustNot {{ show a lens switcher }}
   }
 
   narrow_screens: rule(tools.docs.page_layout, by = product.system.docs_generator) {

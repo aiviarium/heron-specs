@@ -4,7 +4,8 @@ extending: section {
 
   docs_block: term {{
     A tree's `docs { … }` block from `std/docs`: its [theme package](#tools.docs.extending.theme_package), its renderer modules, its
-    `depth`, a `layout` per group of sections and its `slot` nodes.
+    `depth`, the `lenses` its site builds, a `layout` per group of sections and its `slot`
+    nodes.
   }}
 
   theme_package: term {{
@@ -47,6 +48,7 @@ extending: section {
     |   }
     |
     |   renderers = [js("./docs/renderers.ts")]
+    |   lenses = [user, developer, explore]
     | }
     | ```
   }
