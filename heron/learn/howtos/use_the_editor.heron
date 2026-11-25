@@ -1,0 +1,22 @@
+@lens(user)
+@display("Use the editor")
+use_the_editor: howto {
+  | ${cli.serve.name} serves a browser editor for one tree: the files, a live preview
+  | rendered as the docs are, and the checker's diagnostics where they are in the code.
+
+  start_it: step {
+    | Run ${cli.serve.name} in the tree's folder. It prints the address it listens on,
+    | ${cli.serve.addr.default} unless you pass `--addr`; open it in a browser.
+  }
+
+  edit: step {
+    | Pick a file and edit it. The preview beside it updates as you type, an error shows
+    | in place on the line it's about, and completion, hover and rename work as in any
+    | editor with a language server.
+  }
+
+  find_commands: step {
+    | Open the command palette to find any command or file, and press its shortcut next
+    | time: [the editor's commands](#tools.frontend.shell.commands) lists them.
+  }
+}

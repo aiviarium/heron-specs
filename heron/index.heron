@@ -19,6 +19,7 @@ heron: package(version = "0.2.0", sealed = true) {
     "./language/",
     "./cli/",
     "./tools/",
+    "./learn/",
   ]
 
   // A folder's scope is named after the folder, so a name that's an acronym
@@ -28,10 +29,11 @@ heron: package(version = "0.2.0", sealed = true) {
 
   | Version 0.2.0 of the Heron spec: the language, its format, [schemas](#language.schemas.kinds.schema), markup,
   | data, APIs, specifications, interop and scripting, and the system that reads, checks, runs
-  | and documents it, as seen from outside. Nothing in this package names how the system is
+  | and documents it, as seen from outside, with the pages for the people who use it. Nothing in this package names how the system is
   | built.
 }
 
 docs {
   depth = 3
+  lenses = [user, developer, explore]
 }

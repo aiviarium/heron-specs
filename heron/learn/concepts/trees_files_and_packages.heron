@@ -1,0 +1,18 @@
+@lens(user)
+@display("Trees, files and packages")
+trees_files_and_packages: concept {
+  | Everything Heron reads is one tree of named nodes. A node has a kind, such as `section`,
+  | `rule` or `command`, and its path, as `checkout.total`, is how prose links to it and
+  | how commands name it.
+  |
+  | The tree starts from one file, its [entry point](#language.core_format.files.entry_point): `index.heron` in the folder you run a
+  | command in, unless you name another. The [entry point](#language.core_format.files.entry_point) lists the tree's other files in
+  | `include`, and a folder included as `./name/` becomes the scope `name`, so a node's
+  | path says where its file is. The packages it uses are listed in `import`: the standard
+  | ones, such as `std/doc@1`, are built into `heron`, and others come from git or npm,
+  | installed by `heron run setup` and pinned in `heron.lock`.
+  |
+  | A package is a tree published for other trees to import, at a major version. No kind
+  | is built into the language: every kind a file uses comes from a package it imports,
+  | which is why each file starts with its `import`.
+}

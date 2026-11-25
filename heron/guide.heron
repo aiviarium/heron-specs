@@ -18,6 +18,7 @@ guide: section {
     | | `language/`  | The core format, the grammar, [schemas](#language.schemas.kinds.schema), markup, data, APIs, specifications, scripting, interop and the standard packages |
     | | `cli/`       | One command reference per subcommand of the `heron` command                                |
     | | `tools/`     | What the language server, prose linting, the docs, the server and the frontend do          |
+    | | `learn/`     | The pages for people who use Heron: getting started, the how-tos and the concepts           |
 
     spec_domain: term(aliases = ["spec domain"]) {{
       A top-level folder of the spec: one area of the system with its own readers, such as the
@@ -106,6 +107,15 @@ guide: section {
     no_small_tables: rule(guide.kinds, by = product.actors.author) {
       mustNot {{ write a table in prose with one column or fewer than three rows below its header }}
       instead {{ write the rows as a list or a sentence, and keep tables for data with columns to compare }}
+    }
+
+    user_pages: rule(guide.kinds, by = product.actors.author) {
+      must {{ write what a person who uses Heron reads as [authored pages](#language.markup.authored_pages.authored_page) under `learn/`, each marked `@lens(user)` }}
+    }
+
+    facts_inserted: rule(guide.kinds, by = product.actors.author) {
+      where {{ an [authored page](#language.markup.authored_pages.authored_page) states a fact a node of the spec holds, such as the name of a command, the default of an option or the message of a diagnostic }}
+      must {{ insert it from that node, as `${cli.serve.addr.default}`, rather than copy it }}
     }
 
     named_instances: guidance(guide.kinds) {{

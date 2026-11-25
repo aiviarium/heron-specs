@@ -1,0 +1,10 @@
+// What a person who uses Heron reads: getting started, the how-tos and the
+// concepts, each an authored page of the user lens.
+include = [
+  "./getting_started.heron",
+  "./howtos/",
+  "./concepts/",
+]
+
+@lens(user)
+| Pages for people who use Heron to write, check and publish their own trees.

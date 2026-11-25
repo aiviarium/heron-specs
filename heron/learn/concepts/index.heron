@@ -1,0 +1,11 @@
+// The concepts of the user lens: the ideas the how-tos and the reference
+// take for granted.
+include = [
+  "./trees_files_and_packages.heron",
+  "./specs_and_projects.heron",
+  "./lenses.heron",
+  "./versioning.heron",
+]
+
+@lens(user)
+| The ideas the how-tos and the reference take for granted.

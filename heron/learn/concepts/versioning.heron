@@ -1,0 +1,13 @@
+@lens(user)
+@display("Versioning")
+versioning: concept {
+  | A spec is versioned with three numbers: the major, the minor and the patch. The patch
+  | rises for a correction, the minor for a new behaviour and the major for a behaviour
+  | removed or changed. This spec is at ${heron.version}.
+  |
+  | An implementation doesn't have a version line of its own: its version starts with the
+  | spec version it implements, so every build says which spec it builds. Its own builds of
+  | that spec version follow a `+`, as `0.2.0+build3`, and a project that needs its own
+  | patches adds a fourth number, as `0.2.0.1`. [Version a product](#learn.howtos.version_a_product)
+  | shows both.
+}
