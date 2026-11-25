@@ -1,0 +1,54 @@
+# scripts/ci.sh on GitHub: check, lint (with Vale), format-check and render
+# the docs of every package, with heron built from aiviarium/heron's main
+# checked out beside this repository, at ../heron, where ci.sh looks for it.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          path: heron-specs
+      - uses: actions/checkout@v7
+        with:
+          repository: aiviarium/heron
+          ref: main
+          path: heron
+
+      # The Go version heron's go.mod names, with the module and build caches
+      # keyed by its go.sum.
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: heron/go.mod
+          cache: true
+          cache-dependency-path: heron/go.sum
+
+      # Vale for the prose lints, pinned, from the Go proxy. It needs a newer
+      # Go than heron does, so the toolchain is fetched for this install.
+      - name: Install Vale
+        env:
+          GOTOOLCHAIN: auto
+        run: |
+          go install github.com/vale-cli/vale/v3/cmd/vale@v3.28.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: scripts/ci.sh
+        working-directory: heron-specs
+        env:
+          HERON_REQUIRE_VALE: "1"
+        run: scripts/ci.sh

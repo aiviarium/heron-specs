@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Local CI for the spec workspace: check, lint, format and render the docs of
-# every package. No hosted CI is used.
+# every package. .github/workflows/ci.yml runs it on GitHub.
 #
 # The heron binary comes from $HERON_BIN, or is built from a sibling checkout
 # of the implementation: ../heron, falling back to ../specs-v0.
