@@ -1,0 +1,130 @@
+@display("Specs and implementations")
+implementations: section {
+  | A spec can live apart from the code that implements it: the spec is a package of its
+  | own, published and versioned on its own and usually sealed, and an implementation is a
+  | tree that imports the spec at a version and adds only what is about the implementation,
+  | with `std/project`. The two are versioned together: an implementation's version starts
+  | with the spec version it implements. [A sealed spec](#language.specifications.implementations.sealed_spec_example)
+  | and [its implementation](#language.specifications.implementations.implementation_example) show the pair.
+
+  sealed_package: term {{
+    A package declared with `sealed = true`, as `shop: package(version = "2.1.3", sealed = true) { … }`.
+    A tree that imports it refers to its nodes and can't amend, scope or set into them.
+  }}
+
+  implements_kind: term {{
+    `name: implements(spec, at = "SM.Sm.Sp") { … }`, `std/project`'s kind at the root of an
+    implementation's tree: the spec package it implements, the spec version `at` it
+    implements, copied exactly, and the project's own `version`.
+  }}
+
+  implementation_version: term {{
+    The version of a tree that implements a spec: the spec version it implements, then
+    what belongs to the implementation. By default it's `SM.Sm.Sp` with optional build
+    metadata `+<label><build>`, as `2.1.3+build4` or `2.1.3+rc2`, the build counting the
+    implementation's builds of that spec version; where the project's `versioning` sets
+    `scheme = "SM.Sm.Sp.IP"`, an implementation patch `IP` follows as a fourth number, as
+    `2.1.3.4+rc2`.
+  }}
+
+  sealed: section {
+    sealed_locked: rule(sealed_package, by = product.system.checker) {
+      if {{ a tree that imports a [sealed package](#language.specifications.implementations.sealed_package) amends, scopes or sets into one of its nodes }}
+      must {{ report [sealed](#language.specifications.implementations.diagnostics.sealed_node) at the path }}
+      then {{ an implementation can't change what the spec states, and a change to the behaviour is made in the spec first }}
+    }
+
+    spec_kinds_in_spec: rule(implements_kind, by = product.system.checker) {
+      if {{ a tree whose root holds an [implements](#language.specifications.implementations.implements_kind) declares a rule, a story, a criterion, a use case, a term, an epic, a quality, a [lifecycle](#language.specifications.lifecycles.lifecycle), an actor, a persona, a grammar, a command, a screen, a diagnostic or an api }}
+      must {{ report [spec content](#language.specifications.implementations.diagnostics.spec_content) at the outermost such node }}
+    }
+  }
+
+  versions: section {
+    | A spec's version is three numbers, as its package declares it. An implementation copies
+    | them and adds its own after them, so a version of the implementation always says which
+    | spec it builds.
+
+    spec_version_form: rule(implements_kind, by = product.system.checker) {
+      if {{ an [implements](#language.specifications.implementations.implements_kind)'s `at` isn't three numbers `SM.Sm.Sp`, or differs from the version of the spec package the tree imports }}
+      must {{ report [spec version](#language.specifications.implementations.diagnostics.spec_version) at the `implements` }}
+    }
+
+    version_starts_with_spec: rule(implementation_version, by = product.system.checker) {
+      if {{ a project's `version` doesn't start with the spec version its `at` names, or doesn't have the form of its scheme }}
+      must {{ report [project version](#language.specifications.implementations.diagnostics.project_version) at the version }}
+      example {{ `0.2.0+build1` implements `0.2.0`; `0.2.1+build1` at `"0.2.0"` and `0.2.0.1` without the four-number scheme are reported }}
+    }
+
+    schemes: rule(implementation_version, by = product.system.checker) {
+      if {{ a project's `versioning` sets a `scheme` other than `"SM.Sm.Sp"`, the default, or `"SM.Sm.Sp.IP"` }}
+      must {{ report [project version](#language.specifications.implementations.diagnostics.project_version) at the scheme, naming the two }}
+    }
+
+    build_order: rule(implementation_version, by = product.system.interpreter) {
+      must {{ order two versions of an implementation by their spec version, then their implementation patch, then their build number, and start the build number and the patch again from 1 and 0 when the spec version changes }}
+      then {{ `0.2.0+build2` follows `0.2.0+build1`, though semantic versioning gives `+` metadata no order }}
+    }
+
+    release_tags: rule(implementation_version, by = product.system.interpreter) {
+      must {{ record a release of version ‹version› with the git tag `v‹version›`, as `v0.2.0+build1` }}
+    }
+  }
+
+  diagnostics: section {
+    @display("Sealed")
+    sealed_node: diagnostic("sealed", by = product.system.checker) {
+      message = "‹path› is in the sealed package ‹package›: nothing outside it may amend, scope or set into its nodes; import it and refer to them instead"
+    }
+
+    @display("Spec content")
+    spec_content: diagnostic("project-mode", by = product.system.checker) {
+      message = "‹name› is a ‹kind›, which is spec content: this tree implements ‹spec›, so the spec's kinds belong in the spec package, and the project only refers to them"
+    }
+
+    @display("Spec version")
+    spec_version: diagnostic("version", by = product.system.checker) {
+      message = "implements ‹spec› at ‹at›, but the spec package is version ‹version›: at copies the spec version exactly"
+    }
+
+    @display("Project version")
+    project_version: diagnostic("version", by = product.system.checker) {
+      message = "the project version ‹version› ‹reason›"
+      | The version doesn't start with the implemented spec version, or doesn't have the form of the project's scheme.
+    }
+  }
+
+  @display("A sealed spec")
+  sealed_spec_example: example {
+    | ```heron
+    | // spec/index.heron, in the spec repository
+    | import = ["std/schema@1", "std/doc@1", "std/spec@1", "std/product@1"]
+    |
+    | shop: package(version = "0.2.0", sealed = true) {
+    |   shopper: actor {{ Someone who buys from the shop. }}
+    |
+    |   checkout: section {
+    |     totals: rule(checkout, by = shopper) {
+    |       must {{ see the order's total before paying }}
+    |     }
+    |   }
+    | }
+    | ```
+  }
+
+  @display("Its implementation")
+  implementation_example: example {
+    | ```heron
+    | // index.heron, in the implementation's repository
+    | import = ["std/project@1", "git+https://github.com/acme/shop-specs//spec@v0"]
+    |
+    | shop_app: implements(shop, at = "0.2.0") {
+    |   version = "0.2.0+build1"
+    | }
+    |
+    | proves(shop.checkout.totals) {
+    |   verify("web/checkout.test.ts", test = "shows the total")
+    | }
+    | ```
+  }
+}

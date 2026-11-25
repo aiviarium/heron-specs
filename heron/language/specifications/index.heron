@@ -8,10 +8,11 @@ include = [
   "./qualities.heron",
   "./planning.heron",
   "./traceability.heron",
+  "./implementations.heron",
   "./quality_checks.heron",
   "./product_kinds.heron",
   "./tech_kinds.heron",
   "./layout.heron",
 ]
 
-| The kinds a specification is written in: projects, features and their context, requirements, [lifecycles](#language.specifications.lifecycles.lifecycle), qualities, open questions, proof and status, the checks a spec passes, the product and technical kinds, and how a spec tree is laid out.
+| The kinds a specification is written in: projects, features and their context, requirements, [lifecycles](#language.specifications.lifecycles.lifecycle), qualities, open questions, proof and status, specs and their implementations, the checks a spec passes, the product and technical kinds, and how a spec tree is laid out.

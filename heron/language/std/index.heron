@@ -18,6 +18,7 @@ include = [
   "./process.heron",
   "./files.heron",
   "./repo.heron",
+  "./project.heron",
 ]
 
 | The standard packages Heron ships. Each is Heron source under `std/` in the repository, a
