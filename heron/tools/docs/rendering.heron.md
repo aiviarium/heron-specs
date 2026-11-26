@@ -37,6 +37,11 @@ its header.
 <then>a language page reads as its prose, its rules, the words they use, the concerns below it and, last, the errors it reports, and `explore` keeps the tree's order</then>
 </rule>
 
+<rule id="intent_first" targets="tools.docs.rendering" by="system.docs_generator">
+<must>render a node's goals and its other intent-layer children, such as what it leaves out, outside the `explore` lens, before the groups of [the content order](#tools.docs.rendering.content_order), whether shown in full or as pages of their own, and list their pages first among its pages in the navigation</must>
+<then>an area reads from its goals down to its rules and then its contract, whatever order its files are included in</then>
+</rule>
+
 <rule id="rules_flow" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
 <must>separate consecutive rules, terms and diagnostics of one section by the space between two paragraphs, with no border or rule line between them</must>
 </rule>
