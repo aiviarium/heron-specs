@@ -85,6 +85,12 @@ tags: section {
     example {{ `<toc depth="2" />` and `<toc depth={2} />` both set `depth` to 2, `<rule by="desk">` names the actor `desk`, and `<toc depth={true} />` reports [wrong type](#language.core_format.values.diagnostics.wrong_type) }}
   }
 
+  variadic_attributes: rule(tag_attribute, by = product.system.checker) {
+    where {{ an attribute names a variadic parameter }}
+    must {{ give its value as that parameter's arguments, in order and before the named ones: a quoted value as one, a braced list as one per item }}
+    example {{ `<rule id="late" targets="refunds" by="desk">` is `late: rule(refunds, by = desk)`, and `targets={[refunds, refunds.window]}` gives two targets }}
+  }
+
   required_attributes: rule(tag_attribute, by = product.system.checker) {
     if {{ a tag leaves out an attribute whose parameter has no default and isn't optional }}
     must {{ report [missing attribute](#language.markup.tags.diagnostics.missing_attribute) }}
