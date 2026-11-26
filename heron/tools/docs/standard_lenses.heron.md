@@ -14,7 +14,7 @@ user: lens {
   title = "User"
   default = true
   nav = LensNav.TASK
-  show = [docs.authored, docs.step, spec.example, doc.term, spec.command, spec.argument, spec.option, spec.error]
+  show = [docs.authored, docs.step, spec.goal, spec.nongoal, spec.example, doc.term, spec.command, spec.argument, spec.option, spec.error]
   hide = [spec.rule, spec.condition, production]
   depth = 2
   prefix = ""
@@ -48,7 +48,7 @@ implementation. Its reference is shallow: a page per part of the tree, with the
 terms, examples and errors of the concerns below it.
 
 <rule id="user_shows" targets="tools.docs.standard_lenses.user_lens" by="system.docs_generator">
-<must>render in full, in the `user` lens, the [authored pages](#language.markup.authored_pages.authored_page) with their steps, the examples, the terms, the commands with their arguments, options and exit codes, and the diagnostics</must>
+<must>render in full, in the `user` lens, the [authored pages](#language.markup.authored_pages.authored_page) with their steps, the goals and what they leave out, the examples, the terms, the commands with their arguments, options and the errors they exit with, and the errors</must>
 </rule>
 
 <rule id="user_hides" targets="tools.docs.standard_lenses.user_lens" by="system.docs_generator">
