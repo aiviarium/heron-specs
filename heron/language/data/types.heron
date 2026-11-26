@@ -122,7 +122,7 @@ types: section {
   @display("Types, errors and unions")
   data_types: example {
     | ```heron
-    | import = ["std/doc@1", "std/types@1", "std/http@1"]
+    | import = ["std/doc@1", "std/types@1", "std/http@1", "std/proto@1"]
     |
     | Audited: interface {
     |   created_at: Timestamp
@@ -143,13 +143,16 @@ types: section {
     | /// Everything a refund request can be refused with.
     | RefundError: interface(Error)
     |
+    | // One error, projected on each binding: an HTTP status and a gRPC code.
     | @status(422)
+    | @code(FAILED_PRECONDITION)
     | RefundWindowExpired: type(RefundError) {
     |   message: String = "The 30-day refund window has passed."
     |   captured_at: Timestamp
     | }
     |
     | @status(404)
+    | @code(NOT_FOUND)
     | PaymentNotFound: type(RefundError) {
     |   message: String = "No payment exists with this id."
     |   payment_id: String
