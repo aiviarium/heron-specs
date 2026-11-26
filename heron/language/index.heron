@@ -18,4 +18,5 @@ apis {}
 @display("Standard packages")
 std {}
 
+@lens(user, developer)
 | The Heron language: the core format and its grammar, the packages that give it kinds, and the standard packages.

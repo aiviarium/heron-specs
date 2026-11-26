@@ -15,4 +15,5 @@ include = [
   "./prose_view.heron",
 ]
 
+@lens(user, developer)
 | Markup is the prose layer of the format: Markdown's inline text with links to nodes, `$` inserts and [component tags](#language.markup.tags.component_tag), the `std/doc` components it places, and the projection text linters read. The [grammar](#language.grammar.prose) says how each form is read; this section says what it means.

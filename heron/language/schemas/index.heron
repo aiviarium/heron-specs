@@ -14,4 +14,5 @@ include = [
   "./extensions.heron",
 ]
 
+@lens(user, developer)
 | How packages declare kinds, categories, flags and annotations, and how they mix in one tree.

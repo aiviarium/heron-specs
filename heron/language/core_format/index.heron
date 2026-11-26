@@ -15,4 +15,5 @@ include = [
   "./tour.heron",
 ]
 
+@lens(user, developer)
 | The structured document syntax every [Heron file](#language.core_format.files.heron_file) is written in. It defines no kinds of its own: **Heron**, the specification language, builds on it with packages for types, APIs, rules, scenarios and prompts. Its files end in `.heron` and its tool is the `heron` binary.

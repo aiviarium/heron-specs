@@ -15,4 +15,5 @@ include = [
   "./layout.heron",
 ]
 
+@lens(user, developer)
 | The kinds a specification is written in: projects, features and their context, requirements, [lifecycles](#language.specifications.lifecycles.lifecycle), qualities, open questions, proof and status, specs and their implementations, the checks a spec passes, the product and technical kinds, and how a spec tree is laid out.

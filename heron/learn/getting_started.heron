@@ -1,9 +1,8 @@
 @lens(user)
 @display("Getting started")
 getting_started: tutorial {
-  | Heron is a language for writing down what a system does, its rules, terms, APIs,
-  | commands and tasks, as one tree that tools check, run and publish. In a few minutes
-  | you'll have a file that checks and a documentation site built from it.
+  | Install `heron`, write a first tree, check it and build its documentation site, in a few
+  | minutes and four steps.
 
   install: step {
     | Heron is one command, `heron`, with the checker, the formatter, the linter, the task

@@ -21,6 +21,7 @@ include = [
   "./project.heron",
 ]
 
+@lens(user, developer)
 | The standard packages Heron ships. Each is Heron source under `std/` in the repository, a
 | [component](#language.specifications.tech_kinds.component_kind) here with its purpose and
 | where each of its exports is specified.

@@ -7,5 +7,5 @@ include = [
   "./versioning.heron",
 ]
 
-@lens(user)
+@lens(user, developer)
 | The ideas the how-tos and the reference take for granted.

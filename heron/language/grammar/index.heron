@@ -9,4 +9,5 @@ include = [
   "./productions.heron",
 ]
 
+@lens(user, developer)
 | The grammar of the core format: how a line says what it is, the modes a file is read in, the productions of the tree the parser builds, and how it recovers from errors.

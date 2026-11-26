@@ -1,6 +1,8 @@
 // How this spec is laid out and how a change to it is written: the
 // conventions the rest of the package follows.
 
+// The guide is this spec's own authoring rules, so only the full view shows it.
+@lens(explore)
 guide: section {
   | This package is the specification of Heron, written in Heron. It's the source of truth:
   | an implementation that disagrees with it is a bug in one of the two. It's written so that
@@ -51,6 +53,12 @@ guide: section {
     acronym_display_names: rule(guide.layout.folder_scope, by = product.actors.author) {
       where {{ a folder's name is an acronym, as `cli/` }}
       must {{ give its scope a [display name](#language.core_format.naming.display_name) with `@display` in the index that includes the folder, right after the include list, as `@display("CLI") cli {}` }}
+    }
+
+    folder_lenses: rule(guide.layout.folder_scope, by = product.actors.author) {
+      where {{ a folder is for some [lenses](#tools.docs.lenses.lens_kind) of the docs alone }}
+      must {{ mark its scope with `@lens` in the index that includes the folder, right after the include list, as `@lens(developer) tools {}` }}
+      then {{ the product, this spec's own backlog, is marked `@lens(explore)`, the tools `@lens(developer)`, and the guide, a file, carries `@lens(explore)` on its section }}
     }
 
     page_depth: rule(guide.layout, by = product.actors.author) {

@@ -1,4 +1,4 @@
-@lens(user)
+@lens(user, developer)
 @display("Lenses")
 lenses: concept {
   | A tree has more than one kind of reader, and the docs show each the part it needs. A
