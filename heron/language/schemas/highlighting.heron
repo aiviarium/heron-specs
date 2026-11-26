@@ -40,6 +40,10 @@ highlighting: section {
     must {{ classify each name of a file by what it resolves to in the checked tree, as the table gives, and leave a name that resolves to nothing to the static layer }}
   }
 
+  prose_tokens: rule(semantic_highlighting, by = product.system.language_server) {
+    must {{ give prose words no token, and a heading's `#` and a `|` bar the token class `operator`, never `keyword` }}
+  }
+
   token_override: rule(semantic_highlighting, by = product.system.language_server) {
     where {{ a kind, flag, annotation or language is declared with `@highlight(token = t)` }}
     should {{ give the names that resolve to it the token class `t` instead of the table's }}

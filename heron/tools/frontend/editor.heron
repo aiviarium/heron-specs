@@ -62,6 +62,12 @@ editor: section {
     prose_coloured_as_text: rule(tools.frontend.editor.language, by = product.system.editor) {
       must {{ colour prose as body text, never as a comment, in a static grammar that names its tokens `string.prose` }}
     }
+
+    prose_marks_only: rule(tools.frontend.editor.language, by = product.system.editor) {
+      where {{ a `|` line, a `{{ }}` body or a [prose file](#language.core_format.prose_layer.prose_file) }}
+      must {{ colour its words as body text with no keyword, name, number or type token, and mark only Markdown's marks (a heading's `#`, a list item's marker, emphasis delimiters), a heading's `{#name}`, elements (their names, attributes, values and `@name` attributes), [short links](#language.markup.links.short_link), escapes, code spans and fences }}
+      then {{ a fence's code is coloured by its language, and a `heron` fence as Heron }}
+    }
   }
 
   connection: section {
