@@ -71,6 +71,11 @@ alone; no op of the server reads or writes it.
 <then>what people read and what they edit never look different</then>
 </rule>
 
+<rule id="docs_caching" targets="tools.server.serving" by="system.server">
+<must>serve a docs asset requested with its content's version as immutable, and pages, `data.js` and assets requested without a version with an entity tag of their content, answering 304 when the request's `If-None-Match` matches it</must>
+<then>a reader's browser keeps the theme between pages and refetches a page only when it changed</then>
+</rule>
+
 <rule id="lsp_socket" targets="tools.server.serving" by="system.server">
 <must>upgrade `/api/v1/lsp` to a websocket and run one [language server session](#tools.lsp.session.lsp_session) over it, one JSON-RPC message per frame, rooted at the workspace, until either side closes</must>
 <while>the shell has a language server</while>

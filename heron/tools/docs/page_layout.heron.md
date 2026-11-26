@@ -17,7 +17,7 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="nav_scroll_kept" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>keep the navigation's scroll position from one page of a site to the next, for each lens's site apart, in `sessionStorage`, and restore it before the page paints; where none is kept, scroll the current page's entry into view</must>
+<must>keep the navigation's place from one page of a site to the next, for each lens's site and each of its areas apart, in `sessionStorage`, and restore it before the page paints: the entry the reader followed where it was on screen when the navigation can scroll that far, and otherwise the scroll position; where nothing is kept, scroll the current page's entry into view</must>
 <then>following a link far down the navigation leaves the navigation where it was</then>
 </rule>
 
@@ -37,5 +37,23 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="theme_before_paint" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>apply the theme the reader chose, kept in `localStorage` as `heron-theme`, before the page paints, and follow the system's light or dark preference until one is chosen</must>
+<must>apply the theme the reader chose, kept in `localStorage` as `heron-theme`, before the page paints, follow the system's light or dark preference until one is chosen, and declare the page's colour schemes, so the canvas takes the theme before the stylesheet loads</must>
+</rule>
+
+<rule id="stable_frame" targets="tools.docs.page_layout" by="system.docs_generator">
+<must>start the content at the same distance from the window's left edge on every page that has the navigation, whatever the right side of the page holds, and paint a page whole, never before its frame, the navigation, the page and what stands beside it, is parsed</must>
+<then>moving between pages never slides the content sideways or shows a half-built page</then>
+</rule>
+
+<rule id="page_transitions" targets="tools.docs.page_layout" by="system.docs_generator">
+<while>the reader allows motion</while>
+<must>move between pages of a site with a cross-document view transition that keeps the top bar and the navigation in place</must>
+</rule>
+
+<rule id="asset_versions" targets="tools.docs.page_layout" by="system.docs_generator">
+<must>link the theme's stylesheet and script with a version of their content in the URL, so a changed asset has a new URL</must>
+</rule>
+
+<rule id="prefetch_links" targets="tools.docs.page_layout" by="system.docs_generator">
+<should>prefetch a page of the same site as the reader is about to follow a link to it</should>
 </rule>
