@@ -229,7 +229,8 @@ lenses: section {
 
     tree_nav: rule(tools.docs.lenses.lens_nav, by = product.system.docs_generator) {
       where {{ a lens's `nav` is `LensNav.TREE` }}
-      must {{ list in its navigation every node the lens keeps that has an anchor, nested as the tree nests them, each page's nodes folded under the page until it's open }}
+      must {{ list in its navigation every page the lens keeps, nested as the tree nests them }}
+      then {{ a node that's an anchor on a page is in that page's outline, as [page_layout.outline_nested] says, never in the navigation }}
     }
 
     nav_by_area: rule(tools.docs.lenses.navigation, by = product.system.docs_generator) {
