@@ -96,6 +96,11 @@ structure: section {
       example {{ `packages."std/ci" = { … }` sets a key that isn't a name; `a.{` ends the path `a` before the scope }}
     }
 
+    step_segments: rule(by = system.parser) {
+      must {{ read a segment after a dot that is a number with at most one lower-case letter after it, as the `3` of `request_refund.3` and the `2a` of `request_refund.2a`, as a segment of the path, in code, in arguments and in [short links](#heron.language.markup.links.short_link) }}
+      then {{ a [step reference](#language.specifications.usecases.step_reference) is a path like any other }}
+    }
+
     flag_lists: rule(by = system.parser) {
       must {{ read `<` directly after a name or a kind as a flag list only when names separated by commas, then `>`, follow it }}
       then {{ a `<` followed by anything else is the comparison operator }}
