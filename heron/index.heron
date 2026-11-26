@@ -11,7 +11,7 @@ import = [
   "std/docs@1",
 ]
 
-heron: package(version = "0.4.0", sealed = true) {
+heron: package(version = "0.5.0", sealed = true) {
   include = [
     "./guide.heron.md",
     "./actors.heron",
@@ -55,7 +55,7 @@ heron: package(version = "0.4.0", sealed = true) {
   | tree, runs its tasks and builds documentation like this site from it, so the spec, the
   | tests and the docs never disagree.
 
-  | Version 0.4.0 of the Heron spec: the language, its format, [schemas](#language.schemas.kinds.schema), markup,
+  | Version 0.5.0 of the Heron spec: the language, its format, [schemas](#language.schemas.kinds.schema), markup,
   | data, APIs, specifications, interop and scripting, and the system that reads, checks, runs
   | and documents it, as seen from outside, with the pages for the people who use it. Nothing in this package names how the system is
   | built.
