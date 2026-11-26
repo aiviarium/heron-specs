@@ -4,33 +4,33 @@ strings: section {
   | is in.
 
   quoted: section {
-    quote_runs: rule(tree.StringLit, by = product.system.parser) {
+    quote_runs: rule(by = system.parser) {
       must {{ open a string at one double quote or at a run of three or more, and close it at the first run at least as long, whose last quotes close it while any extra ones before them are text }}
       example {{ `""` is always the empty string, `"""a "b" c"""` holds quotes, and a string that holds `"""` opens with four }}
     }
 
-    one_line_strings: rule(tree.StringLit, by = product.system.parser) {
+    one_line_strings: rule(by = system.parser) {
       must {{ end a string opened with one quote at the end of its line, reporting it as unterminated if no quote closed it, and let a string opened with three or more quotes span lines }}
     }
 
-    string_escapes: rule(tree.StringLit, by = product.system.interpreter) {
+    string_escapes: rule(by = system.interpreter) {
       must {{ read a backslash and the character after it as one escape: `\n` a line feed, `\t` a tab, `\r` a carriage return, `\0` a zero byte, and any other character as itself }}
       example {{ `"a\"b"`, `"cost: \$5"` and `"a\\b"`: a quote, a dollar sign and a backslash kept as text }}
     }
 
-    multi_line_values: rule(tree.StringLit, by = product.system.interpreter) {
+    multi_line_values: rule(by = system.interpreter) {
       must {{ trim a string that spans lines: the line end after the opening quotes, a last line that holds only indentation, and the indentation every other non-blank line shares }}
       example {{ an indented `"""` block reads as its text, as a `{{ }}` body does }}
     }
   }
 
   raw: section {
-    raw_runs: rule(language.grammar.lexical.tokens.Raw, by = product.system.parser) {
+    raw_runs: rule(by = system.parser) {
       must {{ open a raw string at a run of backticks and close it at the next run of the same length, reading everything between as text with no escapes and no inserts }}
       then {{ two backticks are always the empty raw string, so a raw string that holds backticks opens with a run of three or more whose length no run of backticks inside it has }}
     }
 
-    one_line_raw: rule(language.grammar.lexical.tokens.Raw, by = product.system.parser) {
+    one_line_raw: rule(by = system.parser) {
       must {{ end a raw string opened with one backtick at the end of its line, reporting it as unterminated if no backtick closed it, and let a raw string opened with three or more span lines }}
     }
   }
@@ -44,24 +44,24 @@ strings: section {
     | | `$name(args)`     | the result of the call                       |
     | | `${expr}`         | the value of the expression                  |
 
-    insert_forms: rule(tree.Insert, by = product.system.parser) {
+    insert_forms: rule(by = system.parser) {
       must {{ read `$` followed by `{` as an expression insert up to its matching `}`, and `$` followed by a name as a path insert whose path ends at a `.` that no name follows }}
-      unless {{ anything else follows the `$`, when the `$` is text }}
+      while {{ it's not the case that anything else follows the `$`, when the `$` is text }}
       example {{ `"$ 5"` and `"US$"` need no escape, and in `"$a.b."` the last `.` is text }}
     }
 
-    insert_calls: rule(tree.Insert, by = product.system.parser) {
+    insert_calls: rule(by = system.parser) {
       must {{ read a list directly after a path insert as the call's arguments only when it parses as an argument list with no errors and no parameters }}
-      unless {{ the list has errors or parameters, when the `(` and what follows it are text }}
+      while {{ it's not the case that the list has errors or parameters, when the `(` and what follows it are text }}
       example {{ `$schema(T)`: a call; `get_$name(@path id: Int)` in a template: the insert `$name`, then text }}
     }
 
-    insert_fallback_linear: rule(tree.Insert, by = product.system.parser) {
+    insert_fallback_linear: rule(by = system.parser) {
       must {{ remember each offset where an insert's arguments, a link or a tag failed to parse, and not try it again from there }}
       then {{ parsing stays linear in the length of the text, whatever the number of failed attempts }}
     }
 
-    nothing_follows_a_call: rule(tree.Insert, by = product.system.parser) {
+    nothing_follows_a_call: rule(by = system.parser) {
       mustNot {{ read a field access or a further call after an insert's argument list }}
       instead {{ write anything longer as an expression insert, as `${f(x).name}` }}
     }
@@ -74,7 +74,7 @@ strings: section {
       The quoted forms insert `$name` and `${expr}`; the backtick form is raw.
     }}
 
-    embedded_is_cast: rule(embedded_string, by = product.system.parser) {
+    embedded_is_cast: rule(embedded_string, by = system.parser) {
       must {{ parse an [embedded string](#language.grammar.strings.embedded.embedded_string) as a `CastExpr` whose value is a string or a raw string, with the same quote and backtick rules as any string }}
       then {{ the parser knows no languages: the type in the [cast](#language.grammar.code.expressions.cast) decides how the text is checked, highlighted and run }}
     }
@@ -82,12 +82,14 @@ strings: section {
 
   /// The productions of strings and inserts.
   @display("String productions")
-  tree: tech.grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
+  tree: grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
     /// Quotes around text, escapes and inserts.
+    @realizes(language.grammar.strings.quoted.multi_line_values, language.grammar.strings.quoted.one_line_strings, language.grammar.strings.quoted.quote_runs, language.grammar.strings.quoted.string_escapes)
     StringLit: production {{ Quote StringPart* Quote }}
     /// An insert; text and escapes are tokens between the parts.
     StringPart: production {{ Insert }}
     /// `$path`, `$path(args)` or `${expr}`, in a string or in prose.
+    @realizes(language.grammar.strings.inserts.insert_calls, language.grammar.strings.inserts.insert_fallback_linear, language.grammar.strings.inserts.insert_forms, language.grammar.strings.inserts.nothing_follows_a_call)
     Insert: production {{ Dollar? DollarBrace? Path? Flags? Args? Expr? RBrace? }}
   }
 }

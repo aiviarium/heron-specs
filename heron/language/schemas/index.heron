@@ -16,3 +16,7 @@ include = [
 
 @lens(user, developer)
 | How packages declare kinds, categories, flags and annotations, and how they mix in one tree.
+
+packages_extend: goal(measure = "A package adds kinds without changing the binary.") {{
+  Teams add the kinds their domain needs as packages of Heron source, and every tool understands them.
+}}

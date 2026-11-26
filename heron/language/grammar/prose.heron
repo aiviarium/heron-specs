@@ -5,59 +5,59 @@ prose: section {
   | start of a line. What the text means is the [Markup](#language.markup) section's.
 
   lines_and_blocks: section {
-    prose_line_runs: rule(tree.ProseLines, by = product.system.parser) {
+    prose_line_runs: rule(by = system.parser) {
       must {{ join consecutive lines that start with `|` after their indentation into one `ProseLines`, and end it at the first line that doesn't }}
       then {{ a bare `|` stays in the run as an empty line, which separates paragraphs }}
     }
 
-    inline_on_one_line: rule(tree.ProseLine, by = product.system.parser) {
+    inline_on_one_line: rule(by = system.parser) {
       must {{ read the inline forms of a `|` or `///` line within that line }}
-      unless {{ a tag or a fenced block is open, which continues onto the following lines that have the same prefix }}
+      while {{ it's not the case that a tag or a fenced block is open, which continues onto the following lines that have the same prefix }}
     }
 
-    block_closes: rule(tree.ProseBlock, by = product.system.parser) {
+    block_closes: rule(by = system.parser) {
       must {{ end a `{{ }}` body at the first `}}` that isn't inside a code span, a [tag attribute](#language.markup.tags.tag_attribute) or an insert, and isn't written `\}}` }}
     }
 
-    block_close_ends_fence: rule(tree.ProseBlock, tree.Fence, by = product.system.parser) {
+    block_close_ends_fence: rule(by = system.parser) {
       must {{ end a `{{ }}` body at a line that holds only `}}`, even inside a fenced block that hasn't closed }}
       then {{ a missing closing fence can't swallow the rest of the file }}
     }
   }
 
   inline_forms: section {
-    prose_escapes: rule(tree.Inline, by = product.system.parser) {
+    prose_escapes: rule(by = system.parser) {
       must {{ read a backslash before `$`, `<`, `[`, `|`, `]`, `` ` ``, `\`, `*`, `_` or `#`, and `\}}`, as an escape that keeps the character as text, and any other backslash as text }}
     }
 
-    code_spans: rule(language.grammar.lexical.tokens.CodeSpan, by = product.system.parser) {
+    code_spans: rule(by = system.parser) {
       must {{ close inline code opened with a run of backticks at the next run of the same length on the same line, reading nothing inside it }}
-      unless {{ no such run follows on the line, and then the backticks are text }}
+      while {{ it's not the case that no such run follows on the line, and then the backticks are text }}
       then {{ inserts, links, tags and `}}` are plain characters in inline code }}
     }
 
-    links: rule(tree.Link, by = product.system.parser) {
+    links: rule(by = system.parser) {
       must {{ read `[text](#path)` as a link to a node and `[text](url)` as a link to a URL, on one line, where the URL ends before a space or `)` and can hold inserts }}
-      unless {{ no `](` follows the matching `]` on the line, or the target doesn't close with `)`, and then the `[` is text }}
+      while {{ it's not the case that no `](` follows the matching `]` on the line, or the target doesn't close with `)`, and then the `[` is text }}
     }
 
-    short_links: rule(tree.ShortLink, by = product.system.parser) {
+    short_links: rule(by = system.parser) {
       must {{ read `[` followed by a name or a dotted path of names, alone or inside one pair of single backticks, then `]` not followed by `(`, as a [short link](#language.markup.links.short_link), on one line }}
-      unless {{ the text between the brackets is anything else, such as `[entry points…]` or `[ ]`, and then the brackets are text }}
+      while {{ it's not the case that the text between the brackets is anything else, such as `[entry points…]` or `[ ]`, and then the brackets are text }}
       example {{ `[refund_window]`, ``[`refund_window`]`` and `[refunds.refund_window]` are [short links](#short_link); `[ ]`, `[1]` and `[a b]` are text }}
     }
 
-    tags: rule(tree.Tag, by = product.system.parser) {
+    tags: rule(by = system.parser) {
       must {{ read `<` directly followed by a path as a tag when attributes, each a name alone, `name="…"` or `name={expr}`, a name with an `@` before it included, follow it up to `/>` or `>`; after `>`, read its content up to `</path>` }}
-      unless {{ the head doesn't parse, and then the `<` is text, so `a < b` and `<-` stay text }}
+      while {{ it's not the case that the head doesn't parse, and then the `<` is text, so `a < b` and `<-` stay text }}
     }
 
-    tag_closing: rule(tree.TagClose, by = product.system.parser) {
+    tag_closing: rule(by = system.parser) {
       if {{ a tag is closed by `</other>` or never closed }}
-      must {{ report [tag mismatch](#language.grammar.recovery.diagnostics.tag_mismatch) at the closing name, or [tag unclosed](#language.grammar.recovery.diagnostics.tag_unclosed) at the opening tag, and keep the tag in the tree }}
+      must {{ report tag mismatch at the closing name, or tag unclosed at the opening tag, and keep the tag in the tree }}
     }
 
-    fences: rule(tree.Fence, by = product.system.parser) {
+    fences: rule(by = system.parser) {
       must {{ open a fenced block at a line whose text starts with three or more backticks or tildes, and close it at a line of at least that number of the same character, reading every line between as text }}
     }
   }
@@ -66,48 +66,59 @@ prose: section {
     | A [prose file](#language.core_format.prose_layer.prose_file), ending in `.heron.md`, is read as
     | prose from its first line, with headings and Heron fences at line starts.
 
-    headings: rule(tree.Heading, by = product.system.parser) {
+    headings: rule(by = system.parser) {
       must {{ read one to six `#` followed by a space or a tab at the start of a line as a heading, and a `{#name}` at its end as the heading's name }}
       example {{ seven `#`, or `#name` with no space, are text }}
     }
 
-    heron_fences: rule(tree.HeronFence, by = product.system.parser) {
+    heron_fences: rule(by = system.parser) {
       must {{ read the lines of a fence whose info string is `heron` as members, closed by a line that closes the fence }}
-      unless {{ the fence is inside a [kind element](#language.markup.tags.component_tag), where it's a fenced block of code, as an example's }}
+      while {{ it's not the case that the fence is inside a [kind element](#language.markup.tags.component_tag), where it's a fenced block of code, as an example's }}
     }
 
-    unclosed_fence: rule(tree.HeronFence, by = product.system.parser) {
+    unclosed_fence: rule(by = system.parser) {
       if {{ the file ends before a heron fence's closing line }}
-      must {{ report [missing fence](#language.grammar.recovery.diagnostics.missing_fence) at the end of the input and keep the lines read as members }}
+      must {{ report missing fence at the end of the input and keep the lines read as members }}
     }
   }
 
   /// The productions of prose and of `.heron.md` files.
   @display("Prose productions")
-  tree: tech.grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
+  tree: grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
     start = language.grammar.prose.tree.ProseFile
 
     /// Consecutive `|` lines: a node's text, or a prose value.
+    @realizes(language.grammar.prose.lines_and_blocks.prose_line_runs)
     ProseLines: production {{ ProseLine* }}
+    @realizes(language.grammar.prose.lines_and_blocks.inline_on_one_line)
     ProseLine: production {{ Pipe Inline* }}
     /// A `{{ }}` body or value.
+    @realizes(language.grammar.prose.lines_and_blocks.block_close_ends_fence, language.grammar.prose.lines_and_blocks.block_closes)
     ProseBlock: production {{ LBrace2 Inline* RBrace2 }}
     /// A form within text; text, escapes and code spans are tokens between them.
+    @realizes(language.grammar.prose.inline_forms.prose_escapes)
     Inline: production {{ Link | ShortLink | Insert | Tag | Fence }}
+    @realizes(language.grammar.prose.inline_forms.links)
     Link: production {{ LinkOpen Inline* LinkMid Hash? Path? Url? Insert* LinkClose }}
     /// `[name]` or ``[`name`]``.
+    @realizes(language.grammar.prose.inline_forms.short_links)
     ShortLink: production {{ LinkOpen LinkTick* Path ShortLinkEnd }}
     /// A node of the path's kind, written in the text.
+    @realizes(language.grammar.prose.inline_forms.tags)
     Tag: production {{ TagOpen Path TagAttr* TagEnd? TagSelfEnd? Inline* TagClose? }}
+    @realizes(language.grammar.prose.inline_forms.tag_closing)
     TagClose: production {{ TagCloseOpen Path TagEnd }}
     TagAttr: production {{ At? Ident Eq? StringLit? LBrace? Expr? RBrace? }}
     /// A fenced block, line by line.
+    @realizes(language.grammar.prose.inline_forms.fences, language.grammar.prose.lines_and_blocks.block_close_ends_fence)
     Fence: production {{ FenceLine* }}
     /// A `.heron.md` file.
     ProseFile: production {{ ProseItem* }}
     ProseItem: production {{ Heading | HeronFence | Inline }}
+    @realizes(language.grammar.prose.prose_files.headings)
     Heading: production {{ HeadingMark Inline* HeadingId? }}
     /// A fenced block of members, read in place.
+    @realizes(language.grammar.prose.prose_files.heron_fences, language.grammar.prose.prose_files.unclosed_fence)
     HeronFence: production {{ FenceLine Member* FenceLine }}
   }
 }

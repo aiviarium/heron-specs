@@ -8,17 +8,17 @@ long_form: section {
   |
   | [A prose file](#language.markup.long_form.markup_prose_file) and [the same page in structure](#language.markup.long_form.markup_page_structure) build the same tree.
 
-  heading_extent: rule(language.core_format.prose_layer.prose_file, by = product.system.checker) {
+  heading_extent: rule(language.core_format.prose_layer.prose_file, by = system.checker) {
     must {{ run a heading's section to the next heading of the same or a higher level, and nest a deeper heading's section inside it }}
   }
 
-  heading_names: rule(language.core_format.prose_layer.prose_file, by = product.system.checker) {
-    must {{ name a heading's section by its `{#name}`, and report [heading needs a name](#language.markup.long_form.diagnostics.heading_needs_name) at a heading without one }}
+  heading_names: rule(language.core_format.prose_layer.prose_file, by = system.checker) {
+    must {{ name a heading's section by its `{#name}`, and report heading needs a name at a heading without one }}
     example {{ `## Limits {#refund_limits}` declares `refund_limits`; `## Before you start` alone is reported }}
     then {{ the heading text is the section's [display name](#language.core_format.naming.display_name) }}
   }
 
-  sections_are_structure: rule(language.markup.writing.prose_text, by = product.actors.author) {
+  sections_are_structure: rule(language.markup.writing.prose_text, by = actors.author) {
     mustNot {{ give prose outside a [prose file](#language.core_format.prose_layer.prose_file) headings of its own }}
     instead {{ title a part with a section node, whose [display name](#language.core_format.naming.display_name) is its heading and whose nesting sets the level }}
   }
@@ -156,10 +156,12 @@ long_form: section {
     | ```
   }
 
-  diagnostics: section {
+  errors: section {
+    @realizes(language.markup.long_form.heading_names)
     @display("Heading needs a name")
-    heading_needs_name: diagnostic("unnamed", by = product.system.checker) {
-      message = "the heading ‹text› declares a section and needs a {#name}"
+    heading_needs_name: error("unnamed", by = system.checker) {
+      title = "the heading {text} declares a section and needs a {#name}"
+      text: field(String)
       | A heading in a [prose_file] without `{#name}`; its text is shown, never turned into a name.
     }
   }

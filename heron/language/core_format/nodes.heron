@@ -20,12 +20,12 @@ nodes: section {
     `String(max = 500)`. The kind decides which arguments and children a node may have.
   }}
 
-  left_to_right: rule(language.core_format.nodes, by = product.system.checker) {
+  left_to_right: rule(language.core_format.nodes, by = system.checker) {
     must {{ decide what's valid on the right or below from what stands on the left or above }}
     then {{ the parent scope decides a name's flags, the kind its arguments and children, and `import` which annotations exist }}
   }
 
-  bodies_hold_members: rule(language.core_format.nodes, by = product.system.checker) {
+  bodies_hold_members: rule(language.core_format.nodes, by = system.checker) {
     must {{ configure a node only through its kind's arguments, fields and accepted children, never through free text }}
     then {{ the kind decides which members of its body are valid }}
   }
@@ -34,14 +34,14 @@ nodes: section {
     | `name: kind …` and `name: Type = value` declare a node. A name is declared once in its
     | scope; every other mention enters, sets or refers to it.
 
-    declared_kinds: rule(language.core_format.nodes.kind_slot, by = product.system.checker) {
+    declared_kinds: rule(language.core_format.nodes.kind_slot, by = system.checker) {
       if {{ the [kind slot](#language.core_format.nodes.kind_slot) names nothing in scope, or something that's neither a kind nor a type }}
-      must {{ report [unknown kind or type](#language.core_format.nodes.diagnostics.unknown_kind) with the closest name in scope, or [not a kind or a type](#language.core_format.nodes.diagnostics.not_a_kind) }}
+      must {{ report unknown kind or type with the closest name in scope, or not a kind or a type }}
     }
 
-    declared_once: rule(language.core_format.nodes.declaring, by = product.system.checker) {
+    declared_once: rule(language.core_format.nodes.declaring, by = system.checker) {
       if {{ a name is declared a second time in the same scope }}
-      must {{ report [declared twice](#language.core_format.conflicts.diagnostics.declared_twice) at the second declaration, with the first as its related site }}
+      must {{ report declared twice at the second declaration, with the first as its related site }}
     }
   }
 
@@ -50,14 +50,14 @@ nodes: section {
     | repeated, so `development { … }` in the index and again in `settings.heron` amend the
     | same node, and a field a type declares is entered the same way.
 
-    enter_never_creates: rule(language.core_format.nodes.entering, by = product.system.checker) {
+    enter_never_creates: rule(language.core_format.nodes.entering, by = system.checker) {
       if {{ `name { … }` names no node that exists and no field its parent's type declares }}
       mustNot {{ create a node }}
-      instead {{ report [entering never creates](#language.core_format.nodes.diagnostics.entered_missing) with the closest field }}
-      unless {{ the parent is open: the file root, a map or an untyped node, where entering creates the node }}
+      instead {{ report entering never creates with the closest field }}
+      while {{ it's not the case that the parent is open: the file root, a map or an untyped node, where entering creates the node }}
     }
 
-    enter_anywhere_in_order: rule(language.core_format.nodes.entering, by = product.system.checker) {
+    enter_anywhere_in_order: rule(language.core_format.nodes.entering, by = system.checker) {
       must {{ let a node be entered before or after its declaration, in any file of the tree }}
     }
   }
@@ -68,24 +68,24 @@ nodes: section {
     | `example {{ requested on day 30: accepted }}` creates an example, because a `{{ }}`
     | body never enters an existing node. Naming it is only a prefix.
 
-    calls_construct: rule(language.core_format.nodes.creating, by = product.system.checker) {
+    calls_construct: rule(language.core_format.nodes.creating, by = system.checker) {
       when {{ a body calls a kind with parentheses, or names a kind with a `{{ }}` body and no node of that name exists }}
       must {{ construct a new node of that kind }}
       then {{ a bare name before `{` always means the node that exists, so a kind instance with a structure body and no arguments is written with a name }}
     }
 
-    calls_yield: rule(language.core_format.nodes.creating, by = product.system.interpreter) {
+    calls_yield: rule(language.core_format.nodes.creating, by = system.interpreter) {
       must {{ add to the body what a call in it yields: a kind call its node, a macro its members, and a func the nodes it returns }}
       then {{ a call that yields nothing just runs, at check time }}
     }
 
-    arguments: rule(language.core_format.nodes.creating, by = product.system.checker) {
+    arguments: rule(language.core_format.nodes.creating, by = system.checker) {
       must {{ fill a kind's or call's parameters from its arguments: positional ones in declaration order, named ones by name }}
     }
 
-    argument_errors: rule(language.core_format.nodes.creating, by = product.system.checker) {
+    argument_errors: rule(language.core_format.nodes.creating, by = system.checker) {
       if {{ there are more positional arguments than parameters, a named argument names no parameter, or a required parameter has no argument }}
-      must {{ report [too many arguments](#language.core_format.nodes.diagnostics.too_many_arguments), [unknown argument](#language.core_format.nodes.diagnostics.unknown_argument) with the closest parameter, or [missing argument](#language.core_format.nodes.diagnostics.missing_argument) }}
+      must {{ report an argument past the last parameter, an unknown argument with the closest parameter, or a missing argument }}
     }
   }
 
@@ -97,7 +97,7 @@ nodes: section {
     free-standing `( … )` in front of a value is a [cast](#language.grammar.code.expressions.cast), not a list.
   }}
 
-  variadic_params: rule(params_and_args, by = product.system.checker) {
+  variadic_params: rule(params_and_args, by = system.checker) {
     when {{ a parameter is flagged `<variadic>` }}
     must {{ accept any number of positional arguments for it, each of the parameter's type, or one list of them }}
     example {{ `type(Audited, Owned)` and `type([Audited, Owned])`: the same }}
@@ -111,15 +111,15 @@ nodes: section {
       arguments are ordinary arguments, as in `List(Payment)`.
     }}
 
-    known_flags: rule(flag_term, by = product.system.checker) {
+    known_flags: rule(flag_term, by = system.checker) {
       if {{ a flag names no flag declared in scope }}
-      must {{ report [unknown flag](#language.core_format.nodes.diagnostics.unknown_flag) with the closest flag in scope }}
-      unless {{ it's one of the core flags `variadic` and `export`, which the prelude `std/core` declares everywhere }}
+      must {{ report unknown flag with the closest flag in scope }}
+      while {{ it's not the case that it's one of the core flags `variadic` and `export`, which the prelude `std/core` declares everywhere }}
     }
 
-    flag_placement: rule(flag_term, by = product.system.linter) {
+    flag_placement: rule(flag_term, by = system.linter) {
       if {{ a flag declared with `on = […]` stands on a kind or annotation it doesn't attach to }}
-      should {{ report [flag placement](#language.schemas.flags.diagnostics.flag_misplaced) }}
+      should {{ report flag placement }}
     }
   }
 
@@ -130,15 +130,15 @@ nodes: section {
       Text goes in `///` lines, which become `@doc`, never in arguments.
     }}
 
-    annotations_resolve: rule(annotation_term, by = product.system.checker) {
+    annotations_resolve: rule(annotation_term, by = system.checker) {
       if {{ an annotation names nothing in scope, or something that isn't an annotation }}
-      must {{ report [unknown annotation](#language.core_format.nodes.diagnostics.unknown_annotation) with the closest annotation, or [not an annotation](#language.core_format.nodes.diagnostics.not_an_annotation) }}
-      unless {{ it's one of the prelude's, such as `@doc` and `@display`, which exist without an import }}
+      must {{ report unknown annotation with the closest annotation, or not an annotation }}
+      while {{ it's not the case that it's one of the prelude's, such as `@doc` and `@display`, which exist without an import }}
     }
 
-    annotation_placement: rule(annotation_term, by = product.system.linter) {
+    annotation_placement: rule(annotation_term, by = system.linter) {
       if {{ an annotation stands where its declaration's `on` doesn't allow it, or twice on one node without being `<repeatable>` }}
-      should {{ report [annotation placement](#language.schemas.annotations.diagnostics.annotation_misplaced), naming where it attaches }}
+      should {{ report annotation placement, naming where it attaches }}
     }
   }
 
@@ -148,66 +148,89 @@ nodes: section {
       It's visible from its line down in its own body and all nested ones.
     }}
 
-    locals_visible_below: rule(local_term, by = product.system.checker) {
+    locals_visible_below: rule(local_term, by = system.checker) {
       must {{ make a local visible only below the line that binds it, in its body and the bodies nested in it }}
-      example {{ a use above the line reports [unknown name](#language.core_format.naming.diagnostics.unknown_name) }}
+      example {{ a use above the line reports [unknown name](#language.core_format.naming.errors.unknown_name) }}
     }
 
-    locals_stay_out: rule(local_term, by = product.system.checker) {
+    locals_stay_out: rule(local_term, by = system.checker) {
       mustNot {{ emit, encode or expose a local by path to another file }}
     }
 
-    locals_never_change: rule(local_term, by = product.system.checker) {
+    locals_never_change: rule(local_term, by = system.checker) {
       mustNot {{ let a local be set: `name = value` below a `let name` sets a field of the node, never the local }}
     }
 
-    unused_locals: rule(local_term, by = product.system.linter) {
+    unused_locals: rule(local_term, by = system.linter) {
       if {{ nothing below a `let` uses it }}
-      should {{ report [unused let](#language.core_format.nodes.diagnostics.unused_let) }}
+      should {{ report unused let }}
     }
   }
 
-  diagnostics: section {
-    unknown_kind: diagnostic("unresolved", by = product.system.checker) {
-      message = "unknown kind or type ‹name›"
+  errors: section {
+    @realizes(language.core_format.nodes.declaring.declared_kinds)
+    unknown_kind: error("unresolved", by = system.checker) {
+      title = "unknown kind or type {name}"
+      name: field(String)
     }
 
-    not_a_kind: diagnostic("not-a-kind", by = product.system.checker) {
-      message = "‹name› is not a kind or a type"
+    @realizes(language.core_format.nodes.declaring.declared_kinds)
+    not_a_kind: error("not-a-kind", by = system.checker) {
+      title = "{name} is not a kind or a type"
+      name: field(String)
     }
 
-    entered_missing: diagnostic("unresolved", by = product.system.checker) {
-      message = "‹path› doesn't exist, and entering never creates a node"
+    @realizes(language.core_format.nodes.entering.enter_never_creates)
+    entered_missing: error("unresolved", by = system.checker) {
+      title = "{path} doesn't exist, and entering never creates a node"
+      path: field(String)
     }
 
-    too_many_arguments: diagnostic("too-many-arguments", by = product.system.checker) {
-      message = "‹callee› takes ‹n› positional arguments"
+    @realizes(language.core_format.nodes.creating.argument_errors)
+    too_many_arguments: error("too-many-arguments", by = system.checker) {
+      title = "{callee} takes {n} positional arguments"
+      callee: field(String)
+      n: field(String)
       | ‹callee› is the kind or type as `kind note` or `type Refund`, and the plural follows
       | ‹n›: "takes 1 positional argument".
     }
 
-    unknown_argument: diagnostic("unknown-argument", by = product.system.checker) {
-      message = "‹callee› takes no argument ‹name›"
+    @realizes(language.core_format.nodes.creating.argument_errors)
+    unknown_argument: error("unknown-argument", by = system.checker) {
+      title = "{callee} takes no argument {name}"
+      callee: field(String)
+      name: field(String)
     }
 
-    missing_argument: diagnostic("missing-argument", by = product.system.checker) {
-      message = "‹callee› needs the argument ‹name›"
+    @realizes(language.core_format.nodes.creating.argument_errors)
+    missing_argument: error("missing-argument", by = system.checker) {
+      title = "{callee} needs the argument {name}"
+      callee: field(String)
+      name: field(String)
     }
 
-    unknown_flag: diagnostic("unresolved", by = product.system.checker) {
-      message = "unknown flag ‹name›"
+    @realizes(language.core_format.nodes.flags.known_flags)
+    unknown_flag: error("unresolved", by = system.checker) {
+      title = "unknown flag {name}"
+      name: field(String)
     }
 
-    unknown_annotation: diagnostic("unresolved", by = product.system.checker) {
-      message = "unknown annotation @‹name›"
+    @realizes(language.core_format.nodes.annotations.annotations_resolve)
+    unknown_annotation: error("unresolved", by = system.checker) {
+      title = "unknown annotation @{name}"
+      name: field(String)
     }
 
-    not_an_annotation: diagnostic("not-an-annotation", by = product.system.checker) {
-      message = "‹name› is not an annotation"
+    @realizes(language.core_format.nodes.annotations.annotations_resolve)
+    not_an_annotation: error("not-an-annotation", by = system.checker) {
+      title = "{name} is not an annotation"
+      name: field(String)
     }
 
-    unused_let: diagnostic("unused-let", severity = warning, by = product.system.linter) {
-      message = "let ‹name› is never used"
+    @realizes(language.core_format.nodes.locals.unused_locals)
+    unused_let: error("unused-let", severity = Severity.warning, by = system.linter) {
+      title = "let {name} is never used"
+      name: field(String)
     }
   }
 }

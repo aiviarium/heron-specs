@@ -4,49 +4,58 @@ conflicts: section {
   | Repeated things, such as `example(…)` written more than once, are child nodes of their
   | own and never conflict.
 
-  set_once: rule(language.core_format.conflicts, by = product.system.checker) {
+  set_once: rule(language.core_format.conflicts, by = system.checker) {
     if {{ a field is set twice in one body }}
-    must {{ report [set twice](#language.core_format.conflicts.diagnostics.set_twice) at the second setting }}
+    must {{ report set twice at the second setting }}
   }
 
-  unordered_conflict: rule(language.core_format.conflicts, by = product.system.checker) {
+  unordered_conflict: rule(language.core_format.conflicts, by = system.checker) {
     if {{ two files set the same path and neither includes the other, directly or through other files }}
-    must {{ report [set in two files](#language.core_format.conflicts.diagnostics.set_in_two_files) at the later setting }}
-    unless {{ one file includes the other, when the including file's setting wins without a report }}
+    must {{ report set in two files at the later setting }}
+    while {{ it's not the case that one file includes the other, when the including file's setting wins without a report }}
   }
 
-  conflicts_keep_first: rule(language.core_format.conflicts, by = product.system.checker) {
+  conflicts_keep_first: rule(language.core_format.conflicts, by = system.checker) {
     when {{ a conflict is reported }}
     must {{ keep the first declaration or setting in the tree and check the rest of the tree as if the later one weren't there }}
   }
 
-  diagnostics: section {
-    declared_twice: diagnostic("conflict", by = product.system.checker) {
-      message = "‹name› is declared twice"
+  errors: section {
+    @realizes(language.core_format.nodes.declaring.declared_once, language.schemas.overloads.overloads_together)
+    declared_twice: error("conflict", by = system.checker) {
+      title = "{name} is declared twice"
       related = "first declared here"
+      name: field(String)
       | A name declared twice in one scope.
     }
 
-    set_twice: diagnostic("conflict", by = product.system.checker) {
-      message = "‹path› is set twice in one body"
+    @realizes(language.apis.examples.one_outcome_each, language.core_format.conflicts.set_once)
+    set_twice: error("conflict", by = system.checker) {
+      title = "{path} is set twice in one body"
       related = "set here first"
+      path: field(String)
       | A field set twice in one body.
     }
 
-    set_in_two_files: diagnostic("conflict", by = product.system.checker) {
-      message = "‹path› is set in two files, and neither includes the other"
+    @realizes(language.core_format.conflicts.unordered_conflict)
+    set_in_two_files: error("conflict", by = system.checker) {
+      title = "{path} is set in two files, and neither includes the other"
       related = "also set here"
+      path: field(String)
       | A path set in two files, neither including the other.
     }
 
-    exported_twice: diagnostic("conflict", by = product.system.checker) {
-      message = "two packages export ‹name›"
+    exported_twice: error("conflict", by = system.checker) {
+      title = "two packages export {name}"
+      name: field(String)
       | A name exported by two packages.
     }
 
-    exported_and_declared: diagnostic("conflict", by = product.system.checker) {
-      message = "‹name› is exported by ‹package› and also declared in this tree"
+    exported_and_declared: error("conflict", by = system.checker) {
+      title = "{name} is exported by {package} and also declared in this tree"
       related = "declared here"
+      name: field(String)
+      package: field(String)
       | An exported name also declared in the tree.
     }
   }

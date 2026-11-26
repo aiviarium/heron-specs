@@ -16,45 +16,51 @@ values: section {
   | | `a.b`                      | a reference to the node at the path           |
   | | `(Set)[…]`, `(u8)12`       | the value converted or tagged by the [cast](#language.grammar.code.expressions.cast) |
 
-  literal_types: rule(language.core_format.values, by = product.system.checker) {
+  literal_types: rule(language.core_format.values, by = system.checker) {
     if {{ a literal's type isn't the type expected where it stands }}
-    must {{ report [wrong type](#language.core_format.values.diagnostics.wrong_type) }}
+    must {{ report wrong type }}
   }
 
-  numbers_by_form: rule(language.core_format.values, by = product.system.checker) {
+  numbers_by_form: rule(language.core_format.values, by = system.checker) {
     must {{ read a number with a fraction or an exponent as a `Float` and any other number as an `Int`, and accept an `Int` where a `Float` or a `Decimal` is expected }}
     example {{ `1.5` where an `Int` is expected reports "expected Int, got 1.5" }}
   }
 
-  enum_values: rule(language.core_format.values, by = product.system.checker) {
+  enum_values: rule(language.core_format.values, by = system.checker) {
     where {{ an enum is expected }}
-    must {{ accept the variant's path, its bare name, or a string naming it in any case, and report [not a variant](#language.core_format.values.diagnostics.not_a_variant) with the closest variant for a name or string that names none }}
+    must {{ accept the variant's path, its bare name, or a string naming it in any case, and report not a variant with the closest variant for a name or string that names none }}
     example {{ `note(kind = tip)`, `note(kind = "TIP")` and `<note kind="tip">`: the same variant }}
   }
 
-  strings_parsed_by_type: rule(language.core_format.values, by = product.system.checker) {
+  strings_parsed_by_type: rule(language.core_format.values, by = system.checker) {
     where {{ a type that parses from a string is expected, such as `Duration` or `Money` }}
-    must {{ parse a string literal by that type's [form](#language.data.typed_strings), and report the type's diagnostic, such as [not a duration](#language.data.typed_strings.diagnostics.not_a_duration), where it doesn't parse }}
+    must {{ parse a string literal by that type's [form](#language.data.typed_strings), and report the type's diagnostic, such as not a duration, where it doesn't parse }}
     example {{ `limit = "30d"`: a `Duration`; `amount = "40.00 EUR"`: `Money` }}
   }
 
-  prose_as_string: rule(language.core_format.values, by = product.system.checker) {
+  prose_as_string: rule(language.core_format.values, by = system.checker) {
     must {{ accept a prose value where a `String` is expected, rendered to plain text }}
     example {{ `message =| No pet exists with this id.` for a `String` field }}
   }
 
-  whitespace_is_layout: rule(language.core_format.values, by = product.system.formatter) {
+  whitespace_is_layout: rule(language.core_format.values, by = system.formatter) {
     must {{ keep whitespace as written only in strings, fenced code and the line structure of prose, and treat it everywhere else as layout the formatter owns }}
   }
 
-  diagnostics: section {
-    wrong_type: diagnostic("type", by = product.system.checker) {
-      message = "expected ‹Type›, got ‹what›"
+  errors: section {
+    @realizes(language.core_format.values.literal_types, language.data.typed_strings.other_literals)
+    wrong_type: error("type", by = system.checker) {
+      title = "expected {type}, got {what}"
+      type: field(String)
+      what: field(String)
       | ‹what› says what the literal is, as "expected Int, got a string".
     }
 
-    not_a_variant: diagnostic("type", by = product.system.checker) {
-      message = "‹value› is not a value of ‹Enum›"
+    @realizes(language.core_format.values.enum_values)
+    not_a_variant: error("type", by = system.checker) {
+      title = "{value} is not a value of {enum}"
+      value: field(String)
+      enum: field(String)
       | ‹value› is written as the source has it, a string in quotes: `"hint" is not a value of NoteKind`.
     }
   }

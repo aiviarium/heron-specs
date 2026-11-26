@@ -10,36 +10,40 @@ amends: section {
     creates that field.
   }}
 
-  set_declared_fields: rule(language.core_format.amends, by = product.system.checker) {
+  set_declared_fields: rule(language.core_format.amends, by = system.checker) {
     if {{ `=` or an entered body in a typed node names a field its type doesn't declare }}
-    must {{ report [no field](#language.core_format.amends.diagnostics.no_field) with the closest field }}
-    unless {{ the node is an [open node](#language.core_format.amends.open_node) }}
+    must {{ report no field with the closest field }}
+    while {{ it's not the case that the node is an [open node](#language.core_format.amends.open_node) }}
   }
 
-  set_one_field: rule(language.core_format.amends, by = product.system.checker) {
+  set_one_field: rule(language.core_format.amends, by = system.checker) {
     must {{ set only the field a path names, keeping the node's other fields, and replace the whole value when the path names the node itself }}
     example {{ `ci.retries.staging = 0` after `ci.{ retries = { main = 0 } }`: both keys are set }}
   }
 
-  flag_as_boolean: rule(language.core_format.amends, by = product.system.checker) {
+  flag_as_boolean: rule(language.core_format.amends, by = system.checker) {
     where {{ the node has no field of that name but its kind declares the flag }}
     must {{ read `name = true` as setting the flag and `name = false` as clearing it }}
     example {{ `development.work.selection.speculative = true`: the same as `selection<speculative>` }}
   }
 
-  lists_change_by_calls: rule(language.core_format.amends, by = product.system.interpreter) {
+  lists_change_by_calls: rule(language.core_format.amends, by = system.interpreter) {
     mustNot {{ concatenate or merge a list implicitly }}
     instead {{ replace it on assignment, and change it in place only through calls such as `requires.add(checks.e2e)`, `steps.remove(test_first)` and `types.insert(after = "fix", "perf")` }}
   }
 
-  reading_order: rule(language.core_format.amends, by = product.system.checker) {
+  reading_order: rule(language.core_format.amends, by = system.checker) {
     must {{ apply settings top to bottom and left to right within a file, and a file on top of the files it includes, in include order }}
     then {{ an amend in a file wins over the same path set in a file it includes }}
   }
 
-  diagnostics: section {
-    no_field: diagnostic("unknown-field", by = product.system.checker) {
-      message = "‹node› (a ‹kind›) has no field ‹name›"
+  errors: section {
+    @realizes(language.core_format.amends.set_declared_fields)
+    no_field: error("unknown-field", by = system.checker) {
+      title = "{node} (a {kind}) has no field {name}"
+      node: field(String)
+      kind: field(String)
+      name: field(String)
       | ‹node› is the node's path, or "the root"; ‹kind› is its kind or type.
     }
   }

@@ -10,21 +10,21 @@ recovery: section {
     tokens reproduces the file.
   }}
 
-  lossless: rule(lossless_tree, by = product.system.parser) {
+  lossless: rule(lossless_tree, by = system.parser) {
     must {{ build a [lossless tree](#language.grammar.recovery.lossless_tree) for every input, valid or not, with every token's text equal to the source at its span and the tokens contiguous }}
     then {{ formatting, fixes and the language server edit tokens in place, and no parse loses text }}
   }
 
-  never_fails: rule(lossless_tree, by = product.system.parser) {
+  never_fails: rule(lossless_tree, by = system.parser) {
     must {{ return a tree and a list of diagnostics for any input, without failing, and in time linear in its length }}
   }
 
-  syntax_errors: rule(lossless_tree, by = product.system.parser) {
+  syntax_errors: rule(lossless_tree, by = system.parser) {
     must {{ report every syntax error as an error coded `syntax` at the offset where the parser expected something else, with a message saying what it expected }}
-    unless {{ the message repeats the one before it at the same offset, which is dropped so one position gets one diagnostic }}
+    while {{ it's not the case that the message repeats the one before it at the same offset, which is dropped so one position gets one diagnostic }}
   }
 
-  checking_goes_on: rule(lossless_tree, by = product.system.checker) {
+  checking_goes_on: rule(lossless_tree, by = system.checker) {
     must {{ check a file with syntax errors as far as its tree goes, reading each `ErrorNode` as nothing }}
     then {{ a typo on one line doesn't hide the diagnostics of the rest of the file }}
   }
@@ -33,19 +33,19 @@ recovery: section {
     | Structure and code recover at line ends: a member or statement whose line has more
     | on it than it can read ends there.
 
-    rest_of_line: rule(language.grammar.structure.tree.Member, by = product.system.parser) {
+    rest_of_line: rule(by = system.parser) {
       if {{ a member or statement is complete but its line goes on }}
-      must {{ report [end of line](#language.grammar.recovery.diagnostics.end_of_line) and keep the rest of the line in an `ErrorNode` }}
+      must {{ report end of line and keep the rest of the line in an `ErrorNode` }}
       example {{ `a = 1 b`: the set `a = 1`, then an error at `b` }}
     }
 
-    no_member: rule(language.grammar.structure.tree.Member, by = product.system.parser) {
+    no_member: rule(by = system.parser) {
       if {{ a line in structure starts with none of the forms a member starts with }}
-      must {{ report [no member](#language.grammar.recovery.diagnostics.no_member) and keep the line in an `ErrorNode` }}
+      must {{ report no member and keep the line in an `ErrorNode` }}
       example {{ `= 1`; a `}` with no body open }}
     }
 
-    progress: rule(language.grammar.structure.tree.Member, by = product.system.parser) {
+    progress: rule(by = system.parser) {
       if {{ a member or statement consumed nothing }}
       must {{ keep one character in an `ErrorNode` and go on after it }}
       then {{ every pass of the loop moves forward, so the parse ends }}
@@ -54,170 +54,183 @@ recovery: section {
 
   missing: section {
     | A missing part is reported where it should stand, and the node is built without it.
-    | The [diagnostics](#language.grammar.recovery.diagnostics) list each part's message.
+    | The [diagnostics](#language.grammar.recovery.errors) list each part's message.
 
-    missing_parts: rule(lossless_tree, by = product.system.parser) {
-      if {{ a construct lacks a part one of the [diagnostics](#language.grammar.recovery.diagnostics) names }}
+    missing_parts: rule(lossless_tree, by = system.parser) {
+      if {{ a construct lacks a part one of the [diagnostics](#language.grammar.recovery.errors) names }}
       must {{ report that diagnostic at the offset where the part belongs, and build the construct without it }}
     }
   }
 
   lists: section {
-    list_entries: rule(language.grammar.structure.tree.Args, language.grammar.code.tree.ArrayExpr, by = product.system.parser) {
+    list_entries: rule(by = system.parser) {
       if {{ an entry of an argument, parameter or array list isn't followed by `,` or the closing bracket }}
-      must {{ report [argument list](#language.grammar.recovery.diagnostics.argument_list), or [array list](#language.grammar.recovery.diagnostics.array_list) in an array, and skip to the next `,` or closing bracket, keeping nested brackets and strings balanced }}
+      must {{ report argument list, or array list in an array, and skip to the next `,` or closing bracket, keeping nested brackets and strings balanced }}
       example {{ `f(a b)`: the argument `a`, then an error holding `b` }}
     }
 
-    map_entries: rule(language.grammar.code.tree.MapEntry, by = product.system.parser) {
+    map_entries: rule(by = system.parser) {
       if {{ a map entry doesn't start with a path, or its path isn't followed by `=` }}
-      must {{ report [map entry](#language.grammar.recovery.diagnostics.map_entry) or [map equals](#language.grammar.recovery.diagnostics.map_equals), and skip to the next `,` or the closing brace }}
+      must {{ report map entry or map equals, and skip to the next `,` or the closing brace }}
     }
   }
 
   depth: section {
-    nesting_limit: rule(lossless_tree, by = product.system.parser) {
+    nesting_limit: rule(lossless_tree, by = system.parser) {
       if {{ members, expressions, statements or tags nest more than 256 deep }}
-      must {{ report [too deep](#language.grammar.recovery.diagnostics.too_deep) and keep the rest of that line, or that expression, in an `ErrorNode` }}
+      must {{ report too deep and keep the rest of that line, or that expression, in an `ErrorNode` }}
       then {{ a hostile input can't exhaust the stack }}
     }
   }
 
-  diagnostics: section {
-    | Every syntax error is coded `syntax` and reported by [the parser](#product.system.parser) at the offset where the parser expected something else.
+  errors: section {
+    | Every syntax error is coded `syntax` and reported by [the parser](#system.parser) at the offset where the parser expected something else.
 
-    end_of_line: diagnostic("syntax", by = product.system.parser) {
-      message = "expected the end of the line"
+    @realizes(language.grammar.recovery.lines.rest_of_line)
+    end_of_line: error("syntax", by = system.parser) {
+      title = "expected the end of the line"
       | A member or statement is complete, but its line goes on.
     }
 
-    no_member: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a member"
+    @realizes(language.grammar.recovery.lines.no_member)
+    no_member: error("syntax", by = system.parser) {
+      title = "expected a member"
       | A line in structure starts with none of the forms a member starts with.
     }
 
-    missing_brace: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `}`"
+    missing_brace: error("syntax", by = system.parser) {
+      title = "expected `}`"
       | A body, a map, a code block or an insert lacks its `}`; at the end of the input when nothing closes it.
     }
 
-    missing_double_brace: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `}}`"
+    missing_double_brace: error("syntax", by = system.parser) {
+      title = "expected `}}`"
       | A `{{ }}` body lacks its `}}`, reported at the end of the input.
     }
 
-    missing_set_value: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a value after `=`"
+    missing_set_value: error("syntax", by = system.parser) {
+      title = "expected a value after `=`"
       | A set has `=` and nothing after it.
     }
 
-    missing_let_equals: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `=`"
+    missing_let_equals: error("syntax", by = system.parser) {
+      title = "expected `=`"
       | A `let` lacks its `=`.
     }
 
-    missing_value: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a value"
+    missing_value: error("syntax", by = system.parser) {
+      title = "expected a value"
       | An expression lacks a value where one must stand.
     }
 
-    missing_type: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a type"
+    missing_type: error("syntax", by = system.parser) {
+      title = "expected a type"
       | A `:` isn't followed by a type.
     }
 
-    missing_name: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a name"
+    missing_name: error("syntax", by = system.parser) {
+      title = "expected a name"
       | A path or a `for` lacks a name.
     }
 
-    missing_in: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `in`"
+    missing_in: error("syntax", by = system.parser) {
+      title = "expected `in`"
       | A `for` lacks its `in`.
     }
 
-    missing_block: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `{`"
+    missing_block: error("syntax", by = system.parser) {
+      title = "expected `{`"
       | An `if` or a `for` lacks its code block.
     }
 
-    missing_param_name: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a parameter name"
+    missing_param_name: error("syntax", by = system.parser) {
+      title = "expected a parameter name"
       | A parameter list holds an entry that doesn't start with a name.
     }
 
-    missing_param_type: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `:` and a type"
+    missing_param_type: error("syntax", by = system.parser) {
+      title = "expected `:` and a type"
       | A parameter's name isn't followed by `:` and a type.
     }
 
-    missing_paren: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `)`"
+    missing_paren: error("syntax", by = system.parser) {
+      title = "expected `)`"
       | A group, an argument list or a type lacks its `)`.
     }
 
-    missing_bracket: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `]`"
+    missing_bracket: error("syntax", by = system.parser) {
+      title = "expected `]`"
       | An array lacks its `]`.
     }
 
-    missing_angle: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `>`"
+    missing_angle: error("syntax", by = system.parser) {
+      title = "expected `>`"
       | A flag list or a tag lacks its `>`.
     }
 
-    unterminated_string: diagnostic("syntax", by = product.system.parser) {
-      message = "unterminated string"
+    unterminated_string: error("syntax", by = system.parser) {
+      title = "unterminated string"
       | A string lacks its closing quote: at the line end for a one-quote string, at the end of the input for a triple-quoted one.
     }
 
-    unterminated_raw: diagnostic("syntax", by = product.system.parser) {
-      message = "unterminated raw string"
+    unterminated_raw: error("syntax", by = system.parser) {
+      title = "unterminated raw string"
       | A raw string lacks the backtick run that closes it.
     }
 
-    missing_fence: diagnostic("syntax", by = product.system.parser) {
-      message = "expected the closing fence"
+    @realizes(language.grammar.prose.prose_files.unclosed_fence)
+    missing_fence: error("syntax", by = system.parser) {
+      title = "expected the closing fence"
       | A heron fence in prose lacks its closing line.
     }
 
-    argument_list: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `,` or `)`"
+    @realizes(language.grammar.recovery.lists.list_entries)
+    argument_list: error("syntax", by = system.parser) {
+      title = "expected `,` or `)`"
       | An entry of an argument or parameter list isn't followed by `,` or `)`.
     }
 
-    array_list: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `,` or `]`"
+    @realizes(language.grammar.recovery.lists.list_entries)
+    array_list: error("syntax", by = system.parser) {
+      title = "expected `,` or `]`"
       | An entry of an array isn't followed by `,` or `]`.
     }
 
-    map_entry: diagnostic("syntax", by = product.system.parser) {
-      message = "expected a map entry"
+    @realizes(language.grammar.recovery.lists.map_entries)
+    map_entry: error("syntax", by = system.parser) {
+      title = "expected a map entry"
       | A map entry doesn't start with a path.
     }
 
-    map_equals: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `=` in a map entry"
+    @realizes(language.grammar.recovery.lists.map_entries)
+    map_equals: error("syntax", by = system.parser) {
+      title = "expected `=` in a map entry"
       | A map entry's path isn't followed by `=`.
     }
 
-    map_separator: diagnostic("syntax", by = product.system.parser) {
-      message = "expected `,`, a new line or `}`"
+    map_separator: error("syntax", by = system.parser) {
+      title = "expected `,`, a new line or `}`"
       | A map entry is followed by something other than `,`, a line end or `}`.
     }
 
-    tag_mismatch: diagnostic("syntax", by = product.system.parser) {
-      message = "`</‹other›>` closes `<‹name›>`"
+    @realizes(language.grammar.prose.inline_forms.tag_closing, language.markup.tags.tag_closing)
+    tag_mismatch: error("syntax", by = system.parser) {
+      title = "`</{other}>` closes `<{name}>`"
+      other: field(String)
+      name: field(String)
       | A closing tag names another tag than the one open, reported at the closing name.
     }
 
-    tag_unclosed: diagnostic("syntax", by = product.system.parser) {
-      message = "`<‹name›>` is never closed"
+    @realizes(language.grammar.prose.inline_forms.tag_closing, language.markup.tags.tag_closing)
+    tag_unclosed: error("syntax", by = system.parser) {
+      title = "`<{name}>` is never closed"
+      name: field(String)
       | An opening tag has no closing tag, reported at the opening tag.
     }
 
-    too_deep: diagnostic("syntax", by = product.system.parser) {
-      message = "nesting is too deep"
+    @realizes(language.grammar.recovery.depth.nesting_limit)
+    too_deep: error("syntax", by = system.parser) {
+      title = "nesting is too deep"
       | Members, expressions, statements or tags nest more than 256 deep.
     }
   }

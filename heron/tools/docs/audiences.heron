@@ -1,0 +1,106 @@
+@display("Audiences")
+audiences: section {
+  | Publishing a tree as a documentation site that each of its readers can use: the people
+  | who use what it describes, the people who write trees of their own, and the implementers
+  | who build from it. Every reader's view is a [lens](#tools.docs.lenses.lens_kind) of the same tree, so the views can't
+  | disagree. The scenarios below illustrate the rules that serve each of its goals.
+
+  opens_on_tasks: scenario(illustrates = tools.docs.lenses.navigation.task_home) {
+    given {{ a site whose [docs block](#tools.docs.extending.docs_block) lists `user`, `developer` and `explore`, and a tree with a guide and two how-tos }}
+    when {{ the reader opens the site's `index.html` }}
+    then {{ the page is the `user` lens's home, with a link to the guide and to each how-to }}
+    then {{ the navigation lists the guide, then the how-tos, then the reference }}
+  }
+
+  no_rules_shown: scenario(illustrates = tools.docs.standard_lenses.user_hides) {
+    given {{ a section that holds a rule, a term and a command }}
+    when {{ the reader opens the command's page in the `user` lens }}
+    then {{ the page shows the command with its options and exit codes, and no rule }}
+    then {{ the glossary lists the term }}
+  }
+
+  errors_as_fixes: scenario(illustrates = tools.docs.standard_lenses.diagnostics_as_errors) {
+    given {{ a diagnostic with a code, a message and prose }}
+    when {{ the reader opens the `user` lens's diagnostics page }}
+    then {{ the diagnostic is one entry with its code, its message and the first sentence of its prose, without its severity or the part that reports it }}
+  }
+
+  broken_example_fails: scenario(illustrates = language.markup.authored_pages.examples_checked) {
+    given {{ a how-to whose example uses an option the spec has since removed }}
+    when {{ the author runs `heron check` }}
+    then {{ it fails with example doesn't check at the example }}
+  }
+
+  fact_follows_spec: scenario(illustrates = language.markup.authored_pages.insert_arguments) {
+    given {{ a how-to that inserts `${cli.serve.addr.default}` }}
+    when {{ the option's default changes and the docs are generated again }}
+    then {{ the how-to shows the new default }}
+  }
+
+  fact_gone_fails: scenario(illustrates = language.markup.authored_pages.inserted_facts_required) {
+    given {{ a how-to that inserts an option's default }}
+    when {{ the option is removed and the author runs `heron check` }}
+    then {{ it fails with unknown name at the [insertion](#language.markup.inserts.insertion) }}
+  }
+
+  authored_page_shown: scenario(illustrates = tools.docs.lenses.navigation.task_nav) {
+    given {{ a how-to with three steps and no [lens mark](#tools.docs.lenses.lens_mark) }}
+    when {{ the docs are generated }}
+    then {{ the how-to has a page in each lens the site builds, its steps numbered 1 to 3, each step at its own anchor }}
+  }
+
+  marked_for_users: scenario(illustrates = tools.docs.lenses.marked_nodes) {
+    given {{ a section with one [prose run](#language.markup.lens_marks.prose_run) marked `@lens(user)` and one marked `@lens(developer)` }}
+    when {{ the docs are generated with the three standard lenses }}
+    then {{ the `user` page shows only the first run, the `developer` page only the second, and the `explore` page both, each beside the title of its lens }}
+  }
+
+  unknown_lens_reported: scenario(illustrates = tools.docs.lenses.lens_names_resolve) {
+    given {{ a node marked `@lens(users)` in a tree that declares no lens `users` }}
+    when {{ the author runs `heron check` }}
+    then {{ it fails with unknown lens, listing `user`, `developer` and `explore` }}
+  }
+
+  topics_and_lines: scenario(illustrates = tools.docs.lenses.navigation.topic_nav) {
+    given {{ a section with two rules and an example }}
+    when {{ the author opens the section's page in the `developer` lens }}
+    then {{ the example comes first, rendered in full, and each rule follows as one line that opens in place }}
+    then {{ the navigation lists sections, and no rule }}
+  }
+
+  readable_rule: scenario(illustrates = tools.docs.standard_lenses.developer_summarizes) {
+    given {{ a rule with a `when`, a `must` and a `then`, targeting the section it stands in }}
+    when {{ the page renders }}
+    then {{ the rule is one sentence in the body text, with no label column, no target chip and no border to the next rule }}
+  }
+
+  declared_lens_built: scenario(illustrates = tools.docs.lenses.lenses_built) {
+    given {{ a tree that declares `support: lens { … prefix = "support" }` and lists it in its [docs block](#tools.docs.extending.docs_block) }}
+    when {{ the docs are generated }}
+    then {{ the site has the lens's pages under `support/`, and the lens switcher lists its title }}
+  }
+
+  override_used: scenario(illustrates = tools.docs.lenses.overriding) {
+    given {{ a tree that declares its own `user` lens with a different `show` }}
+    when {{ the docs are generated }}
+    then {{ the site's root shows what the tree's `user` lens shows, and `std/docs`'s `user` lens is unused }}
+  }
+
+  everything_in_explore: scenario(illustrates = tools.docs.standard_lenses.explore_shows_all) {
+    given {{ a rule, and a section marked `@lens(user)` }}
+    when {{ the implementer opens them in the `explore` lens }}
+    then {{ both are on their pages, the rule with its path, targets, subject and strength on one line under its sentence, and the section with the title of the `user` lens beside it }}
+  }
+
+  switch_keeps_place: scenario(illustrates = tools.docs.lenses.links_across_lenses) {
+    given {{ the page of a command in the `user` lens, scrolled to an option's anchor }}
+    when {{ the implementer picks `Explore` in the lens switcher }}
+    then {{ the command's page opens in `explore/` at the same anchor }}
+  }
+
+  hidden_target_opens: scenario(illustrates = tools.docs.lenses.links_across_lenses) {
+    given {{ a how-to in the `user` lens that links a rule }}
+    when {{ a reader follows the link }}
+    then {{ the rule's anchor opens in the `explore` lens }}
+  }
+}

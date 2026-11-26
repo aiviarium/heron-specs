@@ -4,12 +4,12 @@ Renderers per kind are an [extension point](#language.interop.declaring.extensio
 a scenario or a prompt shows properly once its extension is installed, and as a plain node
 before that.
 
-<rule id="renderer_per_kind" targets="tools.docs.renderers" by="product.system.docs_generator">
+<rule id="renderer_per_kind" targets="tools.docs.renderers" by="system.docs_generator">
 <must>render a node through the renderer registered for its kind's declaration path, such as `spec.rule`, with the latest registration winning</must>
-<unless>none is registered, and then the node shows as its title, prose, fields and children</unless>
+<while>it's not the case that none is registered, and then the node shows as its title, prose, fields and children</while>
 </rule>
 
-<rule id="tag_renderers" targets="language.markup.tags.component_tag" by="product.system.docs_generator">
+<rule id="tag_renderers" targets="language.markup.tags.component_tag" by="system.docs_generator">
 <must>render a markup tag through the renderer registered for its kind, with its attributes typed by the kind's parameters, or else through the built-in components of `std/doc`</must>
 </rule>
 
@@ -19,15 +19,15 @@ made with `defineRenderer(kind, render)` from `@heron/runtime`, run through the
 [JS host](#language.interop.host.js_host) when the docs are generated.
 </term>
 
-<rule id="ts_renderer_contract" targets="tools.docs.renderers.ts_renderer" by="product.system.docs_generator">
+<rule id="ts_renderer_contract" targets="tools.docs.renderers.ts_renderer" by="system.docs_generator">
 <must>register one renderer per kind a module's handshake reports, and call its `render` with plain data: the node's path, name, kind, title, heading level, anchor, rendered prose and children, its kind's arguments as typed attributes, and the components of its kind's other slots by name; for a markup tag, its rendered body and its attributes instead of a path</must>
 <then>`render` returns HTML, or HTML with whether a tag is a block and which built-in islands it uses</then>
 </rule>
 
-<rule id="ts_renderer_fallback" targets="tools.docs.renderers.ts_renderer" by="product.system.docs_generator">
+<rule id="ts_renderer_fallback" targets="tools.docs.renderers.ts_renderer" by="system.docs_generator">
 <must>keep the built-in renderer, or the generic view, for every kind a module doesn't render</must>
 </rule>
 
-<rule id="heron_template_renderers" targets="tools.docs.renderers" by="product.system.docs_generator">
+<rule id="heron_template_renderers" targets="tools.docs.renderers" by="system.docs_generator">
 <may>take renderers and islands written as Heron templates</may>
 </rule>

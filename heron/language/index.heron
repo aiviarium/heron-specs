@@ -20,3 +20,7 @@ std {}
 
 @lens(user, developer)
 | The Heron language: the core format and its grammar, the packages that give it kinds, and the standard packages.
+
+one_format: goal(measure = "One parser reads every Heron file.") {{
+  A team writes specs, the kinds its packages add, data, APIs and tasks in one plain-text format it reads, reviews and diffs like code.
+}}

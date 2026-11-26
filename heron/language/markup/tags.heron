@@ -20,119 +20,132 @@ tags: section {
     `@name` is an annotation on it.
   }}
 
-  tags_are_kinds: rule(component_tag, by = product.system.checker) {
-    must {{ resolve an element's name as a name in code is resolved, and where that names nothing, by suffix as [a link's path](#language.core_format.naming.link_lookup) is, to a kind; and report [unknown tag](#language.core_format.prose_layer.diagnostics.unknown_tag) with the closest kind where it names none }}
+  tags_are_kinds: rule(component_tag, by = system.checker) {
+    must {{ resolve an element's name as a name in code is resolved, and where that names nothing, by suffix as [a link's path](#language.core_format.naming.link_lookup) is, to a kind; and report unknown tag with the closest kind where it names none }}
     then {{ prose holds no raw HTML: `<div>` is an error unless a package declares `div` }}
   }
 
-  element_ids: rule(component_tag, by = product.system.checker) {
+  element_ids: rule(component_tag, by = system.checker) {
     must {{ read an element with an `id` attribute as a node named by the `id`, of the element's kind, a child of the node whose text or body holds it, with a [node path](#language.core_format.naming.node_path), an anchor and, as the lens's depth says, a page of its own }}
     then {{ its [display name](#language.core_format.naming.display_name) comes from its `@display` or its name, never from its text, so rewording the text breaks no link }}
   }
 
-  element_bodies: rule(component_tag, by = product.system.checker) {
+  element_bodies: rule(component_tag, by = system.checker) {
     must {{ read a named element's content as its kind's body: its text as the node's prose, and each element on lines of its own as a member, named by its `id` or anonymous, in the order written }}
     then {{ `<rule id="late" by="desk"><must>refuse it</must></rule>` is the rule `late: rule(by = desk) { must {{ refuse it }} }` }}
   }
 
-  anonymous_elements: rule(component_tag, by = product.system.checker) {
+  anonymous_elements: rule(component_tag, by = system.checker) {
     where {{ an element has no `id` and stands in a node's text or inside a sentence, rather than on lines of its own in a named element's body }}
     must {{ read it as content of that text, which renders in place and declares no node }}
   }
 
-  element_needs_id: rule(component_tag, by = product.system.checker) {
+  element_needs_id: rule(component_tag, by = system.checker) {
     if {{ an element whose kind has `heading = true`, or a term, has no `id` }}
-    must {{ report [element needs an id](#language.markup.tags.diagnostics.element_needs_id) at it }}
+    must {{ report element needs an id at it }}
   }
 
-  annotation_attributes: rule(tag_attribute, by = product.system.checker) {
+  annotation_attributes: rule(tag_attribute, by = system.checker) {
     must {{ read an attribute `@name="args"` or `@name={args}` as the annotation `@name(args)` on the element's node, and a bare `@name` as `@name` with no arguments }}
     example {{ `<concept id="lenses" @lens="user, developer" @display="Lenses">` is `@lens(user, developer) @display("Lenses") lenses: concept` }}
   }
 
-  code_stays_in_heron: rule(component_tag, by = product.system.checker) {
+  code_stays_in_heron: rule(component_tag, by = system.checker) {
     if {{ an element's kind has a code body, a `do` block, and no prose }}
-    must {{ report [code in an element](#language.markup.tags.diagnostics.code_in_element) at it }}
+    must {{ report code in an element at it }}
     then {{ tasks and funcs are written in a [Heron file](#language.core_format.files.heron_file) }}
   }
 
-  quoted_attributes: rule(tag_attribute, by = product.system.parser) {
+  quoted_attributes: rule(tag_attribute, by = system.parser) {
     if {{ an attribute's value is written without quotes or braces, as `depth=2` }}
-    must {{ report [unquoted attribute](#language.markup.tags.diagnostics.unquoted_attribute) at it and keep the element in the tree }}
+    must {{ report unquoted attribute at it and keep the element in the tree }}
     then {{ an element is never repaired as a browser repairs HTML: every element is closed and every value quoted or braced }}
   }
 
-  forms_kept: rule(component_tag, by = product.system.formatter) {
+  forms_kept: rule(component_tag, by = system.formatter) {
     mustNot {{ turn a Markdown form into an element, or an element into a Markdown form }}
     then {{ the tree records which form each node was written in, and `heron fmt` writes it back so }}
   }
 
-  prose_kinds_render_alike: rule(component_tag, by = product.system.docs_generator) {
+  prose_kinds_render_alike: rule(component_tag, by = system.docs_generator) {
     must {{ render an element of a kind a Markdown form builds as that form renders: `<p>`, `<em>`, `<strong>`, `<strike>`, `<code>`, `<quote>`, `<list>` with `<item>`s, `<table>` with `<row>`s and `<cell>`s, `<link>`, `<ref>` and `<divider>` }}
     example {{ `<em>now</em>` and `*now*` render the same, and so do ``<code>x</code>`` and `` `x` `` }}
   }
 
-  tag_names_a_kind: rule(component_tag, by = product.system.linter) {
-    must {{ report [tag not a kind](#language.schemas.modes.diagnostics.tag_not_a_kind) where a tag's name resolves to something that isn't a kind, and [structure-only tag](#language.schemas.modes.diagnostics.structure_only_tag) where its kind is declared `modes = [structure]` }}
+  tag_names_a_kind: rule(component_tag, by = system.linter) {
+    must {{ report tag not a kind where a tag's name resolves to something that isn't a kind, and structure-only tag where its kind is declared `modes = [structure]` }}
   }
 
-  attributes_are_arguments: rule(tag_attribute, by = product.system.checker) {
-    must {{ match each attribute to the parameter of the tag's kind with its name, and report [unknown attribute](#language.core_format.prose_layer.diagnostics.unknown_attribute) with the closest parameter where none has it }}
+  attributes_are_arguments: rule(tag_attribute, by = system.checker) {
+    must {{ match each attribute to the parameter of the tag's kind with its name, and report unknown attribute with the closest parameter where none has it }}
   }
 
-  attribute_values: rule(tag_attribute, by = product.system.checker) {
+  attribute_values: rule(tag_attribute, by = system.checker) {
     must {{ read a quoted attribute as a literal of its parameter's type, a string, a number, a boolean, an enum member or a reference resolved as [a link's path](#language.core_format.naming.link_lookup), and an attribute in braces as an expression of Heron's expression language, list literals included, checked against its parameter's type as an argument }}
-    example {{ `<toc depth="2" />` and `<toc depth={2} />` both set `depth` to 2, `<rule by="desk">` names the actor `desk`, and `<toc depth={true} />` reports [wrong type](#language.core_format.values.diagnostics.wrong_type) }}
+    example {{ `<toc depth="2" />` and `<toc depth={2} />` both set `depth` to 2, `<rule by="desk">` names the actor `desk`, and `<toc depth={true} />` reports [wrong type](#language.core_format.values.errors.wrong_type) }}
   }
 
-  variadic_attributes: rule(tag_attribute, by = product.system.checker) {
+  variadic_attributes: rule(tag_attribute, by = system.checker) {
     where {{ an attribute names a variadic parameter }}
     must {{ give its value as that parameter's arguments, in order and before the named ones: a quoted value as one, a braced list as one per item }}
     example {{ `<rule id="late" targets="refunds" by="desk">` is `late: rule(refunds, by = desk)`, and `targets={[refunds, refunds.window]}` gives two targets }}
   }
 
-  required_attributes: rule(tag_attribute, by = product.system.checker) {
+  required_attributes: rule(tag_attribute, by = system.checker) {
     if {{ a tag leaves out an attribute whose parameter has no default and isn't optional }}
-    must {{ report [missing attribute](#language.markup.tags.diagnostics.missing_attribute) }}
+    must {{ report missing attribute }}
   }
 
-  tag_closing: rule(component_tag, by = product.system.parser) {
-    must {{ close a tag at `</name>` with its own name, and report [tag mismatch](#language.grammar.recovery.diagnostics.tag_mismatch) or [tag unclosed](#language.grammar.recovery.diagnostics.tag_unclosed) otherwise }}
+  tag_closing: rule(component_tag, by = system.parser) {
+    must {{ close a tag at `</name>` with its own name, and report tag mismatch or tag unclosed otherwise }}
   }
 
-  slots: rule(component_tag, by = product.system.checker) {
-    must {{ admit tags nested in a tag's content by its kind's `accept` entries, and report [tag not accepted](#language.markup.tags.diagnostics.tag_not_accepted) for one it doesn't take }}
+  slots: rule(component_tag, by = system.checker) {
+    must {{ admit tags nested in a tag's content by its kind's `accept` entries, and report tag not accepted for one it doesn't take }}
     example {{ `<details><title>…</title>…</details>`, where `details` accepts one `title` }}
   }
 
-  tags_render: rule(component_tag, by = product.system.docs_generator) {
+  tags_render: rule(component_tag, by = system.docs_generator) {
     must {{ render a tag through the renderer registered for its kind, with its content rendered as prose and its attributes as text, and as a span classed by the kind's name where none is registered }}
   }
 
-  diagnostics: section {
-    missing_attribute: diagnostic("missing-argument", by = product.system.checker) {
-      message = "<‹kind›> needs the attribute ‹name›"
+  errors: section {
+    @realizes(language.markup.tags.required_attributes)
+    missing_attribute: error("missing-argument", by = system.checker) {
+      title = "<{kind}> needs the attribute {name}"
+      kind: field(String)
+      name: field(String)
     }
 
-    tag_not_accepted: diagnostic("accept", by = product.system.checker) {
-      message = "<‹kind›> doesn't accept <‹child›>; it accepts ‹kinds›"
+    @realizes(language.markup.tags.slots)
+    tag_not_accepted: error("accept", by = system.checker) {
+      title = "<{kind}> doesn't accept <{child}>; it accepts {kinds}"
+      kind: field(String)
+      child: field(String)
+      kinds: field(String)
     }
 
+    @realizes(language.markup.tags.element_needs_id)
     @display("Element needs an id")
-    element_needs_id: diagnostic("unnamed", by = product.system.checker) {
-      message = "<‹kind›> declares a node and needs an id"
+    element_needs_id: error("unnamed", by = system.checker) {
+      title = "<{kind}> declares a node and needs an id"
+      kind: field(String)
       | A section, a step, a concept or another kind with a heading, or a term, written as an element without `id`.
     }
 
+    @realizes(language.markup.tags.code_stays_in_heron)
     @display("Code in an element")
-    code_in_element: diagnostic("element-code", by = product.system.checker) {
-      message = "<‹kind›>'s body is code; write it in a .heron file"
+    code_in_element: error("element-code", by = system.checker) {
+      title = "<{kind}>'s body is code; write it in a .heron file"
+      kind: field(String)
       | A kind whose body is a `do` block, written as an element; code has no element form.
     }
 
+    @realizes(language.markup.tags.quoted_attributes)
     @display("Unquoted attribute")
-    unquoted_attribute: diagnostic("syntax", by = product.system.parser) {
-      message = "the value of ‹name› needs quotes or braces"
+    unquoted_attribute: error("syntax", by = system.parser) {
+      title = "the value of {name} needs quotes or braces"
+      name: field(String)
       | An attribute written `name=value`; write `name="value"`, or `name={expr}` for an expression.
     }
   }

@@ -31,32 +31,32 @@ yet.
 
 ## Wire {#wire}
 
-<rule id="cbor_libraries" targets="heron_tags" by="product.system.extension_host">
+<rule id="cbor_libraries" targets="heron_tags" by="system.extension_host">
 <must>encode and decode frames on both sides, the host and the JS runtime, each with an encoder and a decoder registered for every tag the table gives a value</must>
 </rule>
 
-<rule id="standard_tags" targets="heron_tags" by="product.system.extension_host">
+<rule id="standard_tags" targets="heron_tags" by="system.extension_host">
 <must>encode times with tag 0, integers past 64 bits with tags 2 and 3, decimal fractions with tag 4 and sets with tag 258, and decode each back to the same type</must>
 </rule>
 
-<rule id="own_tags" targets="heron_tags" by="product.system.extension_host">
+<rule id="own_tags" targets="heron_tags" by="system.extension_host">
 <must>encode a variant, a duration, prose and a reference under their [Heron tags](#language.interop.data_mapping.heron_tags), and decode each back to the same type</must>
 </rule>
 
-<rule id="ts_values" targets="heron_tags" by="product.system.extension_host">
+<rule id="ts_values" targets="heron_tags" by="system.extension_host">
 <must>decode the same tags in TS to `Variant`, `Duration`, `Decimal`, `Ref`, `Set` and mdast trees, and encode them back with their tags</must>
 </rule>
 
-<rule id="decimals_exact" targets="heron_tags" by="product.system.extension_host">
+<rule id="decimals_exact" targets="heron_tags" by="system.extension_host">
 <must>keep a decimal as its mantissa and exponent, so `"40.00"` reads back as `40.00`, never as a float</must>
 </rule>
 
-<rule id="json_tags" targets="heron_tags" by="product.system.extension_host">
+<rule id="json_tags" targets="heron_tags" by="system.extension_host">
 <where>the JSON wire is used</where>
 <must>write each tagged value as an object with one `$` key naming its type: `$variant` with `value`, `$duration`, `$prose`, `$ref`, `$set` and `$decimal` as text</must>
 </rule>
 
-<rule id="canonical_maps" targets="heron_tags" by="product.system.extension_host">
+<rule id="canonical_maps" targets="heron_tags" by="system.extension_host">
 <must>write map keys in the canonical order of the CBOR standard</must>
 <then>equal values encode to equal bytes, which a hash of a call's inputs can rely on</then>
 </rule>
@@ -66,21 +66,21 @@ yet.
 What the interpreter hands the protocol today is narrower than the table: its own
 values are Heron's [data values](#language.data.values) without the tagged types.
 
-<rule id="plain_values" targets="heron_tags" by="product.system.interpreter">
+<rule id="plain_values" targets="heron_tags" by="system.interpreter">
 <must>pass a record as a map of its fields, an enum value as its name, a [typed string](#language.data.typed_strings.typed_string) as its text, a type as its name and a node reference as its path in text, and read a map back as a map and a whole number as an `Int`</must>
 </rule>
 
-<rule id="typed_values" targets="heron_tags" by="product.system.interpreter">
+<rule id="typed_values" targets="heron_tags" by="system.interpreter">
 <must>pass a `Timestamp`, a `Duration`, a decimal, a set, a union's variant, prose and a reference with the tag of their type, and give a record read back the type its declaration names</must>
 </rule>
 
-<rule id="streamed_results" targets="heron_tags" by="product.system.interpreter">
+<rule id="streamed_results" targets="heron_tags" by="system.interpreter">
 <where>a [foreign func](#language.interop.declaring.foreign_func) returns an `AsyncIterable`</where>
 <must>give code each item as it arrives through `$/stream`, as a `Stream(T)`</must>
 </rule>
 
 ## Errors {#errors}
 
-<rule id="thrown_values" targets="heron_tags" by="product.system.extension_host">
+<rule id="thrown_values" targets="heron_tags" by="system.extension_host">
 <must>send a [thrown error](#language.scripting.code.thrown_error) as an error with code `-32001`, its type as `type` and its fields as `data`</must>
 </rule>

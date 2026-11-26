@@ -11,3 +11,7 @@ include = [
 
 | What the development tools do, as their users see it: the language server, prose linting,
 | the editor grammar, the docs, the server and the frontend.
+
+tools_agree: goal(measure = "Editor, CI and docs report the same problems.") {{
+  Every tool around the tree, the editor, the linter, the docs and the server, answers from the same checked tree, so they never disagree.
+}}

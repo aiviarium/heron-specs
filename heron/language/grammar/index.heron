@@ -11,3 +11,7 @@ include = [
 
 @lens(user, developer)
 | The grammar of the core format: how a line says what it is, the modes a file is read in, the productions of the tree the parser builds, and how it recovers from errors.
+
+forgiving_syntax: goal(measure = "A file with one mistake still checks everywhere else.") {{
+  Authors see every problem in a file at once, because a mistake never stops the rest of the file from being read.
+}}

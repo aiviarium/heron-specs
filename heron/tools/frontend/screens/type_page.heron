@@ -1,46 +1,52 @@
+@realizes(tools.frontend.screens.type_page.type_cards)
 type_page: screen(route = "/<type>.html") {
   | A type's page in the API reference: its definition, its fields, its rules, its
   | [lifecycles](#language.specifications.lifecycles.lifecycle) and where it's used. The top bar and the sidebar are the [op page](#tools.frontend.screens.op_page)'s.
 
+  @realizes(tools.frontend.screens.type_page.signature.definition_first)
   signature: region {
     | The definition as a Heron signature in a code block titled with its file.
 
-    definition_first: rule(tools.frontend.screens.type_page.signature, by = product.system.docs_generator) {
+    definition_first: rule(by = system.docs_generator) {
       must {{ open the page with the type's declaration as written, moved to the left margin, without its docs and body, with every type in it linked to its page }}
     }
   }
 
+  @realizes(tools.frontend.screens.type_page.fields.field_table, tools.frontend.screens.type_page.fields.variants_listed)
   fields: region {
     | A bordered table of the fields.
 
-    field_table: rule(tools.frontend.screens.type_page.fields, by = product.system.docs_generator) {
+    field_table: rule(by = system.docs_generator) {
       must {{ list each field with its type, whether it's required, its default, its constraints and its docs }}
     }
 
-    variants_listed: rule(tools.frontend.screens.type_page.fields, by = product.system.docs_generator) {
+    variants_listed: rule(by = system.docs_generator) {
       must {{ list each variant of a union or value of an enum with its own docs, and the parameters of a [generic type](#language.data.types.generic_type) }}
     }
   }
 
+  @realizes(tools.frontend.screens.type_page.rules.rules_as_properties)
   rules: region {
-    rules_as_properties: rule(tools.frontend.screens.type_page.rules, by = product.system.docs_generator) {
+    rules_as_properties: rule(by = system.docs_generator) {
       must {{ show the rules that target the type as its state properties, each with its strength, its conditions and its metrics }}
     }
   }
 
+  @realizes(tools.frontend.screens.type_page.lifecycles.lifecycle_switch)
   lifecycles: region {
-    lifecycle_switch: rule(tools.frontend.screens.type_page.lifecycles, by = product.system.docs_generator) {
+    lifecycle_switch: rule(by = system.docs_generator) {
       must {{ show each [lifecycle](#language.specifications.lifecycles.lifecycle) a field of the type moves through as a state diagram, with a switch to its table }}
     }
   }
 
+  @realizes(tools.frontend.screens.type_page.used_by.backlinks)
   used_by: region {
-    backlinks: rule(tools.frontend.screens.type_page.used_by, by = product.system.docs_generator) {
+    backlinks: rule(by = system.docs_generator) {
       must {{ link back to the ops, fields and types that refer to the type }}
     }
   }
 
-  type_cards: rule(tools.frontend.screens.type_page, by = product.system.docs_generator) {
+  type_cards: rule(by = system.docs_generator) {
     must {{ show a type's signature in a hover card wherever the type is mentioned, in prose or in a signature }}
   }
 }

@@ -19,38 +19,38 @@ files: section {
     included file's root joins the root or the scope that includes it.
   }}
 
-  no_core_kinds: rule(language.core_format, by = product.system.checker) {
+  no_core_kinds: rule(language.core_format, by = system.checker) {
     mustNot {{ define a kind of its own in the core format }}
     instead {{ leave every kind to the packages in `import`, with the core's own names declared in the prelude package `std/core` that every tree sees without importing it }}
   }
 
-  file_kinds: rule(heron_file, by = product.system.checker) {
+  file_kinds: rule(heron_file, by = system.checker) {
     must {{ read a file ending in `.heron.md` as a [prose file](#language.core_format.prose_layer.prose_file) and any other file as structure }}
   }
 
-  entry_from_folder: rule(entry_point, by = product.system.checker) {
+  entry_from_folder: rule(entry_point, by = system.checker) {
     must {{ read a folder given as the [entry point](#language.core_format.files.entry_point) as its `index.heron` }}
     then {{ `heron check spec` and `heron check spec/index.heron` check the same tree }}
   }
 
-  one_identity: rule(heron_file, by = product.system.checker) {
+  one_identity: rule(heron_file, by = system.checker) {
     must {{ identify a file on disk by its cleaned absolute path with symbolic links resolved, and a file of a standard package by `std:` and its path, so every spelling of one file is one file }}
     then {{ a path that doesn't exist yet is identified through its nearest existing parent, so an editor's unsaved file has its identity before it's written }}
   }
 
-  one_tree: rule(entry_point, by = product.system.checker) {
+  one_tree: rule(entry_point, by = system.checker) {
     must {{ resolve references within the entry point's tree and combine amends across its files }}
     then {{ [entry points](#language.core_format.files.entry_point) can share files, so one repository holds more than one tree, and a file checks differently in each tree that reaches it }}
   }
 
-  unreachable_file: rule(entry_point, by = product.system.linter) {
+  unreachable_file: rule(entry_point, by = system.linter) {
     if {{ a `.heron` file in the project is reached by no [entry point](#language.core_format.files.entry_point) }}
-    should {{ report [unreachable file](#language.core_format.files.diagnostics.unreachable_file), since nothing checks it }}
+    should {{ report unreachable file, since nothing checks it }}
   }
 
-  directives: rule(entry_point, by = product.system.checker) {
+  directives: rule(entry_point, by = system.checker) {
     if {{ `include` or `import` is set to anything but a list of plain strings }}
-    must {{ report [not a list](#language.core_format.files.diagnostics.not_a_list), or [not a plain string](#language.core_format.files.diagnostics.not_plain) at an entry that's interpolated or not a string, and skip the entry }}
+    must {{ report not a list, or not a plain string at an entry that's interpolated or not a string, and skip the entry }}
   }
 
   @display("An entry point")
@@ -75,18 +75,24 @@ files: section {
     | ```
   }
 
-  diagnostics: section {
-    not_a_list: diagnostic("directive", by = product.system.checker) {
-      message = "‹directive› takes a list of strings"
+  errors: section {
+    @realizes(language.core_format.files.directives)
+    not_a_list: error("directive", by = system.checker) {
+      title = "{directive} takes a list of strings"
+      directive: field(String)
       | ‹directive› is `include` or `import`.
     }
 
-    not_plain: diagnostic("directive", by = product.system.checker) {
-      message = "‹directive› entries are plain strings"
+    @realizes(language.core_format.files.directives)
+    not_plain: error("directive", by = system.checker) {
+      title = "{directive} entries are plain strings"
+      directive: field(String)
     }
 
-    unreachable_file: diagnostic("unreachable-file", severity = warning, by = product.system.linter) {
-      message = "no entry point reaches ‹file›, so nothing checks it"
+    @realizes(language.core_format.files.unreachable_file)
+    unreachable_file: error("unreachable-file", severity = Severity.warning, by = system.linter) {
+      title = "no entry point reaches {file}, so nothing checks it"
+      file: field(String)
     }
   }
 }

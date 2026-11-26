@@ -9,3 +9,7 @@ include = [
 
 @lens(user, developer)
 | Data written in Heron: values and their types, the strings a type parses, configuration, types and enums, and how values encode. One set of declarations describes data, APIs and configuration, so a spec works as an IDL and a config format at once. Values use the [core format](#language.core_format.values)'s literals; APIs and their transports are under [APIs](#language.apis).
+
+typed_data: goal(measure = "Configuration and data check like code.") {{
+  Teams keep configuration and data in the tree, typed, so a wrong value fails the check rather than production.
+}}

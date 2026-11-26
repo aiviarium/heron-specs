@@ -4,7 +4,7 @@ productions: section {
   | [structure](#language.grammar.structure.tree), [code](#language.grammar.code.tree),
   | [strings](#language.grammar.strings.tree) and [prose](#language.grammar.prose.tree), say
   | which nodes the parser builds from it and what each holds; with the
-  | [tokens](#language.grammar.lexical.tokens) they are [the parser](#product.system.parser)'s
+  | [tokens](#language.grammar.lexical.tokens) they are [the parser](#system.parser)'s
   | `ungrammar` file, from which its node kinds and typed views are generated.
   |
   | Their notation is the one the `ungrammar` format uses: `Name = A | B` is a sum whose alternatives are node
@@ -13,17 +13,17 @@ productions: section {
   | production lists what a node can hold, not the order of the text: the rules beside
   | each production say how the text is read.
 
-  ungram_is_the_spec: rule(language.grammar.structure.tree, language.grammar.code.tree, language.grammar.strings.tree, language.grammar.prose.tree, language.grammar.lexical.tokens, by = product.system.parser) {
+  ungram_is_the_spec: rule(by = system.parser) {
     must {{ keep the `ungrammar` file equal to the tree productions and tokens of this spec: the same token kinds, the same productions, and each production's expression the same up to layout }}
     then {{ a node kind is added in the spec and the grammar file in one change, and the kinds and views are regenerated from the file }}
   }
 
-  grammar_per_concern: rule(ungram_is_the_spec, by = product.actors.author) {
+  grammar_per_concern: rule(ungram_is_the_spec, by = actors.author) {
     must {{ hold each concern's tree productions in a `tech.grammar` of its own in that concern's file, every one naming `grammar/heron.ungram` as its `source` }}
     then {{ the grammars with that source are together the file, and a production written in two of them fails the test that keeps them equal }}
   }
 
-  surface_is_the_design: rule(language.grammar.productions.surface, by = product.system.parser) {
+  surface_is_the_design: rule(by = system.parser) {
     must {{ accept the text the surface grammar describes, and build for it the nodes the tree productions name }}
   }
 

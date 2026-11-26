@@ -45,35 +45,43 @@ values: section {
     `u8` to `u64`, `i8` to `i64`, `f32` and `f64`.
   }}
 
-  required_members: rule(absence, by = product.system.checker) {
+  required_members: rule(absence, by = system.checker) {
     if {{ a [record value](#language.data.values.record_value) leaves out a member that has no `?` and no default }}
-    must {{ report [missing member](#language.data.values.diagnostics.missing_member) }}
+    must {{ report missing member }}
   }
 
-  absent_read: rule(absence, by = product.system.interpreter) {
+  absent_read: rule(absence, by = system.interpreter) {
     if {{ code reads a member that is absent }}
     must {{ throw, naming the member }}
     example {{ code checks presence first with `payment.has(note)` }}
   }
 
-  defaults_present: rule(absence, by = product.system.interpreter) {
+  defaults_present: rule(absence, by = system.interpreter) {
     where {{ a member has a default, as in `currency: String = "EUR"` }}
     must {{ treat it as optional on input and present, with its default, on every value read }}
   }
 
-  sized_numbers: rule(scalar, by = product.system.checker) {
+  sized_numbers: rule(scalar, by = system.checker) {
     if {{ an integer literal doesn't fit the `bits` and `signed` of the `Int` expected }}
-    must {{ report [out of range](#language.data.values.diagnostics.out_of_range) }}
+    must {{ report out of range }}
     example {{ `-1` where a `u8` is expected, and `256` where one is }}
   }
 
-  diagnostics: section {
-    missing_member: diagnostic("missing-argument", by = product.system.checker) {
-      message = "‹Type› needs the member ‹name›"
+  errors: section {
+    @realizes(language.data.values.required_members)
+    missing_member: error("missing-argument", by = system.checker) {
+      title = "{type} needs the member {name}"
+      type: field(String)
+      name: field(String)
     }
 
-    out_of_range: diagnostic("type", by = product.system.checker) {
-      message = "‹value› doesn't fit ‹Type›, which holds ‹min› to ‹max›"
+    @realizes(language.data.values.sized_numbers)
+    out_of_range: error("type", by = system.checker) {
+      title = "{value} doesn't fit {type}, which holds {min} to {max}"
+      value: field(String)
+      type: field(String)
+      min: field(String)
+      max: field(String)
     }
   }
 }

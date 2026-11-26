@@ -50,65 +50,72 @@ types: section {
     `update_refund(id: String, changes: Patch(RefundRequest)): op(Refund)`.
   }}
 
-  closed_records: rule(type_kind, by = product.system.checker) {
+  closed_records: rule(type_kind, by = system.checker) {
     if {{ a constructor call or a [record value](#language.data.values.record_value) sets a member its type doesn't declare }}
-    must {{ report [no member](#language.core_format.naming.diagnostics.no_member) with the closest member }}
-    unless {{ the type is `type<open>`, which keeps such members as they are }}
+    must {{ report no member with the closest member }}
+    while {{ it's not the case that the type is `type<open>`, which keeps such members as they are }}
   }
 
-  patch_concretized: rule(patch_type, by = product.system.checker) {
+  patch_concretized: rule(patch_type, by = system.checker) {
     must {{ read each use of `Patch(T)` as an ordinary record type with every member of `T` optional }}
     then {{ encodings and generated code see a normal type }}
   }
 
-  generics_checked: rule(generic_type, by = product.system.checker) {
+  generics_checked: rule(generic_type, by = system.checker) {
     must {{ check a type argument against its parameter's guard, and the members of `Page(Refund)` with `T` read as `Refund` }}
   }
 
-  only_errors_thrown: rule(error_type, by = product.system.checker) {
+  only_errors_thrown: rule(error_type, by = system.checker) {
     if {{ a type that doesn't implement `Error` is thrown or named in `@throws` }}
-    must {{ report [not an error](#language.data.types.diagnostics.not_an_error) }}
+    must {{ report not an error }}
     then {{ `@throws(RefundError)` covers every type that implements it, and a caught error is matched by type, `result.error.is(RefundWindowExpired)` }}
   }
 
-  errors_never_enums: rule(error_type, by = product.system.checker) {
+  errors_never_enums: rule(error_type, by = system.checker) {
     mustNot {{ accept an enum as an error, in `@throws` or a `throw` }}
-    instead {{ report [not an error](#language.data.types.diagnostics.not_an_error), since an error carries a message and an enum variant doesn't }}
+    instead {{ report not an error, since an error carries a message and an enum variant doesn't }}
   }
 
-  structural_satisfaction: rule(interface_kind, by = product.system.checker) {
+  structural_satisfaction: rule(interface_kind, by = system.checker) {
     must {{ let any type with an interface's members satisfy it where it's expected, while only `implements` brings its members, defaults and funcs in }}
     then {{ satisfying an interface never changes what's encoded }}
   }
 
-  restating_members: rule(interface_kind, by = product.system.checker) {
+  restating_members: rule(interface_kind, by = system.checker) {
     if {{ two interfaces a type implements provide the same member with different types or defaults }}
-    must {{ report [member to restate](#language.data.types.diagnostics.restate_member) unless the type restates the member }}
+    must {{ report member to restate unless the type restates the member }}
     example {{ a type may also restate a member with the same type to change its default, or a func to replace its body }}
   }
 
-  interfaces_for_all_variants: rule(interface_kind, by = product.system.checker) {
+  interfaces_for_all_variants: rule(interface_kind, by = system.checker) {
     where {{ an enum or a union implements an interface }}
     must {{ check the interface against every variant }}
   }
 
-  no_interface_fields: rule(interface_kind, by = product.system.checker) {
+  no_interface_fields: rule(interface_kind, by = system.checker) {
     mustNot {{ accept an interface as the type of a member of encoded data }}
     instead {{ require a `union` there; an interface can still be a parameter's type }}
   }
 
-  codegen: rule(type_kind, by = product.system.generator) {
+  codegen: rule(type_kind, by = system.generator) {
     must {{ generate each format from what its package defines: OpenAPI from `std/http`, [`JSON Schema`](https://json-schema.org) from the types alone }}
     then {{ scenarios use the same definitions, so an op call in a step is typed end to end }}
   }
 
-  diagnostics: section {
-    not_an_error: diagnostic("type", by = product.system.checker) {
-      message = "‹Type› can't be thrown: it doesn't implement Error"
+  errors: section {
+    @realizes(language.apis.responses.thrown_types_are_errors, language.data.types.errors_never_enums, language.data.types.only_errors_thrown)
+    not_an_error: error("type", by = system.checker) {
+      title = "{type} can't be thrown: it doesn't implement Error"
+      type: field(String)
     }
 
-    restate_member: diagnostic("conflict", by = product.system.checker) {
-      message = "‹Type› gets ‹member› from both ‹A› and ‹B›; restate it"
+    @realizes(language.data.types.restating_members)
+    restate_member: error("conflict", by = system.checker) {
+      title = "{type} gets {member} from both {a} and {b}; restate it"
+      type: field(String)
+      member: field(String)
+      a: field(String)
+      b: field(String)
     }
   }
 

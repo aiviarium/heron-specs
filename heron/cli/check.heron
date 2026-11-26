@@ -1,3 +1,4 @@
+@realizes(cli.check.errors_fail)
 check: command("heron check") {
   usage = ["heron check [--json] [--watch] [entry points…]"]
 
@@ -19,6 +20,7 @@ check: command("heron check") {
     | node's `name`, `path`, `kind` or `type`, `file`, `line`, literal `value` and `children`.
   }
 
+  @realizes(cli.check.watch_rechecks_edit)
   watch: option("--watch", type = Bool, default = false) {
     | Checks once, then polls the size and modification time of every file the trees read
     | every 200 ms and checks again when one changes, reusing the session's memo. It
@@ -27,17 +29,21 @@ check: command("heron check") {
     | it's stopped.
   }
 
-  exit(0) {{ No [entry point](#language.core_format.files.entry_point) has an error; warnings and hints don't count. }}
-  exit(1) {{ An [entry point](#language.core_format.files.entry_point) has an error. }}
-  exit(2) {{ An unknown option, or an [entry point](#language.core_format.files.entry_point) that doesn't exist. }}
+  | Exits 0 when: no [entry point](#language.core_format.files.entry_point) has an error; warnings and hints don't count.
+  exit_1: error("heron check exit 1", exit = 1, by = system.command_line) {
+    title = "an entry point has an error"
+  }
+  exit_2: error("heron check exit 2", exit = 2, by = system.command_line) {
+    title = "an unknown option, or an entry point that doesn't exist"
+  }
 
   example {{ `heron check spec petstore` checks two trees in one session, so the standard packages are parsed once. }}
 
-  errors_fail: rule(check, by = product.system.command_line) {
+  errors_fail: rule(by = system.command_line) {
     must {{ exit with status 1 when any diagnostic of a checked tree is an error, and 0 when every one is a warning or a hint }}
   }
 
-  watch_rechecks_edit: rule(check.watch, by = product.system.command_line) {
+  watch_rechecks_edit: rule(by = system.command_line) {
     when {{ a file of a watched tree changes }}
     must {{ check again, rechecking only the nodes the edit touched }}
   }

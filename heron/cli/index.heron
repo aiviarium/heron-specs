@@ -17,8 +17,12 @@ include = [
 | The commands share their conventions. Options come before the positional arguments and
 | take one dash or two, except `heron run`'s, which take two. No option has a short form
 | or reads an environment variable; the variables the extension host reads are listed
-| with [the extension host](#product.system.extension_host). `check` and `lint` print diagnostics to standard output, one per
+| with [the extension host](#system.extension_host). `check` and `lint` print diagnostics to standard output, one per
 | line, with paths relative to the working folder; `run` and `generate`, which check the
 | tree before they work, print its errors to standard error. Messages about the command
 | itself go to standard error, prefixed with `heron ‹command›:`. Exit status 2 is a usage error, 1 a failure of
 | what the command did, and 0 success.
+
+scriptable: goal(measure = "Every command exits with a status a script can act on.") {{
+  Scripts, CI jobs and agents drive Heron from the command line and know what happened from its exit status and output alone.
+}}

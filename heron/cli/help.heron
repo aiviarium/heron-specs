@@ -2,7 +2,7 @@ help: command("heron help") {
   usage = ["heron help [command]", "heron [-h | --help]", "heron"]
 
   | Lists the registered commands, or shows one command's usage line and summary. It isn't
-  | a registered command: the [command line](#product.system.command_line) answers it before looking a
+  | a registered command: the [command line](#system.command_line) answers it before looking a
   | command up, so it lists whatever commands the installed parts and extensions registered.
   |
   | Each command's own `-h` prints its options in the standard flag listing and exits
@@ -14,8 +14,10 @@ help: command("heron help") {
     | printed on standard output. A name that isn't registered lists every command instead, as `heron help` does: the list goes to standard error.
   }
 
-  exit(0) {{ `heron help`, `heron -h` or `heron --help`, with or without a command. }}
-  exit(2) {{ `heron` with no arguments, which lists the commands on standard error. }}
+  | Exits 0 when: `heron help`, `heron -h` or `heron --help`, with or without a command.
+  exit_2: error("heron help exit 2", exit = 2, by = system.command_line) {
+    title = "heron with no arguments, which lists the commands on standard error"
+  }
 
   example {{ `heron help run` prints `usage: heron run [--json] [--yes] [--undo-on-failure] [--entry file] <task> [--param value…]` and the summary below it. }}
 

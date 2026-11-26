@@ -1,76 +1,76 @@
 | The parts of the system this spec talks about, each named by the role it plays as seen from
 | outside: what it reads, what it answers and what it reports. A rule's `by` names the part
-| whose behaviour it states; how a part is built is the implementation's business, not the
-| spec's.
+| whose behaviour it states; a part is no architecture: how it's built is the implementation's
+| business, not the spec's.
 system: section {
   | Every part ships in the one `heron` command, so a laptop, a CI job and an agent run the same
   | parts at the same version.
 
-  command_line: actor(kind = ActorKind.SYSTEM) {{
+  command_line: part {{
     The `heron` command: it reads its arguments, finds the [entry point](#language.core_format.files.entry_point), runs the commands
     registered for it and exits with a status that tells a script what happened.
   }}
 
-  parser: actor(kind = ActorKind.SYSTEM) {{
+  parser: part {{
     Reads a file's text into a lossless syntax tree and reports syntax errors, recovering so the
     rest of the file still parses.
   }}
 
-  checker: actor(kind = ActorKind.SYSTEM) {{
+  checker: part {{
     Loads an [entry point](#language.core_format.files.entry_point) and its includes and imports into one node tree, then resolves names,
     kinds, types and references across it and reports what breaks them.
   }}
 
-  formatter: actor(kind = ActorKind.SYSTEM) {{
+  formatter: part {{
     Rewrites a file in its one canonical layout without changing what it means.
   }}
 
-  linter: actor(kind = ActorKind.SYSTEM) {{
+  linter: part {{
     Runs the lint rules over a checked tree and reports findings, each with the fixes that
     resolve it.
   }}
 
-  prose_linter: actor(kind = ActorKind.SYSTEM) {{
+  prose_linter: part {{
     Projects a tree's prose into the regions a text linter reads and reports prose findings at
     their place in the source.
   }}
 
-  interpreter: actor(kind = ActorKind.SYSTEM) {{
+  interpreter: part {{
     Evaluates funcs, macros and expressions over a checked tree and runs tasks in order of
     their dependencies, recording each run: the task runner.
   }}
 
-  generator: actor(kind = ActorKind.SYSTEM) {{
+  generator: part {{
     Writes the files the generation targets of a checked tree produce, and tells when a written
     file is stale.
   }}
 
-  extension_host: actor(kind = ActorKind.SYSTEM) {{
+  extension_host: part {{
     Starts the extensions a tree declares, speaks the extension protocol with them and lets
     what they implement take part in checking, linting, running and generating.
   }}
 
-  language_server: actor(kind = ActorKind.SYSTEM) {{
+  language_server: part {{
     Answers an editor over the Language Server Protocol from the checked tree: diagnostics,
     completion, hover, navigation, renames, formatting and fixes.
   }}
 
-  editor_grammar: actor(kind = ActorKind.SYSTEM) {{
+  editor_grammar: part {{
     The tree-sitter grammar editors load to colour, fold and select Heron without starting the
     `heron` command.
   }}
 
-  docs_generator: actor(kind = ActorKind.SYSTEM) {{
+  docs_generator: part {{
     Renders a tree as a static documentation site: a page per node, the API reference, search
     and the interactive parts each page loads.
   }}
 
-  server: actor(kind = ActorKind.SYSTEM) {{
+  server: part {{
     Serves a workspace over HTTP: the base API, the routes extensions add, the spec browser
     and the language server's socket.
   }}
 
-  editor: actor(kind = ActorKind.SYSTEM) {{
+  editor: part {{
     The browser editor and its app shell: files, live preview, diagnostics in place and the
     panels and commands later parts hang on it.
   }}

@@ -3,7 +3,7 @@ serve: command("heron serve") {
 
   | Serves the spec browser, the editor and the language server for one tree, plus what
   | installed extensions add, and prints the URL it listens on, as `http://127.0.0.1:7340/`,
-  | on standard output. What it serves is [the server](#product.system.server). It runs until it's stopped.
+  | on standard output. What it serves is [the server](#system.server). It runs until it's stopped.
 
   entry: argument("entry point", type = String, optional = true) {
     | The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
@@ -15,9 +15,13 @@ serve: command("heron serve") {
     | URL shows.
   }
 
-  exit(0) {{ The server was closed. }}
-  exit(1) {{ The address can't be listened on, or the server failed. }}
-  exit(2) {{ An unknown option, or a workspace that can't be opened at the [entry point](#language.core_format.files.entry_point). }}
+  | Exits 0 when: the server was closed.
+  exit_1: error("heron serve exit 1", exit = 1, by = system.command_line) {
+    title = "the address can't be listened on, or the server failed"
+  }
+  exit_2: error("heron serve exit 2", exit = 2, by = system.command_line) {
+    title = "an unknown option, or a workspace that can't be opened at the entry point"
+  }
 
   example {{ `heron serve --addr 127.0.0.1:0 petstore` serves a sample tree on a free port and prints its URL. }}
 

@@ -10,37 +10,39 @@ examples: section {
     example may also be only prose, `told: example {{ … }}`.
   }}
 
-  example_fields: rule(op_example, by = product.system.checker) {
+  example_fields: rule(op_example, by = system.checker) {
     must {{ check an example's fields as the op's parameters, against their types }}
     example {{ `other = 1` in an example of `put(thing: Thing)` reports "store.put.e (a example) has no field other", and `thing = 1` reports "expected Thing, got a number" }}
   }
 
-  one_outcome_each: rule(op_example, by = product.system.checker) {
-    must {{ report [set twice in one body](#language.core_format.conflicts.diagnostics.set_twice) at a second `returns` or a second `throws` in one example }}
+  one_outcome_each: rule(op_example, by = system.checker) {
+    must {{ report set twice in one body at a second `returns` or a second `throws` in one example }}
   }
 
-  one_outcome: rule(op_example, by = product.system.checker) {
+  one_outcome: rule(op_example, by = system.checker) {
     if {{ an example sets both `returns` and `throws` }}
-    must {{ report [two outcomes](#language.apis.examples.diagnostics.two_outcomes) at the second }}
+    must {{ report two outcomes at the second }}
   }
 
-  outcome_types: rule(op_example, by = product.system.checker) {
+  outcome_types: rule(op_example, by = system.checker) {
     must {{ check `returns` against the op's [result type](#language.apis.responses.result_type) and `throws` against the errors the op and its api declare with `@throws` }}
   }
 
-  examples_rendered: rule(op_example, by = product.system.docs_generator) {
+  examples_rendered: rule(op_example, by = system.docs_generator) {
     must {{ show each example of an op as its request, written as a `curl` call, a Heron call and the raw HTTP request when the op is bound to HTTP, and its response with the status of its outcome }}
   }
 
-  examples_checked: rule(op_example, by = product.system.generator) {
+  examples_checked: rule(op_example, by = system.generator) {
     must {{ put [op examples](#language.apis.examples.op_example) into generated OpenAPI, serve them as mock responses, and run them against a running service as contract checks }}
   }
 
-  diagnostics: section {
+  errors: section {
+    @realizes(language.apis.examples.one_outcome)
     @display("Two outcomes")
-    two_outcomes: diagnostic("example", by = product.system.checker) {
-      message = "‹example› states both returns and throws; an example has one outcome"
+    two_outcomes: error("example", by = system.checker) {
+      title = "{example} states both returns and throws; an example has one outcome"
       related = "the other outcome"
+      example: field(String)
       | An [op example](#language.apis.examples.op_example) that both returns a value and throws an error.
     }
   }

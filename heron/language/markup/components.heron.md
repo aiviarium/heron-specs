@@ -33,24 +33,24 @@ condition, and `<for each={changes} as="change">…</for>` repeats it, with `ind
 `$n ${if n == 1 { "change" } else { "changes" }}`.
 </term>
 
-<rule id="built_in_renderers" targets="language.markup.tags.component_tag" by="product.system.docs_generator">
+<rule id="built_in_renderers" targets="language.markup.tags.component_tag" by="system.docs_generator">
 <must>render `note`, `tip`, `warning` and `danger` as callouts of their kind, `kbd` as a key, `em`, `strong` and `span` as inline text, and `details` as a collapsible block</must>
 </rule>
 
-<rule id="other_components" targets="language.markup.tags.component_tag" by="product.system.docs_generator">
+<rule id="other_components" targets="language.markup.tags.component_tag" by="system.docs_generator">
 <must>render every other component in the table by its use there, as `toc` with the enclosing section's headings to its `depth` and `footnote` collected at the section's end</must>
 </rule>
 
-<rule id="logic_rendering" targets="logic_tags" by="product.system.docs_generator">
+<rule id="logic_rendering" targets="logic_tags" by="system.docs_generator">
 <must>evaluate an `if` test or a `for` list where its names are known at generation time, and show the text it selects</must>
 </rule>
 
-<rule id="tag_or_structure" targets="language.markup.tags.component_tag" by="product.system.checker">
+<rule id="tag_or_structure" targets="language.markup.tags.component_tag" by="system.checker">
 <must>build the same node from a component written as a tag and in structure</must>
 <example>`<note kind="tip">Text</note>` and `note(kind = tip) { | Text }` are one node</example>
 </rule>
 
-<rule id="terms_are_nodes" targets="language.markup.links.node_link" by="product.actors.author">
+<rule id="terms_are_nodes" targets="language.markup.links.node_link" by="actors.author">
 <must>declare a term as a node, `dispute: term =| …`, never as a tag</must>
 <then>a link to it, `[dispute](#dispute)`, shows as a defined term, and the glossary finds it</then>
 </rule>

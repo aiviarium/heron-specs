@@ -1,3 +1,4 @@
+@realizes(cli.lint.any_finding_fails)
 lint: command("heron lint") {
   usage = ["heron lint [--json] [--fix] [entry points…]"]
 
@@ -17,6 +18,7 @@ lint: command("heron lint") {
     | `code`, `message`, `related`, `fixes`, `line` and `column`.
   }
 
+  @realizes(cli.lint.fix_applies_no_guess, cli.lint.fix_in_place, cli.lint.fix_no_overlap)
   fix: option("--fix", type = Bool, default = false) {
     | Applies each finding's first fix that isn't a suggestion, writes `heron lint: applied
     | ‹n› fixes` to standard error, and reports the findings it didn't fix. A suggestion is
@@ -25,28 +27,32 @@ lint: command("heron lint") {
     | to see what they changed.
   }
 
-  exit(0) {{ No diagnostic and no finding, of any severity. }}
-  exit(1) {{ A diagnostic or a finding is left, a warning or a hint included; or a fix couldn't be written. }}
-  exit(2) {{ An unknown option, or an [entry point](#language.core_format.files.entry_point) that doesn't exist. }}
+  | Exits 0 when: no diagnostic and no finding, of any severity.
+  exit_1: error("heron lint exit 1", exit = 1, by = system.command_line) {
+    title = "a diagnostic or a finding is left, a warning or a hint included; or a fix couldn't be written"
+  }
+  exit_2: error("heron lint exit 2", exit = 2, by = system.command_line) {
+    title = "an unknown option, or an entry point that doesn't exist"
+  }
 
   example {{ `heron lint --fix spec` rewrites what the prose lints can fix with certainty and lists the rest, such as unknown words, for an author to decide. }}
 
-  any_finding_fails: rule(lint, by = product.system.command_line) {
+  any_finding_fails: rule(by = system.command_line) {
     must {{ exit with status 1 when any diagnostic or finding is left, whatever its severity }}
   }
 
-  fix_applies_no_guess: rule(lint.fix, by = product.system.command_line) {
+  fix_applies_no_guess: rule(by = system.command_line) {
     mustNot {{ apply a fix marked as a suggestion }}
     instead {{ leave the finding reported, for the editor to offer its suggestions as code actions }}
   }
 
-  fix_no_overlap: rule(lint.fix, by = product.system.command_line) {
+  fix_no_overlap: rule(by = system.command_line) {
     if {{ the edits of a fix overlap an edit already taken, or start at the same offset }}
     mustNot {{ apply it }}
     instead {{ leave its finding reported, so the next `heron lint --fix` can apply it to the changed text }}
   }
 
-  fix_in_place: rule(lint.fix, by = product.system.command_line) {
+  fix_in_place: rule(by = system.command_line) {
     must {{ apply each file's edits from its end backwards, so earlier offsets stay valid, and keep the file's permissions }}
   }
 

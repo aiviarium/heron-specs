@@ -4,20 +4,22 @@ editor_screen: screen(route = "/") {
   | the docs make of it and what running it produced. [The code editor](#tools.frontend.editor) gives its behaviour,
   | and [the shell](#tools.frontend.shell) the slots extensions fill.
 
+  @realizes(tools.frontend.screens.editor_screen.title_bar.tabs_follow_files)
   title_bar: region {
     | The workspace's name, the open files as tabs with an unsaved mark and a close
     | button, and the main actions: search with ⌘K, format, save, the preview and the theme.
 
-    tabs_follow_files: rule(tools.frontend.screens.editor_screen.title_bar, by = product.system.editor) {
+    tabs_follow_files: rule(by = system.editor) {
       must {{ show a tab per open file, named by its file name and by as much of its folder as tells two of one name apart, with the unsaved mark while its text differs from the disk }}
     }
   }
 
   sidebar: region {
+    @realizes(tools.frontend.screens.editor_screen.sidebar.file_tree.problem_counts)
     file_tree: region {
       | The tree's files as folders, each file with its problem counts.
 
-      problem_counts: rule(tools.frontend.screens.editor_screen.sidebar.file_tree, by = product.system.editor) {
+      problem_counts: rule(by = system.editor) {
         must {{ show beside each file the errors and warnings of its last analysis, equal to what `heron check` reports for it }}
       }
     }
@@ -26,12 +28,13 @@ editor_screen: screen(route = "/") {
       | The files generation would write, each opening as a read-only preview.
     }
 
+    @realizes(tools.frontend.screens.editor_screen.sidebar.outline.outline_follows)
     outline: region {
       | The current file's nodes, each with its kind, opening at its line.
 
-      outline_follows: rule(tools.frontend.screens.editor_screen.sidebar.outline, by = product.system.editor) {
+      outline_follows: rule(by = system.editor) {
         must {{ list the current file's nodes with their kinds, and move the cursor to a node's line when it's chosen }}
-        unless {{ the file has no nodes, which shows the empty label }}
+        while {{ it's not the case that the file has no nodes, which shows the empty label }}
       }
     }
   }
@@ -42,19 +45,21 @@ editor_screen: screen(route = "/") {
       | generated file is marked read-only.
     }
 
+    @realizes(tools.frontend.screens.editor_screen.code.gutter.gutter_results)
     gutter: region {
       | Results beside the nodes they belong to, from every gutter provider.
 
-      gutter_results: rule(tools.frontend.screens.editor_screen.code.gutter, by = product.system.editor) {
+      gutter_results: rule(by = system.editor) {
         must {{ mark each node that has results with its latest status and summary, and start a run from a runnable node's mark, streaming its status into the same mark }}
       }
     }
 
+    @realizes(tools.frontend.screens.editor_screen.code.diagnostics_hover.problem_hover)
     diagnostics_hover: region {
       | Each diagnostic is an underline; its hover shows the problem, its source, such as the
       | type checker or Vale, and its fixes as actions.
 
-      problem_hover: rule(tools.frontend.screens.editor_screen.code.diagnostics_hover, by = product.system.editor) {
+      problem_hover: rule(by = system.editor) {
         must {{ show the message of a diagnostic, its source by its name in the catalogue (the type checker, a lint, Vale or the spec lints) and its code in the hover, with each fix offered as a code action }}
       }
     }
@@ -70,15 +75,16 @@ editor_screen: screen(route = "/") {
     | the tree, each opening at its place.
   }
 
+  @realizes(tools.frontend.screens.editor_screen.status_bar.language_server_state, tools.frontend.screens.editor_screen.status_bar.status_counts)
   status_bar: region {
     | The branch, the problem counts, the language server's state and the cursor's line
     | and column.
 
-    status_counts: rule(tools.frontend.screens.editor_screen.status_bar, by = product.system.editor) {
+    status_counts: rule(by = system.editor) {
       must {{ show the tree's error and warning counts, opening the problems panel when chosen, and the cursor's line and column as it moves }}
     }
 
-    language_server_state: rule(tools.frontend.screens.editor_screen.status_bar, by = product.system.editor) {
+    language_server_state: rule(by = system.editor) {
       must {{ show the language client's state: connecting, connected, reconnecting with its reason, or failed with its reason and a retry action }}
     }
   }

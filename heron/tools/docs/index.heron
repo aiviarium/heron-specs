@@ -13,8 +13,23 @@ include = [
   "./search.heron.md",
   "./diagrams.heron.md",
   "./versions.heron.md",
+  "./audiences.heron",
 ]
 
 | What the docs generator makes of a checked tree: a documentation site of plain files that
 | work without a server, the same pages `heron serve` shows live as the spec browser, so
 | what people read and what they edit never look different.
+
+tasks_first: goal(source = "readers") {{ A [reader](#actors.reader) gets something done with the product without reading its spec: the docs open on the tasks they can do. }}
+
+pages_stay_true: goal(source = "readers") {{ What a [reader](#actors.reader) copies from the docs works: every example and fact on a page matches the product they have. }}
+
+write_for_readers: goal(source = "authors") {{ An [author](#actors.author) writes guides, how-tos, concepts and tutorials in the tree they explain, so readers get pages written for them that can't drift from the spec. }}
+
+read_by_topic: goal(source = "authors") {{ An [author](#actors.author) finds the form they need by topic and sees it used before reading its rules. }}
+
+own_lenses: goal(source = "authors") {{ An organization's docs show each of its audiences what it needs, through lenses it declares or changes. }}
+
+full_view: goal(source = "implementers") {{ Nothing another lens leaves out is hidden from an [implementer](#actors.implementer): one view shows every node with its formal parts. }}
+
+same_node_everywhere: goal(source = "implementers") {{ An [implementer](#actors.implementer) can send a reader of another lens to what they mean: a link leads to the same node in every lens. }}

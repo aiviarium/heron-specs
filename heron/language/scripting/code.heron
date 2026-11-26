@@ -33,72 +33,72 @@ code: section {
     | language with their text, and references to nodes. A type is a value too, as the
     | first argument of `json.decode(List(Pet), text)`.
 
-    ints_stay_whole: rule(language.scripting.code.values, by = product.system.interpreter) {
+    ints_stay_whole: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ keep the result of `+`, `-`, `*`, `/` and `%` on two `Int` values an `Int`, dividing whole numbers toward zero, and give a `Float` when either operand is one }}
       example {{ `7 / 2` is `3`, `7 % 3` is `1` and `1.5 + 1` is `2.5` }}
     }
 
-    division_by_zero: rule(code_fault, by = product.system.interpreter) {
+    division_by_zero: rule(code_fault, by = system.interpreter) {
       if {{ the right operand of `/` or `%` is zero }}
-      must {{ fail with [division by zero](#language.scripting.code.diagnostics.division_by_zero) }}
+      must {{ fail with division by zero }}
     }
 
-    int_overflow: rule(code_fault, by = product.system.interpreter) {
+    int_overflow: rule(code_fault, by = system.interpreter) {
       if {{ `+`, `-`, `*`, `/`, `%` or unary `-` on `Int` values gives a whole number outside the 64-bit range, or an `Int` literal is outside it }}
-      must {{ fail with [Int overflow](#language.scripting.code.diagnostics.int_overflow) rather than wrap around }}
+      must {{ fail with Int overflow rather than wrap around }}
       example {{ `9223372036854775807 + 1` fails with `9223372036854775807 + 1 overflows Int, a 64-bit integer` }}
     }
 
-    bools_only: rule(code_fault, by = product.system.interpreter) {
-      must {{ take only a `Bool` as the condition of `if` and the operand of `and`, `or` and `not`, and fail with [needs a Bool](#language.scripting.code.diagnostics.needs_bool) for anything else }}
+    bools_only: rule(code_fault, by = system.interpreter) {
+      must {{ take only a `Bool` as the condition of `if` and the operand of `and`, `or` and `not`, and fail, saying it needs a `Bool`, for anything else }}
       then {{ there's no truthiness: `if items.size` fails, and `if not items.empty` is written instead }}
     }
 
-    short_circuit: rule(language.scripting.code.values, by = product.system.interpreter) {
+    short_circuit: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ skip the right operand of `and` when the left is `false`, and of `or` when the left is `true` }}
     }
 
-    operands: rule(code_fault, by = product.system.interpreter) {
-      must {{ define `+` on two numbers, two strings or two lists, which it joins, `<`, `<=`, `>` and `>=` on two numbers or two strings, and fail with [operator not defined](#language.scripting.code.diagnostics.operator_undefined) on any other pair }}
+    operands: rule(code_fault, by = system.interpreter) {
+      must {{ define `+` on two numbers, two strings or two lists, which it joins, `<`, `<=`, `>` and `>=` on two numbers or two strings, and fail with operator not defined on any other pair }}
       example {{ `"a" + "b"` is `"ab"`, `[1] + [2]` is `[1, 2]`, `"a" < "b"` is `true` and `1 + "x"` fails }}
     }
 
-    structural_equality: rule(language.scripting.code.values, by = product.system.interpreter) {
+    structural_equality: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ compare with `==` and `!=` by structure, an `Int` equal to the `Float` of the same number and a [typed string](#language.data.typed_strings.typed_string) equal to its text }}
       then {{ `==` never fails, and values of different shapes are unequal }}
     }
 
-    membership: rule(language.scripting.code.values, by = product.system.interpreter) {
+    membership: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ read `x in c` as an item of a list, a key of a map or a member of a record that's set, or a substring of a `String`, and as `false` when `c` is null }}
     }
 
-    type_tests: rule(language.scripting.code.values, by = product.system.interpreter) {
+    type_tests: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ read `v is T` as true when `v`'s type is `T` or implements the interface `T`, when `T` is `Float` and `v` an `Int`, and when `T` is `Any` and `v` isn't null }}
       example {{ `result.error is ProcessError` and `result.error is Error` are both true for a failed process }}
     }
 
-    enum_values: rule(language.scripting.code.values, by = product.system.interpreter) {
+    enum_values: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ give an enum variant as a value its name, as a `String` }}
       then {{ a variant compares equal to its name, prints as it and is passed to a process as it }}
     }
 
-    clock_reading: rule(language.scripting.code.values, by = product.system.interpreter) {
+    clock_reading: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ read `clock.now` from the run's clock alone, as an ISO 8601 time in UTC with milliseconds }}
       then {{ a run given a fixed clock is replayable }}
       example {{ `2026-01-02T03:04:05.000Z` }}
     }
 
-    determinism: rule(language.scripting.code.values, by = product.system.interpreter) {
+    determinism: rule(language.scripting.code.values, by = system.interpreter) {
       must {{ reach processes, files, the environment and the time only through the capabilities a run is given }}
       then {{ a run is deterministic given its capabilities' answers, which a test fakes and the run record keeps }}
     }
 
-    missing_capability: rule(code_fault, by = product.system.interpreter) {
+    missing_capability: rule(code_fault, by = system.interpreter) {
       if {{ code runs a process, reads, writes or makes a temporary file, or reads the clock where the run has no such capability }}
-      must {{ fail with [no capability](#language.scripting.code.diagnostics.no_capability) }}
+      must {{ fail with no capability }}
     }
 
-    conversions: rule(thrown_error, by = product.system.interpreter) {
+    conversions: rule(thrown_error, by = system.interpreter) {
       must {{ convert one positional argument by calling its target type, `String(x)`, `Int(s)`, `Float(s)` and `Bool(x)`, and throw `ParseError` for text that isn't the number asked for }}
       example {{ `Int("3")` is `3`; `attempt(Int("three")).error.message` reads `"three" is no Int` }}
     }
@@ -115,22 +115,22 @@ code: section {
     | | list          | `size`, `empty`, `first`, `last`                                             | `contains`, `join`, `get`                                    |
     | | map           | its keys                                                                     | `contains`, `get`                                            |
 
-    string_case: rule(language.scripting.code.members, by = product.system.interpreter) {
+    string_case: rule(language.scripting.code.members, by = system.interpreter) {
       must {{ split a `String` into words at underscores, hyphens, spaces and each upper-case letter that follows a lower-case one, for `pascal`, `camel`, `snake` and `kebab` }}
       example {{ `"pet_category".pascal` is `PetCategory` }}
     }
 
-    absent_members: rule(language.scripting.code.members, by = product.system.interpreter) {
+    absent_members: rule(language.scripting.code.members, by = system.interpreter) {
       must {{ read a record field or map key that isn't set as null, and `first` and `last` of an empty list as null }}
       then {{ a map's members are its keys, so `counts.size` reads the key `size` }}
     }
 
-    no_member: rule(code_fault, by = product.system.interpreter) {
+    no_member: rule(code_fault, by = system.interpreter) {
       if {{ code reads a member of null, or a member or method that the value's type doesn't have and no func in scope supplies }}
-      must {{ fail with [no member](#language.scripting.code.diagnostics.no_member) }}
+      must {{ fail with no member }}
     }
 
-    method_fallback: rule(language.scripting.code.members, by = product.system.interpreter) {
+    method_fallback: rule(language.scripting.code.members, by = system.interpreter) {
       where {{ a method isn't one of the value's own }}
       must {{ call the func its name resolves to in scope, with the value as the first positional argument }}
       example {{ `list.contains(x)` is the built-in; `orders.total()` is `total(orders)` }}
@@ -141,18 +141,18 @@ code: section {
     | `let name = expr` binds a [local](#language.core_format.nodes.locals.local_term) once,
     | for the rest of its block and the blocks inside it.
 
-    bound_once: rule(language.core_format.nodes.locals.local_term, by = product.system.interpreter) {
+    bound_once: rule(language.core_format.nodes.locals.local_term, by = system.interpreter) {
       if {{ a block binds a name its own earlier `let` already bound }}
-      must {{ fail with [already bound](#language.scripting.code.diagnostics.already_bound) }}
+      must {{ fail with already bound }}
       then {{ a nested block may bind the name again, which hides the outer one until the nested block ends }}
     }
 
-    fields_not_locals: rule(language.core_format.nodes.locals.local_term, by = product.system.interpreter) {
+    fields_not_locals: rule(language.core_format.nodes.locals.local_term, by = system.interpreter) {
       if {{ an assignment's path starts with a local, or is a single name }}
-      must {{ fail with [locals never change](#language.scripting.code.diagnostics.locals_never_change) }}
+      must {{ fail with locals never change }}
     }
 
-    set_fields: rule(hook, by = product.system.interpreter) {
+    set_fields: rule(hook, by = system.interpreter) {
       when {{ code runs `node.field = value` on a node that exists }}
       must {{ keep the value as that field's for the rest of the run, ahead of what the tree says, and record it }}
       example {{ after `db.ready = true`, `db.ready` reads `true` even where the tree writes `ready = false` }}
@@ -163,33 +163,33 @@ code: section {
     | `if` and `for` are statements and expressions alike: a block's value is the value of
     | its last expression statement.
 
-    if_value: rule(language.scripting.code.control_flow, by = product.system.interpreter) {
+    if_value: rule(language.scripting.code.control_flow, by = system.interpreter) {
       must {{ give `if` the value of the block it runs, and null when the condition is false and there's no `else` }}
       example {{ `let label = if refunds.size == 1 { "refund" } else { "refunds" }` }}
     }
 
-    for_collects: rule(language.scripting.code.control_flow, by = product.system.interpreter) {
+    for_collects: rule(language.scripting.code.control_flow, by = system.interpreter) {
       must {{ give `for` a list of its block's value for each item, in order }}
       example {{ `let doubled = for amount in amounts { amount * 2 }` }}
     }
 
-    for_collections: rule(code_fault, by = product.system.interpreter) {
-      must {{ iterate a list or set by its items, a map by its keys in sorted order, and null as empty, and fail with [not iterable](#language.scripting.code.diagnostics.not_iterable) for anything else }}
+    for_collections: rule(code_fault, by = system.interpreter) {
+      must {{ iterate a list or set by its items, a map by its keys in sorted order, and null as empty, and fail with not iterable for anything else }}
       then {{ every loop is finite, since every collection is }}
     }
 
-    return_ends_the_call: rule(language.scripting.code.control_flow, by = product.system.interpreter) {
+    return_ends_the_call: rule(language.scripting.code.control_flow, by = system.interpreter) {
       must {{ end the func, task or [hook](#language.scripting.code.hook) with `return`'s value from any depth of `if` and `for` that stands as a statement or as a `let`'s value }}
     }
 
-    return_in_expression: rule(code_fault, by = product.system.interpreter) {
+    return_in_expression: rule(code_fault, by = system.interpreter) {
       if {{ a `return` runs inside an `if` or `for` that is an operand or an argument }}
-      must {{ fail with [return inside an expression](#language.scripting.code.diagnostics.return_in_expression) }}
+      must {{ fail with return inside an expression }}
     }
 
-    no_recursion: rule(code_fault, by = product.system.interpreter) {
+    no_recursion: rule(code_fault, by = system.interpreter) {
       if {{ a func or task is called while a call of it is still running, directly or through other calls }}
-      must {{ fail with [calls itself](#language.scripting.code.diagnostics.calls_itself) }}
+      must {{ fail with calls itself }}
       then {{ with `for` over finite collections and no `while`, every run of code ends }}
     }
   }
@@ -198,36 +198,36 @@ code: section {
     | Everything that isn't a binding, a branch or a loop is a call: of a func, a task, an
     | op, a type or a built-in.
 
-    argument_binding: rule(language.scripting.code.calls, by = product.system.interpreter) {
+    argument_binding: rule(language.scripting.code.calls, by = system.interpreter) {
       must {{ bind positional arguments to the parameters in order, a `<variadic>` parameter taking the rest or one list, named ones by name, then each parameter left out to its default, evaluated at the call, or null when it's optional }}
     }
 
-    argument_mismatch: rule(code_fault, by = product.system.interpreter) {
+    argument_mismatch: rule(code_fault, by = system.interpreter) {
       if {{ a call gives more positional arguments than there are parameters, names a parameter that doesn't exist, or leaves out a required one }}
-      must {{ fail with [wrong arguments](#language.scripting.code.diagnostics.wrong_arguments) }}
+      must {{ fail with wrong arguments }}
     }
 
-    type_calls: rule(language.scripting.code.calls, by = product.system.interpreter) {
+    type_calls: rule(language.scripting.code.calls, by = system.interpreter) {
       must {{ read a call of a type as a record of it when every argument is named, a conversion when there's one positional value, and a type with arguments when every argument is a type }}
       example {{ `OrderRequest(pet_id = 4)`, `String(42)` and `List(Pet)` }}
     }
 
-    bodiless_funcs: rule(code_fault, by = product.system.interpreter) {
+    bodiless_funcs: rule(code_fault, by = system.interpreter) {
       if {{ a func with no body, no value and no foreign binding is called and nothing is registered under its path }}
-      must {{ fail with [no implementation](#language.scripting.code.diagnostics.no_implementation) }}
+      must {{ fail with no implementation }}
     }
 
-    uncallable: rule(code_fault, by = product.system.interpreter) {
+    uncallable: rule(code_fault, by = system.interpreter) {
       if {{ code calls a node that isn't a func, task, op or type, or calls a macro }}
-      must {{ fail with [can't be called](#language.scripting.code.diagnostics.not_callable) }}
+      must {{ fail with can't be called }}
       then {{ a macro is invoked in structure, where its source lands, never from code }}
     }
 
-    calls_recorded: rule(language.scripting.code.calls, by = product.system.interpreter) {
+    calls_recorded: rule(language.scripting.code.calls, by = system.interpreter) {
       must {{ record each call of a func or task once it returns, with its arguments, its result or error and how deep it was }}
     }
 
-    log_lines: rule(language.scripting.code.calls, by = product.system.interpreter) {
+    log_lines: rule(language.scripting.code.calls, by = system.interpreter) {
       must {{ record each `log(message)` as a line of the run and hand it to the run's log, which `heron run` prints on standard error }}
     }
   }
@@ -243,32 +243,32 @@ code: section {
       `let result = attempt(store.place_order(request = request))`.
     }}
 
-    throws_propagate: rule(thrown_error, by = product.system.interpreter) {
+    throws_propagate: rule(thrown_error, by = system.interpreter) {
       if {{ a call throws }}
       must {{ end each enclosing call and block with the same error, up to the nearest `attempt(…)` or the run }}
     }
 
-    declared_errors: rule(thrown_error, by = product.system.interpreter) {
+    declared_errors: rule(thrown_error, by = system.interpreter) {
       must {{ throw only values of [error types](#language.data.types.error_type) a package declares, each implementing `Error` and named by the `@throws` of the func that throws it }}
       then {{ `result.error is FileError` checks where the package is imported, and is true at run time for the error `read` threw }}
       example {{ `std/process` declares `ProcessError`, `std/files` declares `FileError`, `std/json` declares `DecodeError` and `EncodeError`, and the prelude declares `ParseError` for conversions and `ForeignError` for foreign code }}
     }
 
-    attempt_catches_throws: rule(attempt_func, by = product.system.interpreter) {
+    attempt_catches_throws: rule(attempt_func, by = system.interpreter) {
       must {{ return a `Result` with `error` set when its call throws, and with `value` set, null included, when it returns }}
     }
 
-    attempt_passes_faults: rule(attempt_func, by = product.system.interpreter) {
+    attempt_passes_faults: rule(attempt_func, by = system.interpreter) {
       mustNot {{ catch a [fault](#language.scripting.code.code_fault) }}
       instead {{ let it fail the run, since retrying code that's wrong can't help }}
     }
 
-    attempt_one_call: rule(attempt_func, by = product.system.interpreter) {
+    attempt_one_call: rule(attempt_func, by = system.interpreter) {
       if {{ `attempt` is given anything but one argument }}
-      must {{ fail with [attempt takes one call](#language.scripting.code.diagnostics.attempt_arity) }}
+      must {{ fail with attempt takes one call }}
     }
 
-    faults_located: rule(code_fault, by = product.system.interpreter) {
+    faults_located: rule(code_fault, by = system.interpreter) {
       must {{ give a [code fault](#language.scripting.code.code_fault) the file, line and column of the code that caused it, as `index.heron:2:10: Int + String isn't defined` }}
     }
   }
@@ -277,109 +277,140 @@ code: section {
     | A call with a trailing block, `check("rejected") { … }`, makes the block a named step
     | of the run, so a test or a deployment reads as the steps it took.
 
-    trailing_block_step: rule(hook, by = product.system.interpreter) {
+    trailing_block_step: rule(hook, by = system.interpreter) {
       when {{ a call takes a trailing block }}
       must {{ run the block as a step named by the call's first positional argument, or by the called name when there is none, and record the step with its value or error once it ends }}
     }
 
-    registered_step_funcs: rule(hook, by = product.system.interpreter) {
+    registered_step_funcs: rule(hook, by = system.interpreter) {
       where {{ the callee of a trailing block is a func built into `heron` or implemented in a foreign language }}
       must {{ call it with the block, which it runs as it chooses }}
       then {{ a test framework's `check` can run its block once, retry it or skip it }}
     }
 
-    return_in_step: rule(hook, by = product.system.interpreter) {
+    return_in_step: rule(hook, by = system.interpreter) {
       must {{ end only the step at a `return` inside its block, with the returned value as the step's }}
     }
 
-    hooks_in_order: rule(hook, by = product.system.interpreter) {
+    hooks_in_order: rule(hook, by = system.interpreter) {
       when {{ a node's code is run }}
       must {{ run each of its `do` blocks in reading order, with the given values as locals, and stop at the first `return` }}
     }
   }
 
-  diagnostics: section {
+  errors: section {
     | A [code fault](#language.scripting.code.code_fault) ends the run with its message after `heron run: ‹task› failed: ` and the
     | position, and the run record keeps it as the run's error.
 
-    division_by_zero: diagnostic("fault", by = product.system.interpreter) {
-      message = "division by zero"
+    @realizes(language.scripting.code.values.division_by_zero)
+    division_by_zero: error("fault", by = system.interpreter) {
+      title = "division by zero"
     }
 
+    @realizes(language.scripting.code.values.int_overflow)
     @display("Int overflow")
-    int_overflow: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹expression› overflows Int, a 64-bit integer"
+    int_overflow: error("fault", by = system.interpreter) {
+      title = "{expression} overflows Int, a 64-bit integer"
+      expression: field(String)
       | `9223372036854775807 + 1`, `-(-9223372036854775808)` or a literal such as `99999999999999999999`: the expression or literal is named as written.
     }
 
+    @realizes(language.scripting.code.values.bools_only)
     @display("Needs a Bool")
-    needs_bool: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹if, and, or, not› needs a Bool, got ‹type›"
+    needs_bool: error("fault", by = system.interpreter) {
+      title = "{if_and_or_not} needs a Bool, got {type}"
+      if_and_or_not: field(String)
+      type: field(String)
     }
 
+    @realizes(language.scripting.code.values.operands)
     @display("Operator not defined")
-    operator_undefined: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹type› ‹operator› ‹type› isn't defined"
+    operator_undefined: error("fault", by = system.interpreter) {
+      title = "{type} {operator} {type} isn't defined"
+      type: field(String)
+      operator: field(String)
     }
 
+    @realizes(language.scripting.code.values.missing_capability)
     @display("No capability")
-    no_capability: diagnostic("fault", by = product.system.interpreter) {
-      message = "no processes can run here"
+    no_capability: error("fault", by = system.interpreter) {
+      title = "no processes can run here"
       | Or `no files can be read here`, `no files can be written here`, `no temporary files
       | can be made here` or `no clock is available to this run`.
     }
 
+    @realizes(language.scripting.code.members.no_member)
     @display("No member")
-    no_member: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹type› has no member ‹name›"
+    no_member: error("fault", by = system.interpreter) {
+      title = "{type} has no member {name}"
+      type: field(String)
+      name: field(String)
       | Or `null has no member ‹name›`, or `‹type› has no method ‹name›` for a call.
     }
 
+    @realizes(language.scripting.code.bindings.bound_once)
     @display("Already bound")
-    already_bound: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹name› is already bound in this block; locals never change"
+    already_bound: error("fault", by = system.interpreter) {
+      title = "{name} is already bound in this block; locals never change"
+      name: field(String)
     }
 
+    @realizes(language.scripting.code.bindings.fields_not_locals)
     @display("Locals never change")
-    locals_never_change: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹name› is a local, and locals never change; only a node's field can be set"
+    locals_never_change: error("fault", by = system.interpreter) {
+      title = "{name} is a local, and locals never change; only a node's field can be set"
+      name: field(String)
     }
 
+    @realizes(language.scripting.code.control_flow.for_collections)
     @display("Not iterable")
-    not_iterable: diagnostic("fault", by = product.system.interpreter) {
-      message = "for iterates a list, a set or a map, not ‹type›"
+    not_iterable: error("fault", by = system.interpreter) {
+      title = "for iterates a list, a set or a map, not {type}"
+      type: field(String)
     }
 
+    @realizes(language.scripting.code.control_flow.return_in_expression)
     @display("Return inside an expression")
-    return_in_expression: diagnostic("fault", by = product.system.interpreter) {
-      message = "return can't stand inside an expression"
+    return_in_expression: error("fault", by = system.interpreter) {
+      title = "return can't stand inside an expression"
     }
 
+    @realizes(language.scripting.code.control_flow.no_recursion)
     @display("Calls itself")
-    calls_itself: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹name› calls itself; code has no recursion"
+    calls_itself: error("fault", by = system.interpreter) {
+      title = "{name} calls itself; code has no recursion"
+      name: field(String)
     }
 
+    @realizes(language.scripting.code.calls.argument_mismatch, language.scripting.tasks.ordering.needed_without_args)
     @display("Wrong arguments")
-    wrong_arguments: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹name› needs the argument ‹param›"
+    wrong_arguments: error("fault", by = system.interpreter) {
+      title = "{name} needs the argument {param}"
+      name: field(String)
+      param: field(String)
       | Or `‹name› takes ‹n› positional arguments` and `‹name› takes no argument ‹param›`.
     }
 
+    @realizes(language.scripting.code.calls.bodiless_funcs)
     @display("No implementation")
-    no_implementation: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹name› has no body and no implementation is registered for ‹path›"
+    no_implementation: error("fault", by = system.interpreter) {
+      title = "{name} has no body and no implementation is registered for {path}"
+      name: field(String)
+      path: field(String)
     }
 
+    @realizes(language.scripting.code.calls.uncallable)
     @display("Can't be called")
-    not_callable: diagnostic("fault", by = product.system.interpreter) {
-      message = "‹path› can't be called: it is no func, task or type"
+    not_callable: error("fault", by = system.interpreter) {
+      title = "{path} can't be called: it is no func, task or type"
+      path: field(String)
       | Or `macro ‹name› is invoked in structure, not called from code`.
     }
 
+    @realizes(language.scripting.code.failures.attempt_one_call)
     @display("Attempt takes one call")
-    attempt_arity: diagnostic("fault", by = product.system.interpreter) {
-      message = "attempt takes one call"
+    attempt_arity: error("fault", by = system.interpreter) {
+      title = "attempt takes one call"
     }
   }
 }

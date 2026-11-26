@@ -16,4 +16,8 @@ include = [
 ]
 
 @lens(user, developer)
-| Markup is the prose layer of the format: Markdown's inline text with links to nodes, `$` inserts and [component tags](#language.markup.tags.component_tag), the `std/doc` components it places, and the projection text linters read. The [grammar](#language.grammar.prose) says how each form is read; this section says what it means.
+| Markup is the prose [layer](#heron.language.specifications.layers.layer) of the format: Markdown's inline text with links to nodes, `$` inserts and [component tags](#language.markup.tags.component_tag), the `std/doc` components it places, and the projection text linters read. The [grammar](#language.grammar.prose) says how each form is read; this section says what it means.
+
+prose_stays_true: goal(measure = "Prose links and inserts never point at nothing.") {{
+  Authors write prose that links to and quotes the tree, so it changes when the tree changes.
+}}

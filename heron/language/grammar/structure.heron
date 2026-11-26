@@ -24,22 +24,22 @@ structure: section {
       string text or raw text. Each construct's opener sets the mode of its inside.
     }}
 
-    body_by_opener: rule(tree.Body, by = product.system.parser) {
+    body_by_opener: rule(by = system.parser) {
       must {{ read a body after a member's head by what opens it: `{` as structure, `{{` as prose and `do {` as code }}
       then {{ a body can't change its mode inside, so a `{{ }}` body is all prose and a `do` body all code }}
     }
 
-    prose_after_eq: rule(tree.Set, by = product.system.parser) {
+    prose_after_eq: rule(by = system.parser) {
       must {{ read `=|` and a `=` followed by `|` lines or `{{` as a prose value, and anything else after `=` as an expression }}
       example {{ `message =| No pet exists with this id.`: a prose value with no quotes }}
     }
 
-    code_only_in_do: rule(tree.DoBlock, by = product.system.parser) {
+    code_only_in_do: rule(by = system.parser) {
       must {{ read statements only inside `do { … }`, and expressions only after `=`, `:`, in arguments, in annotations, in `${ }` and in [tag attributes](#language.markup.tags.tag_attribute) }}
       then {{ structure never holds a statement, and code never holds a member }}
     }
 
-    inserts_switch_back: rule(language.grammar.strings.tree.Insert, by = product.system.parser) {
+    inserts_switch_back: rule(by = system.parser) {
       must {{ read the inside of `${ … }` as an expression wherever prose or string text is read, up to its matching `}`, so brackets, strings and nested inserts inside it don't close what holds it }}
     }
   }
@@ -64,45 +64,45 @@ structure: section {
     | | `path { … }` or `path do { … }`         | `Enter`      |
     | | `path`                                  | `Invoke`     |
 
-    declaration_shape: rule(tree.Declare, tree.Value, by = product.system.parser) {
+    declaration_shape: rule(by = system.parser) {
       must {{ read a member as a declaration when its path, with optional flags, an optional list and an optional `?`, is followed by `:`; as a `Value` when `=` follows the type, and as a `Declare` otherwise }}
     }
 
-    params_or_args: rule(tree.Params, tree.Args, by = product.system.parser) {
+    params_or_args: rule(by = system.parser) {
       must {{ read a list after a name as `Params` when an entry is `name: Type`, starts with `///` or `@`, or the list is followed by `:`, and as `Args` otherwise }}
       example {{ `f(x: Int): func` declares a parameter, while `case(days_ago = 31)` and `code("sh")` pass arguments }}
     }
 
-    named_or_positional: rule(tree.Arg, by = product.system.parser) {
+    named_or_positional: rule(by = system.parser) {
       must {{ read an argument as named when it's a name followed by `=` and not `==`, and as positional otherwise }}
     }
 
-    invoke_shape: rule(tree.Invoke, by = product.system.parser) {
+    invoke_shape: rule(by = system.parser) {
       must {{ read a path with flags or arguments and no `:` as an `Invoke`, with an optional body or `=` and a value, and a bare path alone on its line as an `Invoke` with nothing after it }}
       example {{ `verification<generate>`, `requires.add(checks.e2e)` and `marker(color = Color.RED)`: invokes }}
     }
 
-    enter_shape: rule(tree.Enter, tree.TextNode, tree.Scope, tree.Set, by = product.system.parser) {
+    enter_shape: rule(by = system.parser) {
       must {{ read a bare path by what follows it: `.{` as a `Scope`, `=` as a `Set`, `{{` as a `TextNode`, and `{` or `do {` as an `Enter` }}
     }
 
-    let_shape: rule(tree.Let, by = product.system.parser) {
+    let_shape: rule(by = system.parser) {
       must {{ read `let` as a local's binding only when a space and a name follow it, with an optional `: Type`, then `=` and a value }}
       example {{ `let: Int = 1` declares a field named `let` }}
     }
 
-    paths: rule(tree.Path, by = product.system.parser) {
+    paths: rule(by = system.parser) {
       must {{ read a path as names joined by `.`, where in structure a segment can also be a string, and end it at a `.` that no name or string follows }}
       example {{ `packages."std/ci" = { … }` sets a key that isn't a name; `a.{` ends the path `a` before the scope }}
     }
 
-    flag_lists: rule(tree.Flags, by = product.system.parser) {
+    flag_lists: rule(by = system.parser) {
       must {{ read `<` directly after a name or a kind as a flag list only when names separated by commas, then `>`, follow it }}
-      unless {{ anything else follows the `<`, when it's the comparison operator }}
+      while {{ it's not the case that anything else follows the `<`, when it's the comparison operator }}
       example {{ `a<b` and `a < b` compare, while `task<confirm>` flags }}
     }
 
-    optional_marker: rule(tree.Declare, tree.Param, by = product.system.parser) {
+    optional_marker: rule(by = system.parser) {
       must {{ read a `?` between a name and its `:` as marking the declaration or parameter optional }}
       example {{ `note?: String`: an optional field; `lang?: String` in a list: an optional parameter }}
     }
@@ -111,72 +111,92 @@ structure: section {
   lines: section {
     | Members are separated by line ends, never by punctuation.
 
-    newlines_end_members: rule(tree.Member, by = product.system.parser) {
+    newlines_end_members: rule(by = system.parser) {
       must {{ end a member at the end of its line, so that nothing but a trailing comment or a closing `}` follows it on that line }}
-      unless {{ an open bracket, a trailing operator or a value still to come after `=` continues it onto the next line }}
+      while {{ it's not the case that an open bracket, a trailing operator or a value still to come after `=` continues it onto the next line }}
       example {{ `x =` with `1` on the next line, and an argument list wrapped one entry per line with a trailing comma: one member each }}
     }
 
-    doc_lines_attach: rule(tree.Doc, by = product.system.parser) {
+    doc_lines_attach: rule(by = system.parser) {
       must {{ join consecutive [doc lines](#language.core_format.prose_layer.doc_lines) into one `Doc` and attach it to the member on the next line }}
-      unless {{ a blank line, a comment or a `}` follows them, which then stand alone as a `Doc` member }}
+      while {{ it's not the case that a blank line, a comment or a `}` follows them, which then stand alone as a `Doc` member }}
     }
 
-    annotation_lines: rule(tree.Annotation, by = product.system.parser) {
+    annotation_lines: rule(by = system.parser) {
       must {{ attach `@name(args)` annotations to the member they stand in front of, on the same line or on lines of their own directly above it, with comments allowed between }}
     }
   }
 
   /// The productions of members, their heads and their bodies.
   @display("Structure productions")
-  tree: tech.grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
+  tree: grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
     start = language.grammar.structure.tree.File
 
     /// A file of structure: its implicit root's members.
     File: production {{ Member* }}
     /// One member of a body.
+    @realizes(language.grammar.structure.lines.newlines_end_members)
     Member: production {{
       Declare | Value | Enter | TextNode | Scope | Invoke | Set | Let | Action
       | ProseLines | ProseBlock | CommentLine | Doc | ErrorNode
     }}
     /// A node of a stated kind or type, with an optional body.
+    @realizes(language.grammar.structure.member_shapes.optional_marker, language.grammar.structure.member_shapes.declaration_shape)
     Declare: production {{ Doc? Annotation* Path Flags? Params? Question? Colon Type Body? }}
     /// A typed value, or a func of one expression.
+    @realizes(language.grammar.structure.member_shapes.declaration_shape)
     Value: production {{ Doc? Annotation* Path Flags? Params? Question? Colon Type Eq Expr }}
     /// Amends a node that exists.
+    @realizes(language.grammar.structure.member_shapes.enter_shape)
     Enter: production {{ Doc? Annotation* Path Body }}
     /// A node of the path's kind holding only text, or an entered node's text.
+    @realizes(language.grammar.structure.member_shapes.enter_shape)
     TextNode: production {{ Doc? Annotation* Path ProseBlock }}
     /// Amends a path, creating it if it's missing; with no path, a group.
+    @realizes(language.grammar.structure.member_shapes.enter_shape)
     Scope: production {{ Doc? Annotation* Path? Dot StructBody }}
     /// A call: of a kind, a macro or a func.
+    @realizes(language.grammar.structure.member_shapes.invoke_shape)
     Invoke: production {{ Doc? Annotation* Path Flags? Args? Body? Eq? Expr? }}
     /// Sets a field that exists.
+    @realizes(language.grammar.structure.member_shapes.enter_shape, language.grammar.structure.modes.prose_after_eq)
     Set: production {{ Doc? Annotation* Path Eq Expr }}
     /// Binds a local.
+    @realizes(language.grammar.structure.member_shapes.let_shape)
     Let: production {{ Doc? KwLet Ident Colon? Type? Eq Expr }}
     /// The node's code.
     Action: production {{ Doc? Annotation* DoBlock }}
     /// A comment on a line of its own.
+    @realizes(language.grammar.lexical.comment_members)
     CommentLine: production {{ Comment }}
     /// What the parser skipped to recover.
     ErrorNode: production {{ Error* }}
     /// `///` lines, joined into the next member's `@doc`.
+    @realizes(language.grammar.structure.lines.doc_lines_attach)
     Doc: production {{ DocLine* }}
     DocLine: production {{ DocPrefix Inline* }}
+    @realizes(language.grammar.structure.lines.annotation_lines)
     Annotation: production {{ At Path Flags? Args? }}
+    @realizes(language.grammar.structure.member_shapes.paths)
     Path: production {{ Ident* StringLit* }}
+    @realizes(language.grammar.structure.member_shapes.flag_lists)
     Flags: production {{ FlagOpen Ident* Comma* FlagClose }}
     /// Inputs that callers and cases supply.
+    @realizes(language.grammar.structure.member_shapes.params_or_args)
     Params: production {{ LParen Param* Comma* RParen }}
+    @realizes(language.grammar.structure.member_shapes.optional_marker)
     Param: production {{ Doc? Annotation* Ident Flags? Question? Colon Type Eq? default:Expr? }}
     /// Arguments that configure a kind or call.
+    @realizes(language.grammar.structure.member_shapes.params_or_args)
     Args: production {{ LParen Arg* Comma* RParen }}
+    @realizes(language.grammar.structure.member_shapes.named_or_positional)
     Arg: production {{ PositionalArg | NamedArg }}
     PositionalArg: production {{ Expr }}
     NamedArg: production {{ Ident Eq Expr }}
+    @realizes(language.grammar.structure.modes.body_by_opener)
     Body: production {{ StructBody | ProseBlock | DoBlock }}
     StructBody: production {{ LBrace Member* RBrace }}
+    @realizes(language.grammar.structure.modes.code_only_in_do)
     DoBlock: production {{ KwDo Code }}
   }
 }

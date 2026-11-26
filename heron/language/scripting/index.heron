@@ -8,4 +8,8 @@ include = [
 ]
 
 @lens(user, developer)
-| The small executable layer: what code in `do` blocks does, processes and files, tasks run by path, and funcs, macros and templates. It's kept small on purpose: code decides, combines and calls, real work runs in the language a system is built in, and what stays is deterministic, so every run is replayable.
+| The small executable [layer](#heron.language.specifications.layers.layer): what code in `do` blocks does, processes and files, tasks run by path, and funcs, macros and templates. It's kept small on purpose: code decides, combines and calls, real work runs in the language a system is built in, and what stays is deterministic, so every run is replayable.
+
+tasks_in_tree: goal(measure = "Build, test and release run from the tree.") {{
+  Teams run their build, test and release tasks from the same tree that specifies them, with a record of every run.
+}}
