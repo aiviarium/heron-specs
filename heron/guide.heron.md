@@ -171,6 +171,12 @@ choice for the implementer.
 <must>change the package's version with every change an implementation would see: the patch for a correction, the minor for a new behaviour, the major for a behaviour removed or changed</must>
 </rule>
 
+<rule id="in_place_before_release" targets="guide.changing" by="actors.author">
+<while>the package is unreleased, before its first version is tagged or published</while>
+<must>change it in place, so the tree and its docs describe only the current language, as if it had always been so, without deprecation marks, migration notes or diagnostics for kinds and syntax it has dropped</must>
+<then>compatibility handling, such as deprecations and migration advice, starts with the first release and covers only versions that were released</then>
+</rule>
+
 <rule id="tree_stays_green" targets="guide.changing" by="actors.author">
 <must>pass `heron check`, `heron lint` and `heron fmt --check`, and render as the documentation site, after every change</must>
 </rule>
