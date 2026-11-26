@@ -14,7 +14,7 @@ documenting: epic {
       opens_on_tasks: criterion {
         given {{ a site whose [docs block](#tools.docs.extending.docs_block) lists `user`, `developer` and `explore`, and a tree with a guide and two how-tos }}
         when {{ the reader opens the site's `index.html` }}
-        then {{ the page is the `user` lens's home, with a tile for the guide and each how-to }}
+        then {{ the page is the `user` lens's home, with a link to the guide and to each how-to }}
         then {{ the navigation lists the guide, then the how-tos, then the reference }}
       }
 

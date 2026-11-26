@@ -153,8 +153,9 @@ lenses: section {
     }
 
     empty_containers_dropped: rule(tools.docs.lenses.what_a_lens_shows, by = product.system.docs_generator) {
-      where {{ a lens keeps no node of a section's subtree and leaves the section out }}
-      mustNot {{ give the section a heading, a page or a place in the navigation in that lens }}
+      where {{ a lens shows nothing of a section's or a [folder scope](#guide.layout.folder_scope)'s subtree, neither a node below it nor a [prose run](#language.markup.lens_marks.prose_run) of its own }}
+      mustNot {{ give the section or the scope a heading, a page or a place in the navigation in that lens }}
+      then {{ a folder whose pages and prose are all marked for `user` has no empty page in `developer` }}
     }
 
     marked_nodes: rule(tools.docs.lenses.lens_mark, by = product.system.docs_generator) {
@@ -181,8 +182,8 @@ lenses: section {
 
     links_across_lenses: rule(tools.docs.lenses.what_a_lens_shows, by = product.system.docs_generator) {
       where {{ a link on a page of one lens leads to a node that lens leaves out }}
-      must {{ link the node's anchor on its page in the first lens of the site's `lenses` that shows it, and show that lens's `title` after the link text }}
-      then {{ a user's page can link a rule, which opens in `explore` }}
+      must {{ link the node's anchor on its page in the first lens of the site's `lenses` that shows it, and show that lens's `title` after the text of a link written in prose }}
+      then {{ a user's page can link a rule, which opens in `explore`, and the links the generator builds, such as a rule's subject or the part that reports a diagnostic, read without a lens's title after each }}
     }
   }
 
@@ -192,12 +193,24 @@ lenses: section {
 
     task_nav: rule(tools.docs.lenses.lens_nav, by = product.system.docs_generator) {
       where {{ a lens's `nav` is `LensNav.TASK` }}
-      must {{ list in its navigation the pages its `entry` names, then its other [authored pages](#language.markup.authored_pages.authored_page) grouped by kind as guides, tutorials, how-tos and concepts, each group in the order the tree writes it, then a group of the reference: every other page the lens keeps, in the order of the tree }}
+      must {{ list in its navigation the pages its `entry` names, then its other [authored pages](#language.markup.authored_pages.authored_page) grouped by kind as guides, tutorials, how-tos and concepts, each group in the order the tree writes it, then a group of the reference: every other page the lens keeps, in the order of the tree, then its diagnostics page, titled with the [string catalogue](#tools.frontend.writing.string_catalogue)'s word for errors, and its glossary }}
+    }
+
+    task_reference_once: rule(tools.docs.lenses.lens_nav, by = product.system.docs_generator) {
+      where {{ a lens's `nav` is `LensNav.TASK`, and a page of the reference holds nothing the lens shows but its own prose and [authored pages](#language.markup.authored_pages.authored_page) its navigation already lists }}
+      mustNot {{ list that page in the reference group }}
+      then {{ a folder of how-tos is listed once, by its how-tos, and not again by its folder }}
     }
 
     task_home: rule(tools.docs.lenses.lens_nav, by = product.system.docs_generator) {
       where {{ a lens's `nav` is `LensNav.TASK` }}
-      must {{ show on its home page the site's title, the root's prose the lens keeps, and a tile for each page its `entry` names, or for its first three [authored pages](#language.markup.authored_pages.authored_page) when it names none, each tile with the page's title and the first sentence of its prose }}
+      must {{ show on its home page the site's title and the root's prose the lens keeps; then the first page its `entry` names, or else its first tutorial, as the primary link, with the page's title and the first sentence of its prose; then a group for each group of its navigation, labelled as the navigation labels it, with a link to each of its pages but the primary one, each with the page's title and the first sentence of its prose where it has one }}
+      then {{ the home page reaches every page its navigation lists, and a group left with no page is left out }}
+    }
+
+    topic_home: rule(tools.docs.lenses.lens_nav, by = product.system.docs_generator) {
+      where {{ a lens's `nav` is `LensNav.TOPIC` }}
+      must {{ show on its home page the site's title and the root's prose the lens keeps, then a group for each group of its navigation, labelled with its section's title, with a link to each of its pages and the first sentence of the page's prose where it has one }}
     }
 
     topic_nav: rule(tools.docs.lenses.lens_nav, by = product.system.docs_generator) {
