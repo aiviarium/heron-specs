@@ -160,3 +160,7 @@ protocol: section {
 protocol.messages.{
   include = ["./protocol_messages.heron"]
 }
+
+// The messages' scope, as the docs' navigation names its types.
+@display("Extension protocol messages")
+protocol.messages {}
