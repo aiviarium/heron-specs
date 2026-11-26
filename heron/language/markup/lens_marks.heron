@@ -2,12 +2,14 @@
 lens_marks: section {
   | A [lens mark](#tools.docs.lenses.lens_mark), `@lens(names…)`, says which [lenses](#tools.docs.lenses.lens_kind) of the docs a node or a piece of prose
   | is for. On a node it's an annotation like any other; on prose it marks one [prose run](#language.markup.lens_marks.prose_run),
-  | so a section can say one thing to its users and another to its implementers.
+  | so a section can say one thing to its users and another to its implementers. Every
+  | element accepts it as an attribute, so in a [prose file](#language.core_format.prose_layer.prose_file) a marked paragraph is
+  | `<p @lens="user, developer">…</p>`, or the same mark on any element that wraps it.
   | [A marked prose run](#language.markup.lens_marks.marked_prose_example) shows both.
 
   prose_run: term {{
     One run of a node's own text: consecutive `|` lines, up to the first member that isn't
-    one, or one `{{ }}` body. A [lens mark](#tools.docs.lenses.lens_mark) on the line above a run applies to the whole run,
+    one, one `{{ }}` body, or one block of a [prose file](#language.core_format.prose_layer.prose_file). A [lens mark](#tools.docs.lenses.lens_mark) on the line above a run applies to the whole run,
     its paragraphs included.
   }}
 
@@ -27,6 +29,17 @@ lens_marks: section {
 
   mark_checked_on_prose: rule(prose_run, by = product.system.checker) {
     must {{ check a [lens mark](#tools.docs.lenses.lens_mark) on a [prose run](#language.markup.lens_marks.prose_run) as one on a node, reporting [unknown lens](#tools.docs.lenses.diagnostics.unknown_lens) and [not a lens](#tools.docs.lenses.diagnostics.not_a_lens) at the name }}
+  }
+
+  element_marks: rule(prose_run, by = product.system.checker) {
+    where {{ an element that declares no node has an `@lens` attribute, as `<p @lens="user, developer">…</p>` }}
+    must {{ read it as a [lens mark](#tools.docs.lenses.lens_mark) on the element's content, checked as one on a [prose run](#language.markup.lens_marks.prose_run) }}
+    then {{ a prose file's block that is such an element is a marked [prose run](#language.markup.lens_marks.prose_run), as `|` lines under `@lens(user, developer)` are }}
+  }
+
+  element_marks_shown: rule(prose_run, by = product.system.docs_generator) {
+    where {{ an element inside a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark) }}
+    must {{ render its content only in the lenses the mark names, and in explore with the mark's lenses beside it, as a marked run renders }}
   }
 
   only_lens_on_prose: rule(prose_run, by = product.system.linter) {

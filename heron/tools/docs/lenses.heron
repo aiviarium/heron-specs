@@ -22,8 +22,9 @@ lenses: section {
   }}
 
   lens_mark: term {{
-    `@lens(names…)` on a node or a [prose run](#language.markup.lens_marks.prose_run): the [lenses](#tools.docs.lenses.lens_kind) the node or the block is for,
-    each named by a reference to a lens node.
+    `@lens(names…)` on a node or a [prose run](#language.markup.lens_marks.prose_run), or `@lens="names…"` on an
+    element: the [lenses](#tools.docs.lenses.lens_kind) the node or the block is for, each named by a reference to a
+    lens node.
   }}
 
   declaring: section {
