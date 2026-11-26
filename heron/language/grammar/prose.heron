@@ -73,6 +73,7 @@ prose: section {
 
     heron_fences: rule(tree.HeronFence, by = product.system.parser) {
       must {{ read the lines of a fence whose info string is `heron` as members, closed by a line that closes the fence }}
+      unless {{ the fence is inside a [kind element](#language.markup.tags.component_tag), where it's a fenced block of code, as an example's }}
     }
 
     unclosed_fence: rule(tree.HeronFence, by = product.system.parser) {

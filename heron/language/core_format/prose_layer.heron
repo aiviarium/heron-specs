@@ -15,7 +15,8 @@ prose_layer: section {
     A file ending in `.heron.md`, with a prose root. It reads as Markdown with links,
     `$` [insertions](#language.markup.inserts.insertion) and [kind elements](#language.markup.tags.component_tag). Its headings are sections, each named by
     its `{#name}`, as `## Limits {#refund_limits}`; its elements with an `id` are nodes; and
-    fenced blocks marked `heron` are read in place as members of the current section. Its
+    fenced blocks marked `heron` outside an element are read in place as members of the
+    current section. Its
     nodes sit under the scope the file is included at.
   }}
 
