@@ -68,7 +68,7 @@ quality_checks: section {
   negated_condition: rule(language.specifications.requirements.rule_condition, by = system.prose_linter) {
     if {{ a condition says "not the case that", or negates twice in one clause, as `isn't … no` or `not … never` }}
     should {{ report a negated condition at the words }}
-    then {{ an exception migrated from `unless` reads as the state the rule applies in }}
+    then {{ a rule says the state it applies in, as the people who use the product would }}
   }
 
   design_words: rule(language.specifications.layers.layer, by = system.prose_linter) {

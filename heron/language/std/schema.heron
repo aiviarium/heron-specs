@@ -10,7 +10,7 @@ schema: part {
   | | `package`                                                     | [Packages](#language.schemas.kinds.packages)                                                                               |
   | | `kind`, `accept`, `Mode`                                      | [Declaring kinds](#language.schemas.kinds.declaring), [Accept](#language.schemas.accept), [Modes](#language.schemas.modes) |
   | | `category`, `flow`, `phrasing`                                | [Categories](#language.schemas.categories)                                                                                 |
-  | | `Layer`, a kind's `layer` and `extends`, `@retired`           | [Layers](#language.specifications.layers), [Retired kinds](#language.specifications.retired)                              |
+  | | `Layer`, a kind's `layer` and `extends`                       | [Layers](#language.specifications.layers)                                                                                 |
   | | `flag`, `<repeatable>`                                        | [Flags](#language.schemas.flags)                                                                                           |
   | | `annotation`                                                  | [Annotations](#language.schemas.annotations)                                                                               |
   | | `<overload>`                                                  | [Overloads](#language.schemas.overloads)                                                                                   |

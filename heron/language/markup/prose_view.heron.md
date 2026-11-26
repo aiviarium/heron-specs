@@ -52,7 +52,7 @@ their text, which the core maps back onto the source.
 
 <rule id="region_context" targets="prose_region" by="system.prose_linter">
 <must>give every region its file, its byte range, the path and kind of the node its text belongs to, and where the text was written: `prose`, `block`, `value`, `doc`, `string` or `file`</must>
-<then>a provider can scope its checks, such as treating `example` bodies or `outOfScope` differently</then>
+<then>a provider can scope its checks, such as treating `example` bodies or `nongoal` differently</then>
 </rule>
 
 <rule id="element_regions" targets="prose_region" by="system.prose_linter">

@@ -70,6 +70,11 @@ imports: section {
       must {{ write `heron.lock` with the exact version and checksum of every package and extension `heron run setup` installs }}
     }
 
+    branch_pins: rule(import_term, by = system.interpreter) {
+      where {{ `heron.lock` pins a package from git at a branch with its commit, as a package is pinned before its first release }}
+      must {{ install it from that commit and keep the pin, asking the remote for no tag }}
+    }
+
     file_imports: rule(import_term, by = system.checker) {
       must {{ resolve an entry that starts with `./` or `../` as a file or folder relative to the importing file, and a folder import as its `index.heron`, visible both directly and under the folder's name }}
     }

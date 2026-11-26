@@ -33,7 +33,7 @@ targets, asked in its text, with `owner` naming who answers it.
 
 <rule id="resolving_translates" targets="open_kind" by="actors.author">
 <when>an open question is answered</when>
-<must>write the requirement or the `outOfScope` it was about, and delete the question</must>
+<must>write the requirement or the `nongoal` it was about, and delete the question</must>
 </rule>
 
 <rule id="planning_checks" targets="planning_tree" by="system.linter">

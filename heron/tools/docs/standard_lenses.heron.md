@@ -52,7 +52,7 @@ terms, examples and errors of the concerns below it.
 </rule>
 
 <rule id="user_hides" targets="tools.docs.standard_lenses.user_lens" by="system.docs_generator">
-<mustNot>render, in the `user` lens, a rule, a rule's conditions, a production, an invariant, or the prose of a section of the tree that no [lens mark](#tools.docs.lenses.lens_mark) keeps for `user`</mustNot>
+<mustNot>render, in the `user` lens, a rule, a rule's conditions, a production, or the prose of a section of the tree that no [lens mark](#tools.docs.lenses.lens_mark) keeps for `user`</mustNot>
 </rule>
 
 <rule id="diagnostics_as_errors" targets="tools.docs.standard_lenses.user_lens" by="system.docs_generator">

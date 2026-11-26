@@ -35,7 +35,7 @@ implementations: section {
     }
 
     spec_kinds_in_spec: rule(implements_kind, by = system.checker) {
-      if {{ a tree whose root holds an [implements](#language.specifications.implementations.implements_kind) declares a rule, a story, a criterion, a use case, a term, an epic, a quality, a [lifecycle](#language.specifications.lifecycles.lifecycle), an actor, a persona, a grammar, a command, a screen, a diagnostic or an api }}
+      if {{ a tree whose root holds an [implements](#language.specifications.implementations.implements_kind) declares a goal, a rule, a scenario, a use case, a term, a quality, a [lifecycle](#language.specifications.lifecycles.lifecycle), an actor, a persona, a grammar, a command, a screen, an error or an api }}
       must {{ report spec content at the outermost such node }}
     }
   }

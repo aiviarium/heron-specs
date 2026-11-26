@@ -1,6 +1,6 @@
 naming: section {
   | Names follow code rules: `snake_case` for nodes, fields and values, `camelCase` for
-  | kinds, such as `mcpServer` or `outOfScope`, and `PascalCase` for types. A node is
+  | kinds, such as `mcpServer`, and `PascalCase` for types. A node is
   | reached by its path, and shown by its [display name](#language.core_format.naming.display_name).
 
   node_path: term {{
