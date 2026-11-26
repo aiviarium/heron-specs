@@ -1,0 +1,197 @@
+@display("Layers")
+layers: section {
+  | A spec says three things about a technical product, and keeps them apart: why it exists
+  | and for whom, what must hold of it as seen from outside, and the exact surface a consumer
+  | relies on. Each is a [layer](#language.specifications.layers.layer), and every core kind of
+  | `std/spec` belongs to one. How the product gets built and delivered is no [layer](#heron.language.specifications.layers.layer) of the spec;
+  | it belongs to the implementation's project, with `std/project`.
+  |
+  | | [Layer](#heron.language.specifications.layers.layer)           | Says                                           | Core kinds                                                     |
+  | | --------------- | ---------------------------------------------- | -------------------------------------------------------------- |
+  | | `INTENT`        | why the product exists, who it's for, what for | `goal`, `actor`, `persona`, `nongoal`, `assumption`, `quality`  |
+  | | `SPECIFICATION` | what must hold, from outside, in domain words  | `rule`, `constraint`, `part`, `term`, `scenario`, `usecase`     |
+  | | `CONTRACT`      | the exact technical contract                   | `op` and `api`, `command`, `screen`, `error`, `example`, types  |
+  |
+  | Links run up: a lower node names the higher node it exists for, and the docs walk them in
+  | reverse to show, under each node, what realizes, illustrates or serves it.
+
+  layer: term {{
+    One of `std/schema`'s `Layer` values, `INTENT`, `SPECIFICATION` or `CONTRACT`, in that
+    order from top to bottom. A kind declares its layer with `kind(layer = Layer.CONTRACT)`,
+    and a node is in its kind's layer. A node of a kind with no layer is outside the layer
+    checks.
+  }}
+
+  extends_kind: term {{
+    The core kind a custom kind names with `kind(extends = rule)`: the custom kind takes its
+    parameters, fields and body, its [layer](#heron.language.specifications.layers.layer) unless it declares one, its renderer, and its place
+    in the links and the [coverage](#heron.language.specifications.traceability.coverage) checks, as if its nodes were of the core kind.
+  }}
+
+  layer_reference: term {{
+    A reference a node in a [layer](#heron.language.specifications.layers.layer) makes in its own text or arguments: a link, a [short link](#heron.language.markup.links.short_link), a
+    `<ref>` element or a reference-typed argument. References made by its children are theirs.
+  }}
+
+  derived_list: term {{
+    A list the docs compute under a node by walking references to it in reverse: what
+    realizes it, what illustrates it, what serves it, what refines it and what relies on it.
+  }}
+
+  @display("References never point down")
+  references_point_up: rule(layer_reference, by = system.checker, rationale = "A higher layer stays true while the layers below it change, so it never depends on them.") {
+    if {{ a node's [layer reference](#language.specifications.layers.layer_reference) names a node in a lower [layer](#language.specifications.layers.layer) than its own }}
+    must {{ report the reference as an error at it }}
+    then {{ a contract entry may name a rule or a goal, and a rule a goal, while no goal names a rule and no rule names an error or an op }}
+  }
+
+  same_layer_free: rule(layer_reference, by = system.checker) {
+    mustNot {{ report a reference between two nodes of one [layer](#language.specifications.layers.layer), or from or to a node of a kind with no [layer](#heron.language.specifications.layers.layer) }}
+  }
+
+  layer_declared: rule(layer, by = system.checker) {
+    must {{ read a kind's [layer](#language.specifications.layers.layer) from its `layer` argument, or else from the kind it extends, and give a kind with neither no [layer](#heron.language.specifications.layers.layer) }}
+  }
+
+  extends_inherits: rule(extends_kind, by = system.checker) {
+    must {{ give a kind that extends another its parameters, fields, body and [layer](#language.specifications.layers.layer), and read its nodes as nodes of the extended kind wherever a link's target or a [coverage](#heron.language.specifications.traceability.coverage) check names that kind }}
+  }
+
+  extends_rendered: rule(extends_kind, by = system.docs_generator) {
+    must {{ render a node of a kind that extends a core kind with the core kind's renderer, unless a renderer is registered for its own kind }}
+  }
+
+  links_on_lower_node: rule(layers, by = system.checker) {
+    must {{ store every link on the lower or later node, as an argument or annotation of that node, and accept none in the other direction }}
+    then {{ adding a contract entry never edits the rule it realizes }}
+  }
+
+  derived_lists_shown: rule(derived_list, by = system.docs_generator) {
+    must {{ show under each node its [derived lists](#language.specifications.layers.derived_list), "Realized by", "Illustrated by", "Served by", "Refined by" and "Relied on by", each entry a link, and mark the lists as derived from links written elsewhere }}
+  }
+
+  derived_lists_exported: rule(derived_list, by = system.docs_generator) {
+    must {{ write the [derived lists](#language.specifications.layers.derived_list) into the agent export of each node, marked as derived }}
+  }
+
+  links: section {
+    | A link is an argument or annotation of the node it starts from, and always points up or
+    | across. `proves`, the link from a test, lives in the implementation's project.
+    |
+    | | Link          | From                                          | To                                    |
+    | | ------------- | --------------------------------------------- | ------------------------------------- |
+    | | `serves`      | a rule, constraint, use case or quality scenario | a goal or a quality                |
+    | | `derives`     | a rule                                        | the rule it's derived from            |
+    | | `illustrates` | an outcome scenario                           | one rule, or one path of a use case   |
+    | | `@realizes`   | a contract entry or an error                  | rules, use cases, steps or extensions |
+    | | `refines`     | an example                                    | an outcome scenario                   |
+    | | `relies`      | a rule or a use case                          | assumptions                           |
+    | | `proves`      | a test, in a project                          | any requirement, at a [revision](#heron.language.specifications.layers.revisions.revision)        |
+
+    link_kinds: rule(layers.links, by = system.checker) {
+      if {{ a link names a node of a kind its table row doesn't allow }}
+      must {{ report the link as an error at the target, naming the kinds it takes }}
+      example {{ `serves = [checker]` on a rule reports that `serves` takes a goal or a quality }}
+    }
+
+    realizes_annotation: rule(layers.links, by = system.checker) {
+      must {{ accept `@realizes(targets…)` on a node of the `CONTRACT` [layer](#language.specifications.layers.layer) and on a project's component, and read a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
+    }
+
+    area_goals: rule(layers.links, by = system.checker) {
+      where {{ a rule, a constraint or a use case names no goal with `serves` }}
+      must {{ read it as serving the goals declared in the nearest section above it that declares any, the package's own included }}
+      then {{ an area that opens with its goals motivates the requirements in it, and a requirement names a goal of its own only where it serves another }}
+    }
+
+    derives_acyclic: rule(layers.links, by = system.checker) {
+      if {{ a rule's `derives` chain comes back to the rule }}
+      must {{ report the cycle as an error at the first link of it }}
+    }
+  }
+
+  revisions: section {
+    | A requirement's meaning changes rarely and on purpose. Its `rev` says which meaning it has,
+    | and a proof names the [revision](#heron.language.specifications.layers.revisions.revision) it was written against, so a changed requirement shows which
+    | of its proofs need a second look.
+
+    revision: term {{
+      A requirement's `rev`, a whole number from 1, the default: a rule, a constraint, a
+      scenario, a use case, a contract entry or an error.
+    }}
+
+    revision_bump: rule(revision, by = actors.author, rationale = "A wording fix keeps the revision; a change of behaviour doesn't.") {
+      when {{ a change alters what a requirement means, so a proof of the old meaning may no longer prove it }}
+      must {{ raise its [revision](#language.specifications.layers.revisions.revision) by one in the same change }}
+    }
+
+    revision_positive: rule(revision, by = system.checker) {
+      if {{ a `rev` is less than 1 }}
+      must {{ report it as an error at the value }}
+    }
+  }
+
+  @display("A goal, a rule and the op that realizes it")
+  layers_example: example {
+    | ```heron
+    | import = ["std/doc@1", "std/types@1", "std/spec@1", "std/apis@1", "std/http@1"]
+    |
+    | self_service: goal(measure = "Most refunds need no support ticket.") {{
+    |   Customers fix a wrong charge themselves.
+    | }}
+    |
+    | customer: actor {{ Someone who paid with the shop. }}
+    |
+    | desk: part {{ The support console. }}
+    |
+    | refund_in_window: rule(by = desk, serves = [self_service]) {
+    |   when {{ a [customer] asks for a refund inside the refund window }}
+    |   must {{ refund the amount asked for }}
+    | }
+    |
+    | payments: api {
+    |   @realizes(refund_in_window)
+    |   @http<post>("/refunds")
+    |   create_refund(amount: Int): op(Int)
+    | }
+    | ```
+  }
+
+  errors: section {
+    @realizes(layers.references_point_up)
+    @display("Reference points down")
+    points_down: error("layer", by = system.checker) {
+      title = "{name} is a {kind} in the {to} layer, and a {from} node can't reference a lower layer; link it from the lower node instead"
+      name: field(String)
+      kind: field(String)
+      to: field(String)
+      from: field(String)
+      | A goal linking a rule, or a rule linking an op or an error. The fix is a link on the lower node: `serves`, `@realizes` or `illustrates`.
+    }
+
+    @realizes(layers.links.link_kinds)
+    @display("Wrong link target")
+    wrong_link_target: error("link", by = system.checker) {
+      title = "{link} takes {kinds}, and {name} is a {kind}"
+      link: field(String)
+      kinds: field(String)
+      name: field(String)
+      kind: field(String)
+    }
+
+    @realizes(layers.links.derives_acyclic)
+    @display("Derivation cycle")
+    derives_cycle: error("cycle", by = system.checker) {
+      title = "{name} derives from itself through {path}"
+      name: field(String)
+      path: field(String)
+    }
+
+    @realizes(layers.revisions.revision_positive)
+    @display("Revision below 1")
+    revision_below_one: error("type", by = system.checker) {
+      title = "a revision is a whole number from 1, not {value}"
+      value: field(String)
+    }
+  }
+}

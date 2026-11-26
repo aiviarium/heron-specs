@@ -12,11 +12,11 @@ then run ${cli.help.name}: it lists the commands you have.
 Make an empty folder and write this as `index.heron` in it. The folder's
 `index.heron` is where every command starts reading. Its `import` brings in the
 standard packages whose kinds the file uses: `section` and `term` from `std/doc`,
-`rule` from `std/spec` and `actor` from `std/product`.
+`rule` and `actor` from `std/spec`.
 
 <example id="first_tree" @display="index.heron">
 ```heron
-import = ["std/doc@1", "std/spec@1", "std/product@1"]
+import = ["std/doc@1", "std/spec@1"]
 
 shopper: actor {{ Someone who buys from the shop. }}
 
@@ -36,7 +36,7 @@ checkout: section {
 <step id="check">
 Run ${cli.check.name} in the folder. It prints nothing and exits with status 0: the
 tree checks. Now change `by = shopper` to `by = shoper` and run it again. It prints one
-line, the file, line and column, then the message ${language.core_format.naming.diagnostics.unknown_name.message}
+line, the file, line and column, then the message ${language.core_format.naming.errors.unknown_name.title}
 with the closest name it found, and exits with status 1. Put the name back.
 </step>
 

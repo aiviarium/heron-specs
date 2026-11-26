@@ -1,5 +1,5 @@
 @display("std/http")
-http: component(path = "std/http", lang = "heron") {
+http: part {
   | Binds apis and ops to HTTP, with server-sent events for streamed results.
   |
   | Its surface is declared in `std/http/package.heron`, whose types the API
@@ -10,6 +10,4 @@ http: component(path = "std/http", lang = "heron") {
   | | `@get`, `@post`, `@put`, `@patch`, `@delete`, `@http` | [Transports](#language.apis.transports)                 |
   | | `@path`, `@query`, `@header`, `@body`                 | [Params](#language.apis.params)                         |
   | | `@status`                                             | [Responses](#language.apis.responses.status_annotation) |
-
-  uses = [language.std.types]
 }

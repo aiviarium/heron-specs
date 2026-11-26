@@ -1,11 +1,10 @@
 @display("std/project")
-project: component(path = "std/project", lang = "heron") {
+project: part {
   | The implementation side of a spec that lives apart from its code: the declaration that a
   | tree implements a spec at a version, the proofs that link the spec's requirements to the
-  | tests that prove them, where the rest stands, and the releases.
+  | tests that prove them at a [revision](#heron.language.specifications.layers.revisions.revision), where the rest stands, the releases, the
+  | implementation's own components, and its delivery: stories, increments and milestones.
   |
   | Its surface is declared in `std/project/package.heron`, whose types the API reference renders.
-  | `implements` and `release` are specified in [Specs and implementations](#language.specifications.implementations), and `proves`, `verify`, `status`, `<planned>` and `<untested>` in [Verify, status and coverage](#language.specifications.traceability).
-
-  uses = [language.std.doc, language.std.spec, language.std.tech]
+  | `implements` and `release` are specified in [Specs and implementations](#language.specifications.implementations), `proves`, `verify`, `status`, `<planned>` and `<untested>` in [Proof, revisions and gaps](#language.specifications.traceability), and the components and delivery kinds in [Delivery](#language.specifications.delivery).
 }

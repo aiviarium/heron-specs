@@ -1,9 +1,7 @@
 @display("std/repo")
-repo: component(path = "std/repo", lang = "heron") {
+repo: part {
   | The repository a tree's [entry point](#language.core_format.files.entry_point) stands for, its toolchain and the setup `heron run setup` runs; the interpreter backs its funcs.
   |
   | Its surface is declared in `std/repo/package.heron`, whose types the API reference renders.
-  | `Repository` and `repository` are specified in [Repository tasks](#language.scripting.tasks.finding.repository_tasks), and `Tool`, `ensure_toolchain`, `install_packages`, `generate` and `SetupError` with [the interpreter](#product.system.interpreter).
-
-  uses = [language.std.types]
+  | `Repository` and `repository` are specified in [Repository tasks](#language.scripting.tasks.finding.repository_tasks), and `Tool`, `ensure_toolchain`, `install_packages`, `generate` and `SetupError` with [the interpreter](#system.interpreter).
 }

@@ -1,5 +1,5 @@
 @display("std/process")
-process: component(path = "std/process", lang = "heron") {
+process: part {
   | Processes as a capability of a run: arguments are a list, so nothing is parsed or quoted by a shell.
   |
   | Its surface is declared in `std/process/package.heron`, whose types the API
@@ -10,6 +10,4 @@ process: component(path = "std/process", lang = "heron") {
   | | `run`, `Process` | [Processes](#language.scripting.processes_and_files.processes)                                                                       |
   | | `ProcessError`   | [Processes](#language.scripting.processes_and_files.processes), [declared errors](#language.scripting.code.failures.declared_errors) |
   | | `sh`             | [Quoting](#language.scripting.processes_and_files.quoting)                                                                           |
-
-  uses = [language.std.types]
 }

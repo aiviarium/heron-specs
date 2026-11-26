@@ -1,5 +1,5 @@
 @display("std/schema")
-schema: component(path = "std/schema", lang = "heron") {
+schema: part {
   | The kinds a [schema](#language.schemas.kinds.schema) is written with, so the format describes its own packages in Heron.
   |
   | Its surface is declared in `std/schema/package.heron`, whose types the API
@@ -10,17 +10,16 @@ schema: component(path = "std/schema", lang = "heron") {
   | | `package`                                                     | [Packages](#language.schemas.kinds.packages)                                                                               |
   | | `kind`, `accept`, `Mode`                                      | [Declaring kinds](#language.schemas.kinds.declaring), [Accept](#language.schemas.accept), [Modes](#language.schemas.modes) |
   | | `category`, `flow`, `phrasing`                                | [Categories](#language.schemas.categories)                                                                                 |
+  | | `Layer`, a kind's `layer` and `extends`, `@retired`           | [Layers](#language.specifications.layers), [Retired kinds](#language.specifications.retired)                              |
   | | `flag`, `<repeatable>`                                        | [Flags](#language.schemas.flags)                                                                                           |
   | | `annotation`                                                  | [Annotations](#language.schemas.annotations)                                                                               |
   | | `<overload>`                                                  | [Overloads](#language.schemas.overloads)                                                                                   |
   | | `Ref`                                                         | [Refs](#language.schemas.kinds.refs)                                                                                       |
   | | `language`, `Env`, `@insert`, `Insert`, `<raw>`, `@highlight` | [Highlighting](#language.schemas.highlighting), [quoting](#language.scripting.processes_and_files.quoting)                 |
   | | `extension`, `@extern`, `resource`, `generator`, `lint`       | [Extensions](#language.schemas.extensions)                                                                                 |
-  | | `Verbatim`                                                    | [the `surface` kind](#language.specifications.tech_kinds.component_kind)                                                   |
+  | | `Verbatim`                                                    | [a component's `exports`](#language.specifications.delivery.component_kind)                                                   |
 
-  uses = [language.std.types]
-
-  language_env: rule(language.std.schema, by = product.system.interpreter) {
+  language_env: rule(language.std.schema, by = system.interpreter) {
     where {{ a `language` is declared with `env` }}
     must {{ give the values a script's code reads to its program as the mode says: `PARAMS` as positional parameters after the script, `VARIABLES` as variables of the program's environment }}
     example {{ `std/process`'s `sh` is declared with `env = Env.PARAMS`, so `$1` in a script is its first value }}

@@ -1,5 +1,5 @@
 @display("std/docs")
-docs: component(path = "std/docs", lang = "heron") {
+docs: part {
   | How the docs generator is configured and what it's given to render: its styling, the
   | layout each section uses, the components each slot shows, the modules that render kinds,
   | the [lenses](#tools.docs.lenses.lens_kind) a site is read through, and the [authored pages](#language.markup.authored_pages.authored_page) written for its readers. A
@@ -16,13 +16,11 @@ docs: component(path = "std/docs", lang = "heron") {
   | | `authored`, `guide`, `howto`, `step`, `concept`, `tutorial` | [authored pages](#language.markup.authored_pages)  |
   | | `renderers` modules                                         | [renderers](#tools.docs.renderers)                 |
 
-  uses = [language.std.doc, language.std.js, language.std.spec, language.std.tech]
-
-  standard_lenses_in_std: rule(language.std.docs, by = product.system.checker) {
+  standard_lenses_in_std: rule(language.std.docs, by = system.checker) {
     must {{ resolve `user`, `developer` and `explore` in a tree that imports `std/docs` as the lens nodes `std/docs` declares, unless the tree declares its own of that name }}
   }
 
-  lens_mark_from_doc: rule(language.std.docs, by = product.system.checker) {
+  lens_mark_from_doc: rule(language.std.docs, by = system.checker) {
     must {{ resolve `@lens` as `std/doc`'s annotation, whose names are references to `std/docs`'s lens nodes or a tree's own }}
     then {{ the annotation and the kind are both called `lens`, each declared once in its own package }}
   }

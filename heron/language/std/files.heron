@@ -1,9 +1,7 @@
 @display("std/files")
-files: component(path = "std/files", lang = "heron") {
+files: part {
   | Files as a capability of a run: reading, writing and a run's temporary paths.
   |
   | Its surface is declared in `std/files/package.heron`, whose types the API reference renders.
   | `read`, `write` and `temp` are specified in [Files](#language.scripting.processes_and_files.files), and `FileError` in [file errors](#language.scripting.processes_and_files.files.file_errors) and [declared errors](#language.scripting.code.failures.declared_errors).
-
-  uses = [language.std.types]
 }

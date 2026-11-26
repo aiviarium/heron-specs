@@ -1,5 +1,5 @@
 @display("std/core")
-core: component(path = "std/core", lang = "heron") {
+core: part {
   | The [prelude](#language.core_format.imports.packages.prelude): the flags, annotations, code kinds and names every tree sees without importing anything.
   |
   | Its surface is declared in `std/core/package.heron`, whose types the API
@@ -16,7 +16,5 @@ core: component(path = "std/core", lang = "heron") {
   | | `clock`, `Clock`, `log`                             | [Calls](#language.scripting.code.calls)                                                                              |
   | | `attempt`                                           | [Failures](#language.scripting.code.failures)                                                                        |
   | | `ParseError`                                        | [Conversions](#language.scripting.code.values.conversions)                                                           |
-  | | `ForeignError`                                      | [Foreign errors](#language.interop.declaring.errors)                                                                 |
-
-  uses = [language.std.schema, language.std.types]
+  | | `ForeignError`                                      | [Foreign errors](#language.interop.declaring.foreign_errors)                                                                 |
 }

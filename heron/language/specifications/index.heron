@@ -1,19 +1,26 @@
-// Specifications: the kinds a spec is written in, from std/spec,
-// std/product and std/tech, and how a spec tree is laid out.
+// Specifications: the kinds a spec is written in, from std/spec, in its three
+// layers, with projects, delivery and how a spec tree is laid out.
 include = [
-  "./projects.heron",
+  "./layers.heron",
+  "./intent.heron",
   "./context.heron.md",
   "./requirements.heron",
+  "./usecases.heron",
+  "./contract.heron",
   "./lifecycles.heron",
-  "./qualities.heron",
   "./planning.heron.md",
   "./traceability.heron",
+  "./projects.heron",
   "./implementations.heron",
+  "./delivery.heron",
   "./quality_checks.heron",
-  "./product_kinds.heron",
-  "./tech_kinds.heron",
+  "./retired.heron",
   "./layout.heron.md",
 ]
 
 @lens(user, developer)
-| The kinds a specification is written in: projects, features and their context, requirements, [lifecycles](#language.specifications.lifecycles.lifecycle), qualities, open questions, proof and status, specs and their implementations, the checks a spec passes, the product and technical kinds, and how a spec tree is laid out.
+| The kinds a specification is written in, in three [layers](#heron.language.specifications.layers.layer): the intent, why the product exists and for whom; the specification, what must hold of it from outside; and the contract, the exact surface a consumer relies on. Then the links between them, [lifecycles](#language.specifications.lifecycles.lifecycle), open questions, proof and the gaps it leaves, specs and their implementations, delivery, the checks a spec passes, the [retired kinds](#heron.language.specifications.retired.retired_kind) and how a spec tree is laid out.
+
+specs_traceable: goal(measure = "Every requirement reaches a goal and a proof.") {{
+  Teams state what their product must do so that every requirement says why it exists and how it is proven.
+}}

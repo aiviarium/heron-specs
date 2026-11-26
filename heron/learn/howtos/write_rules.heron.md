@@ -8,18 +8,18 @@ Declare the words it uses as `term` nodes in it, so every page can link them.
 </step>
 
 <step id="add_rules">
-Write one `rule` per behaviour. Its argument is what it's about, `by` names who or
-what must act, and its body holds one strength, `must`, `should`, `may`, `mustNot`
-or `shouldNot`, with the conditions it holds under: `when`, `while`, `where`, `if`
-and `unless`. Add `then` for what follows, and `instead` for what to do in place of
+Write one `rule` per behaviour. Its argument is what it's about, `by` names the actor
+or part that must act, `serves` the goal it's for, and its body holds one strength,
+`must`, `should`, `may`, `mustNot` or `shouldNot`, with the conditions it holds under:
+`where`, any `while`, and at most one trigger, `when` or `if`. Add `then` for what follows, and `instead` for what to do in place of
 something a rule forbids. Link a term by its name in brackets, `[refund_window]`, which
 reads "refund window" on the page; a bracket meant as text is written `\[optional]`.
 
 <example id="refunds_section" @display="A section with rules">
 ```heron
-import = ["std/doc@1", "std/spec@1", "std/product@1"]
+import = ["std/doc@1", "std/spec@1"]
 
-desk: actor(kind = ActorKind.SYSTEM) {{ The support console. }}
+desk: part {{ The support console. }}
 
 refunds: section {
   | How the support console refunds a payment.

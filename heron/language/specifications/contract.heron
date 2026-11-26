@@ -1,0 +1,165 @@
+@display("Contract")
+contract: section {
+  | The contract [layer](#heron.language.specifications.layers.layer) says exactly what a consumer can observe and rely on: the entries of the
+  | product's [surfaces](#heron.tools.frontend.design_system.surfaces), the errors they report, the types they exchange and examples of each.
+  | It's still a requirement, never a design: it pins what a consumer relies on and nothing
+  | inside. Every entry names the rules and use case steps it exists for with `@realizes`.
+  |
+  | | Surface                     | Entry                                | Inputs                    | Outcomes                    |
+  | | --------------------------- | ------------------------------------ | ------------------------- | --------------------------- |
+  | | an API, `api`               | `op`                                 | params                    | responses, keyed by status  |
+  | | a command line              | `command(name)`                      | arguments and options     | exit statuses, as errors    |
+  | | an app, `screen(route)`     | `region`                             | what the reader enters    | what it shows, and errors   |
+  | | a language, `std/grammar`   | `production`, `token`                | the text                  | the tree, and errors        |
+  |
+  | | Kind                                                   | Holds                                                         |
+  | | ------------------------------------------------------ | ------------------------------------------------------------- |
+  | | `error(id, severity, status, exit, by)`                | its `title`, with a `{name}` for each `field`, `related`, examples |
+  | | `example(refines)`                                     | one concrete case, exact inputs and outputs                    |
+  | | `command(name)`                                        | `usage` lines, `errors`, arguments, options, examples and subcommands |
+  | | `screen(route)`                                        | regions, nested as the layout nests                            |
+
+  surface_entry: term {{
+    One entry of a surface, the same shape on every surface: a stable name, typed inputs,
+    outcomes keyed by result, of which errors are some, named examples, a `deprecated` flag
+    and its links. An `op`, a `command`, a `screen`'s region and a grammar's production are
+    entries.
+  }}
+
+  error_kind: term {{
+    `name: error("id", by = part) { title = "…" }`, one problem the product reports, with one
+    identity wherever it's reported. Its `title` is the message, with a `{name}` for each part
+    filled in where it happens, each a `field` of the error. Where a surface reports it, a
+    projection says how: `status`, the HTTP status; `exit`, the command's exit status;
+    `severity` and the site, for a diagnostic; a `field`, for a form.
+  }}
+
+  error_projection: term {{
+    How one surface reports an error: its `status` on an API, its `exit` on a command line,
+    its `severity` and site as a diagnostic, or the field it's shown at on a screen.
+  }}
+
+  example_kind: term {{
+    `example(refines = scenario) {{ … }}`, a concrete case with its exact inputs and outputs,
+    pinning only what the contract guarantees; a rule's `example {{ … }}` child is a key or
+    boundary case of that rule.
+  }}
+
+  command_kind: term {{
+    `name: command("heron check") { … }`, an entry of a command line: one usage line per
+    form, `argument(name, type, optional, variadic)` and `option(name, type, default, short,
+    env)` as its inputs, and the errors its `errors` list names as its failing outcomes, each
+    with its `exit` projection.
+  }}
+
+  screen_kind: term {{
+    `name: screen(route = "/docs/<op>") { … }`, a view of an app and its regions, each
+    region holding what it shows and the regions inside it.
+  }}
+
+  contract_layer: rule(contract, by = system.checker) {
+    must {{ give `error`, `example`, `command`, `argument`, `option`, `screen`, `region`, `api`, `op` and the kinds of `std/types` and `std/grammar` the `CONTRACT` [layer](#language.specifications.layers.layer) }}
+  }
+
+  placeholders_declared: rule(error_kind, by = system.checker) {
+    if {{ an error's `title` or `related` holds a `{name}` that no `field` of the error declares, or a field appears in neither }}
+    must {{ report it as an error at the [placeholder](#heron.language.core_format.expressions.placeholder) or the field }}
+    then {{ every value a message carries is also given as data, so nobody parses the message }}
+  }
+
+  error_title_required: rule(error_kind, by = system.checker) {
+    if {{ an error sets no `title` }}
+    must {{ report the missing field, as for any member declared without a default }}
+  }
+
+  one_identity: rule(error_kind, by = system.checker) {
+    must {{ give each error one identity, its id, for every surface that reports it, and report it on each surface through its [projection](#language.specifications.contract.error_projection) there }}
+    then {{ a diagnostic, an API error and an exit status of the same problem are one error }}
+  }
+
+  refines_scenario: rule(example_kind, by = system.checker) {
+    if {{ an example's `refines` names something other than an outcome scenario }}
+    must {{ report it as an error at the reference }}
+  }
+
+  command_view: rule(command_kind, by = system.docs_generator) {
+    must {{ show a command under its name as the page title, with its arguments and its options each as a table of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table), and the errors it exits with as a table of exit status and title }}
+  }
+
+  screen_view: rule(screen_kind, by = system.docs_generator) {
+    must {{ show a screen's route as a fact and its regions nested, each with an anchor }}
+  }
+
+  error_view: rule(error_kind, by = system.docs_generator) {
+    must {{ show an error as an entry of its section's list: its id and its title with each `{name}` marked on one line, its projections, its related message and the part that reports it as one line of facts, its prose, and the [derived list](#heron.language.specifications.layers.derived_list) of what it realizes; and list it on the Errors page, grouped by id, with a link to its anchor }}
+  }
+
+  errors_on_surfaces: rule(error_kind, by = system.docs_generator) {
+    must {{ show on each [surface entry](#heron.language.specifications.contract.surface_entry) the errors it reports with their projection there: an op's with their status, a command's with their exit status }}
+  }
+
+  error_granularity: rule(error_kind, by = actors.author) {
+    must {{ write two problems as one error when the same fix resolves both, and as two errors when their fixes differ }}
+  }
+
+  error_ids: rule(error_kind, by = actors.author) {
+    should {{ name a new error's id after its domain and its reason, as `refund.WINDOW_EXPIRED`, and keep an id once it's published }}
+  }
+
+  contract_minimal: rule(example_kind, by = actors.author) {
+    should {{ pin in an example only what a consumer may rely on, and leave out values the contract doesn't guarantee }}
+  }
+
+  errors: section {
+    @realizes(placeholders_declared)
+    @display("Placeholder not a field")
+    placeholder_not_field: error("placeholder", by = system.checker) {
+      title = "{placeholder} in the title of {error} is no field of it; declare {placeholder}: field(…)"
+      placeholder: field(String)
+      error: field(String)
+    }
+
+    @realizes(placeholders_declared)
+    @display("Field not in the message")
+    field_unused: error("placeholder", severity = Severity.warning, by = system.checker) {
+      title = "field {field} of {error} appears in neither its title nor its related message"
+      field: field(String)
+      error: field(String)
+    }
+
+    @realizes(refines_scenario)
+    @display("Refines no outcome scenario")
+    refines_not_scenario: error("link", by = system.checker) {
+      title = "refines takes an outcome scenario, and {name} is a {kind}"
+      name: field(String)
+      kind: field(String)
+    }
+  }
+
+  @display("An error on two surfaces")
+  contract_example: example {
+    | ```heron
+    | import = ["std/doc@1", "std/types@1", "std/spec@1", "std/apis@1", "std/http@1"]
+    |
+    | desk: part {{ The support console. }}
+    |
+    | late_rejected: rule(by = desk) {
+    |   if {{ a refund arrives more than 30 days after capture }}
+    |   must {{ reject the request }}
+    | }
+    |
+    | @realizes(late_rejected)
+    | window_expired: error("refund.WINDOW_EXPIRED", status = 422, exit = 3, by = desk) {
+    |   title = "the refund window of payment {payment} closed on {closed}"
+    |   payment: field(String)
+    |   closed: field(String)
+    | }
+    |
+    | refund: command("shop refund") {
+    |   usage = ["shop refund <payment>"]
+    |   errors = [window_expired]
+    |   payment: argument("payment", type = String)
+    | }
+    | ```
+  }
+}

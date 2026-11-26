@@ -10,7 +10,7 @@ as a package, sealed, at its version.
 
 <example id="spec_package" @display="The spec package">
 ```heron
-import = ["std/schema@1", "std/doc@1", "std/spec@1", "std/product@1"]
+import = ["std/schema@1", "std/doc@1", "std/spec@1"]
 
 shop: package(version = "0.2.0", sealed = true) {
   shopper: actor {{ Someone who buys from the shop. }}
@@ -51,7 +51,7 @@ proves(shop.checkout.totals) {
 
 <step id="change_the_spec_first">
 ${cli.check.name} reports an amend of a spec node from the implementation as
-${language.specifications.implementations.diagnostics.sealed_node.message}. To change
+${language.specifications.implementations.errors.sealed_node.title}. To change
 a behaviour, change the spec, release it, and move the implementation to the new
 version.
 </step>

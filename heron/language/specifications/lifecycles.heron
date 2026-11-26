@@ -20,44 +20,49 @@ lifecycles: section {
     transitions the op may cause.
   }}
 
-  transition_variants: rule(transition_kind, by = product.system.checker) {
+  transition_variants: rule(transition_kind, by = system.checker) {
     must {{ resolve a transition's `from` and `to` as variants of their enum, and report an unknown one as unresolved }}
     example {{ `transition(Status.OPEN, Status.GONE)` reports "Status has no member GONE" }}
   }
 
-  transition_body: rule(transition_kind, by = product.system.checker) {
-    must {{ report [doesn't accept](#language.schemas.accept.diagnostics.doesnt_accept) at a strength in a transition's body }}
+  transition_body: rule(transition_kind, by = system.checker) {
+    must {{ report doesn't accept at a strength in a transition's body }}
   }
 
-  lifecycle_view: rule(lifecycle, by = product.system.docs_generator) {
+  lifecycle_view: rule(lifecycle, by = system.docs_generator) {
     must {{ show a [lifecycle](#language.specifications.lifecycles.lifecycle) as a diagram of its states and transitions, with a table beside it of each transition's name, its from and to states and the ops that perform it }}
     then {{ a transition no op performs shows "No op" in the table }}
   }
 
-  lifecycle_field_enum: rule(lifecycle, by = product.system.checker) {
+  lifecycle_field_enum: rule(lifecycle, by = system.checker) {
     if {{ the field a [lifecycle](#language.specifications.lifecycles.lifecycle) names isn't of an enum type, or a transition's variants aren't of the field's enum }}
-    must {{ report [not an enum field](#language.specifications.lifecycles.diagnostics.not_enum_field) at the field or the variant }}
+    must {{ report not an enum field at the field or the variant }}
   }
 
-  closed_model: rule(lifecycle, by = product.system.interpreter) {
+  closed_model: rule(lifecycle, by = system.interpreter) {
     when {{ a run observes a change of a modelled field }}
     must {{ fail the check of the run unless the change is a transition the op performing it declares with `@performs` }}
   }
 
-  lifecycle_lints: rule(lifecycle, by = product.system.linter) {
-    should {{ report [incomplete lifecycle](#language.specifications.lifecycles.diagnostics.incomplete_lifecycle) for a state with no way in or out, a transition no op performs, and an op that changes the field without `@performs` }}
+  lifecycle_lints: rule(lifecycle, by = system.linter) {
+    should {{ report incomplete [lifecycle](#heron.language.specifications.lifecycles.lifecycle) for a state with no way in or out, a transition no op performs, and an op that changes the field without `@performs` }}
   }
 
-  diagnostics: section {
+  errors: section {
+    @realizes(language.specifications.lifecycles.lifecycle_field_enum)
     @display("Not an enum field")
-    not_enum_field: diagnostic("lifecycle", by = product.system.checker) {
-      message = "‹field› isn't of an enum type, so it has no states"
+    not_enum_field: error("lifecycle", by = system.checker) {
+      title = "{field} isn't of an enum type, so it has no states"
+      field: field(String)
       | A [lifecycle](#language.specifications.lifecycles.lifecycle) on a field whose values aren't a closed set.
     }
 
+    @realizes(language.specifications.lifecycles.lifecycle_lints)
     @display("Incomplete lifecycle")
-    incomplete_lifecycle: diagnostic("lifecycle", severity = warning, by = product.system.linter) {
-      message = "‹state› of ‹lifecycle› can't be reached"
+    incomplete_lifecycle: error("lifecycle", severity = Severity.warning, by = system.linter) {
+      title = "{state} of {lifecycle} can't be reached"
+      state: field(String)
+      lifecycle: field(String)
       | A state, transition or op the [lifecycle](#language.specifications.lifecycles.lifecycle) doesn't connect; the message names which.
     }
   }

@@ -1,6 +1,6 @@
 @display("std/spec")
-spec: component(path = "std/spec", lang = "heron") {
-  | Projects, requirements, [lifecycles](#language.specifications.lifecycles.lifecycle), qualities and planning: the kinds a specification is written in, this one included.
+spec: part {
+  | The kinds a specification is written in, this one included, in its three [layers](#language.specifications.layers.layer): the intent, the specification and the contract, with the links between them, projects, [lifecycles](#language.specifications.lifecycles.lifecycle) and planning. It holds what `std/product` and `std/tech` held, which are retired.
   |
   | Its surface is declared in `std/spec/package.heron`, whose types the API
   | reference renders; each export is specified where its behaviour is:
@@ -9,12 +9,13 @@ spec: component(path = "std/spec", lang = "heron") {
   | | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
   | | `project`, `<external>`, `<shared>`, `Source`, `git`                          | [Projects](#language.specifications.projects)             |
   | | `Versioning`, `Bumps`, `FromSpec`, `Releases`                                 | [Projects](#language.specifications.projects)             |
-  | | `<security>`, `<privacy>`, `<operations>`, `outOfScope`                       | [Context](#language.specifications.context)               |
-  | | `rule`, `strength`, `condition`, `must` … `instead`, `example`                | [Requirements](#language.specifications.requirements)     |
+  | | `goal`, `ActorKind`, `actor`, `persona`, `nongoal`, `assumption`, `quality`   | [Intent](#language.specifications.intent)                 |
+  | | `rule`, `strength`, `condition`, `must` … `instead`, `constraint`, `part`     | [Requirements](#language.specifications.requirements)     |
+  | | `scenario`, `given`                                                           | [Requirements](#language.specifications.requirements.scenario_kind) |
+  | | `usecase`, `UseCaseLevel`                                                     | [Use cases](#language.specifications.usecases)            |
+  | | `error`, `field`, `Severity`, `example`, `command`, `argument`, `option`, `screen`, `region`, `@realizes` | [Contract](#language.specifications.contract) |
   | | `states`, `transition`, `@performs`                                           | [Lifecycles](#language.specifications.lifecycles)         |
-  | | `metric`, `quality`, `applies`                                                | [Qualities](#language.specifications.qualities)           |
-  | | `guidance`                                                                    | [Context](#language.specifications.context.guidance_kind) |
+  | | `<security>`, `<privacy>`, `<operations>`, `guidance`                         | [Context](#language.specifications.context)               |
   | | `open`                                                                        | [Open questions](#language.specifications.planning)       |
-
-  uses = [language.std.doc, language.std.types]
+  | | the [retired kinds](#heron.language.specifications.retired.retired_kind) and `@retired`                                              | [Retired kinds](#language.specifications.retired)         |
 }

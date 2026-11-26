@@ -1,0 +1,123 @@
+@display("Intent")
+intent: section {
+  | The intent [layer](#heron.language.specifications.layers.layer) says why a product exists and for whom: its goals, the actors that cross
+  | its boundary, what it deliberately leaves out, what it relies on others to do, and the
+  | qualities that matter most. Intent is validated with the people it's for and measured in the
+  | product's use; no test proves it. A whole product's intent, its vision, actors, personas and
+  | top goals, opens the package; an area opens with the goals of its own.
+  |
+  | | Kind                   | Holds                                                                  |
+  | | ---------------------- | ---------------------------------------------------------------------- |
+  | | `goal(measure, source)` | what the product is for, with an optional measure of success and who asked for it |
+  | | `actor(kind)`          | a role that crosses the boundary: `PERSON`, the default, `SYSTEM` or `AGENT` |
+  | | `persona(plays)`       | an archetype of a person who plays an actor, with `goals` and `pains`   |
+  | | `nongoal`              | something the product could plausibly do and deliberately doesn't       |
+  | | `assumption`           | what the spec relies on an actor or the environment to do               |
+  | | `quality(measure)`     | a quality that matters most, measured by its quality scenarios          |
+
+  goal_kind: term {{
+    `name: goal(measure = "…") {{ … }}`, an outcome the product is for, in the words of the
+    people it's for, with no solution in it. Rules, use cases and constraints name the goals
+    they serve.
+  }}
+
+  actor_kind: term {{
+    `name: actor(kind = ActorKind.SYSTEM) {{ … }}`, a role that crosses the system's
+    boundary: a person, another program or an agent. It's the one "who" of a spec: rules bind
+    actors and parts, use cases start from an actor, and personas play one.
+  }}
+
+  persona_kind: term {{
+    `name: persona(plays = actor) {{ … }}`, an archetype of a person behind an actor, with
+    what they want and what gets in their way. It never adds a second list of who.
+  }}
+
+  nongoal_kind: term {{
+    `name: nongoal {{ … }}`, something a reader could expect the product to do that it
+    deliberately doesn't, written as what's left out rather than as a behaviour.
+  }}
+
+  assumption_kind: term {{
+    `name: assumption {{ … }}`, what the spec relies on an actor or the environment to do,
+    such as an operator keeping a clock in sync. A rule or use case that depends on it names
+    it with `relies`.
+  }}
+
+  quality_kind: term {{
+    `name: quality(measure = "…") {{ … }}`, one of the few qualities that matter most, as
+    responsiveness or recovery. Its measurable form is a quality scenario that serves it.
+  }}
+
+  intent_layer: rule(intent, by = system.checker) {
+    must {{ give `goal`, `actor`, `persona`, `nongoal`, `assumption` and `quality` the `INTENT` [layer](#language.specifications.layers.layer) }}
+  }
+
+  persona_plays_actor: rule(persona_kind, by = system.checker) {
+    if {{ a persona's `plays` is missing or names a node that isn't an actor }}
+    must {{ report it as an error at the persona or at the reference }}
+  }
+
+  actor_kinds: rule(actor_kind, by = system.checker) {
+    must {{ read an actor's `kind` as `ActorKind.PERSON` when it's left out }}
+  }
+
+  references_named_kind: rule(actor_kind, by = system.checker) {
+    if {{ a reference that must name an actor, a goal or another kind names a node of a different kind }}
+    must {{ report it as an error at the reference }}
+  }
+
+  goals_never_proven: rule(goal_kind, by = system.checker) {
+    mustNot {{ require a proof or a status for a goal, a `nongoal`, an assumption, an actor, a persona or a quality }}
+    then {{ conformance lists none of them }}
+  }
+
+  goal_measure_shown: rule(goal_kind, by = system.docs_generator) {
+    must {{ show a goal's measure and source under its text, and below them the [derived lists](#heron.language.specifications.layers.derived_list) of the rules, use cases, constraints and scenarios that serve it }}
+  }
+
+  actor_view: rule(actor_kind, by = system.docs_generator) {
+    must {{ show an actor with its kind, the personas that play it, and the use cases and rules that name it }}
+  }
+
+  stakeholders_as_source: rule(goal_kind, by = actors.author) {
+    must {{ name who asked for a goal or a constraint in its `source` or its prose, and declare no node for them }}
+  }
+
+  product_intent_on_top: rule(intent, by = actors.author) {
+    must {{ put a product's vision, actors, personas and top goals at the top of its package, and open each area with its own goals }}
+  }
+
+  @display("A product's intent")
+  intent_example: example {
+    | ```heron
+    | import = ["std/doc@1", "std/spec@1"]
+    |
+    | self_service: goal(measure = "Nine refunds in ten need no support ticket.", source = "support team") {{
+    |   Customers fix a wrong charge themselves.
+    | }}
+    |
+    | customer: actor {{ Someone who paid with the shop. }}
+    |
+    | bank: actor(kind = ActorKind.SYSTEM) {{ The card network that settles payments. }}
+    |
+    | priya: persona(plays = customer) {{ Buys weekly, on her phone, between meetings. }}
+    |
+    | no_cash_refunds: nongoal {{ Refunds in cash at a store. }}
+    |
+    | bank_settles: assumption {{ The [bank] settles a refund within five working days. }}
+    |
+    | responsive: quality(measure = "Pages answer within a second.") {{ The shop feels instant. }}
+    | ```
+  }
+
+  errors: section {
+    @realizes(persona_plays_actor, references_named_kind)
+    @display("Not an actor")
+    not_an_actor: error("type", by = system.checker) {
+      title = "{name} is a {kind}, not an actor"
+      name: field(String)
+      kind: field(String)
+      | A reference that must name an actor naming another kind of node; any `Ref(kind)` is checked the same way.
+    }
+  }
+}

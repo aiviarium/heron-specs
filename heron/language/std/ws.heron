@@ -1,9 +1,7 @@
 @display("std/ws")
-ws: component(path = "std/ws", lang = "heron") {
+ws: part {
   | Binds apis and ops to WebSockets, each op a message type on the socket.
   |
   | Its surface is declared in `std/ws/package.heron`, whose types the API reference renders.
   | `@ws` is specified in [Streams](#language.apis.streams.ws_socket).
-
-  uses = [language.std.types]
 }
