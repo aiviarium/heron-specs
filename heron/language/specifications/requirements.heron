@@ -78,6 +78,12 @@ requirements: section {
     example {{ "When a refund is requested, if the capture date is past, `desk` must reject the request, unless the payment is under review, so the customer is told at once." }}
   }
 
+  no_repeated_connective: rule(rule_kind, by = product.system.docs_generator) {
+    where {{ the text of a rule's `then` or `instead` already holds the connective the [rule's sentence](#language.specifications.requirements.ears_sentence) would join it with, as a `then` that reads "the nearest declaration wins, so a section named `grammar` hides a kind of that name" }}
+    must {{ end the sentence before that clause and render the clause as the next sentence of the paragraph, starting with a capital }}
+    then {{ no sentence reads ", so … so" or "instead … instead" }}
+  }
+
   subject_words: rule(rule_subject, by = product.system.docs_generator) {
     must {{ name a component by its name as code, an actor, a persona or a term as "the" and its name, a targeted type as "a" or "an" and its name in words, and anything else as "the system" }}
   }

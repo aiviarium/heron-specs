@@ -23,9 +23,18 @@ rendering: section {
   }
 
   target_chip: rule(language.specifications.requirements.rule_kind, by = product.system.docs_generator) {
-    where {{ a target of a rule is the node the rule stands in, or the section that holds it }}
+    where {{ a target of a rule is the node the rule stands in, the section that holds it, or a node shown on the same page }}
     mustNot {{ show that target as a chip beside the rule }}
     then {{ a chip shows only the targets a reader couldn't tell from where the rule is }}
+  }
+
+  chip_leads: rule(language.specifications.requirements.rule_kind, by = product.system.docs_generator) {
+    must {{ show a rule's target chips before its sentence, as a tag in the label size on the line above it, never after the sentence's last word }}
+  }
+
+  content_order: rule(tools.docs.rendering, by = product.system.docs_generator) {
+    must {{ render a node's children, outside the `explore` lens, in this order: the nodes rendered in full that are none of the others, such as examples, APIs and diagrams; then its rules, qualities and guidance; then its terms; then its sections; then its diagnostics, and a section that holds only diagnostics; each group in the order the tree writes it }}
+    then {{ a language page reads as its prose, its rules, the words they use, the concerns below it and, last, the errors it reports, and `explore` keeps the tree's order }}
   }
 
   rules_flow: rule(language.specifications.requirements.rule_kind, by = product.system.docs_generator) {
@@ -57,6 +66,11 @@ rendering: section {
 
   one_indent: rule(tools.docs.rendering, by = product.system.docs_generator) {
     must {{ indent a page's content at most one level from the left edge of its text column, and show a node's depth by its heading's level and its place in the navigation }}
+  }
+
+  content_width: rule(tools.docs.rendering, by = product.system.docs_generator) {
+    must {{ set a page's code blocks, tables, callouts, lists and fields to the width of its prose, the measure of the [type scale](#tools.frontend.design_system.tokens.type_scale), and scroll a code block or a table wider than that inside its own frame }}
+    then {{ every block of a page shares one left and one right edge }}
   }
 
   no_nested_boxes: rule(tools.docs.rendering, by = product.system.docs_generator) {

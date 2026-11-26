@@ -147,12 +147,6 @@ lenses: section {
       then {{ `show` lists what a lens keeps: in the `user` lens a guide's own sections show with it, and the tree's sections don't }}
     }
 
-    summarized_after_full: rule(summary_line, by = product.system.docs_generator) {
-      where {{ the children of one node, in one lens, are some rendered in full and some as [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) }}
-      must {{ render the children rendered in full first and the [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) after them, each group in the order the tree writes it }}
-      then {{ in the `developer` lens a section's examples, APIs and diagrams come before its rules }}
-    }
-
     containers_kept: rule(tools.docs.lenses.what_a_lens_shows, by = product.system.docs_generator) {
       where {{ a lens leaves a section out and keeps a node below it }}
       must {{ keep the section's heading, and its page where it's a [page node](#tools.docs.site.page_node), as the place of the nodes it keeps, without the section's own prose }}

@@ -72,6 +72,11 @@ design_system: section {
       must {{ set every sentence that comes from the spec, a rule's, the sentences of steps, [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) and diagnostic messages included, in the body face at the docs prose size of the [type scale](#tools.frontend.design_system.tokens.type_scale) and the `text` level }}
     }
 
+    prose_in_code: rule(text_levels, by = product.system.docs_generator) {
+      must {{ colour the text of a `{{ }}` body and of a `|` line in a code block at the `text` level, as prose outside code is, and keep the faint levels for comments alone }}
+      then {{ the sentences of an example read as sentences, and only a `//` or `///` comment reads as an aside }}
+    }
+
     small_text_for_facts: rule(text_levels, by = product.system.docs_generator) {
       mustNot {{ set a sentence from the spec in `text-faint`, in `text-decor` or below the docs prose size }}
       instead {{ keep `text-secondary` and the smaller sizes for labels, breadcrumbs, facts lines and captions }}

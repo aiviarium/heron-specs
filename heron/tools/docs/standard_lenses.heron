@@ -69,7 +69,7 @@ standard_lenses: section {
     | on one line a reader opens when they need it.
 
     developer_summarizes: rule(tools.docs.standard_lenses.developer_lens, by = product.system.docs_generator) {
-      must {{ render, in the `developer` lens, each rule, quality and guidance as a [summary line](#tools.docs.lenses.what_a_lens_shows.summary_line), after the nodes of its section rendered in full, and every other node in full }}
+      must {{ render, in the `developer` lens, each rule, quality and guidance as a [summary line](#tools.docs.lenses.what_a_lens_shows.summary_line), in the place [the content order](#tools.docs.rendering.content_order) gives rules, and every other node in full }}
     }
 
     developer_by_topic: rule(tools.docs.standard_lenses.developer_lens, by = product.system.docs_generator) {
