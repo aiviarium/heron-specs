@@ -31,3 +31,17 @@ comes from [the language server](#system.language_server).
 <rule id="highlight_scope" targets="tools.tree_sitter.query_files" by="system.editor_grammar">
 <must>register the grammar for the file type `heron` under the scope `source.heron`, with its highlight and fold queries</must>
 </rule>
+
+## TextMate grammar {#textmate}
+
+A TextMate grammar for [Heron files](#language.core_format.files.heron_file) and [prose files](#language.core_format.prose_layer.prose_file), for editors that read TextMate grammars,
+such as VS Code and the editors built on it, published with the tree-sitter grammar.
+
+<rule id="textmate_published" targets="tools.tree_sitter.textmate" by="system.editor_grammar">
+<must>publish `heron.tmLanguage.json`, scope `source.heron`, and `heron-md.tmLanguage.json`, scope `text.heron.markdown`, generated from the same token kinds as the editor's static grammar, and keep the published files equal to what the generator writes</must>
+</rule>
+
+<rule id="textmate_scopes" targets="tools.tree_sitter.textmate" by="system.editor_grammar">
+<must>scope comments, `///` docs, strings with their escapes and `${…}` inserts, code spans, numbers, keywords, annotations, types, names and punctuation in structure, and in prose only its links, `$` inserts, kind elements with their attributes, code spans and Markdown's marks, with TextMate's standard scope names</must>
+<then>a theme colours Heron as it colours other languages, and prose keeps the text colour</then>
+</rule>

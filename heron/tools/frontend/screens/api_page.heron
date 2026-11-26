@@ -1,0 +1,37 @@
+@display("API page")
+api_page: screen(route = "/<api>.html") {
+  | An api's landing page in the API reference: what it is, how it travels on the wire, and
+  | every op grouped by the surface it belongs to, one line each, so a reader finds an op
+  | without opening each one. The top bar and the sidebar are the [op page](#tools.frontend.screens.op_page)'s.
+
+  @realizes(tools.frontend.screens.api_page.lead.api_facts)
+  lead: region {
+    | The api's prose, its base path and its wire format.
+
+    api_facts: rule(by = system.docs_generator) {
+      must {{ show the api's prose, its base path, and its wire format: JSON bodies over HTTP, streams as server-sent events and sockets as websocket frames }}
+    }
+  }
+
+  @realizes(tools.frontend.screens.api_page.ops.ops_grouped, tools.frontend.screens.api_page.ops.one_line_each)
+  ops: region {
+    | The ops, grouped.
+
+    ops_grouped: rule(by = system.docs_generator) {
+      must {{ group the api's ops by the first segment of their path after the base path, each group in the order its first op is written }}
+    }
+
+    one_line_each: rule(by = system.docs_generator) {
+      must {{ show each op on one row: its method, its path, its [display name](#language.core_format.naming.display_name) linked to its page, the first sentence of its prose, and a mark when it's deprecated }}
+    }
+  }
+
+  @realizes(tools.frontend.screens.api_page.types.types_listed)
+  types: region {
+    | The types and errors the api's ops name.
+
+    types_listed: rule(by = system.docs_generator) {
+      must {{ list the types and the errors the api's ops name, directly or through the fields of other types, each linked to its page with the first sentence of its docs }}
+    }
+  }
+}

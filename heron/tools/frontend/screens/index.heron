@@ -1,10 +1,11 @@
 // The reference screens: the op page, the type page and the editor.
 include = [
+  "./api_page.heron",
   "./op_page.heron",
   "./type_page.heron",
   "./editor_screen.heron",
 ]
 
-| The three reference screens every other view follows: an API op page and a type page of
-| the docs, and the editor. Each is a screen of nested regions, with the rules on what each
+| The reference screens every other view follows: an API op page and a type page of
+| the docs with the api page they open from, and the editor. Each is a screen of nested regions, with the rules on what each
 | region holds.
