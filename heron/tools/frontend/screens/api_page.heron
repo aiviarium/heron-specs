@@ -29,7 +29,7 @@ api_page: screen(route = "/<api>.html") {
     }
 
     signature_each: rule(by = system.docs_generator) {
-      must {{ show each method on one line: its streaming kind as a badge, its signature as `Method(Request) returns (stream Response)` or its JSON-RPC name, its [display name](#language.core_format.naming.display_name) linked to its page, and the first sentence of its prose }}
+      must {{ show each method on one line: its [streaming kind](#language.apis.rpc.streaming_kind) as a badge, its signature as `Method(Request) returns (stream Response)` or its JSON-RPC name, its [display name](#language.core_format.naming.display_name) linked to its page, and the first sentence of its prose }}
     }
 
     both_indexes: rule(by = system.docs_generator) {

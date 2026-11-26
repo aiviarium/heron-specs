@@ -33,3 +33,4 @@ typeahead
 [Pp]roto
 gRPC
 [Uu]ncoded
+[Bb]uf

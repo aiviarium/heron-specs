@@ -6,7 +6,7 @@ on them read a Heron api as they read any protobuf package. Every name and numbe
 is the one [gRPC and Connect](#language.apis.grpc) gives, the same the docs show.
 
 <rule id="proto_target" targets="tools.proto" by="system.generator">
-<must>write, for `heron generate proto`, one file per protobuf package of the tree's services, at `.heron/proto/` and then the package's path with its dots as folders and its last segment that isn't a version as the file's name, and beside them a `buf.yaml` that lints with buf's `STANDARD` rules</must>
+<must>write, for `heron generate proto`, one file per protobuf package of the tree's services, at `.heron/proto/` and then the package's path with its dots as folders and its last segment that isn't a version as the file's name, and beside them a `buf.yaml` that lints with the `STANDARD` rules of `buf`</must>
 <example>`acme.parcels.v1` is written to `.heron/proto/acme/parcels/v1/parcels.proto`</example>
 </rule>
 

@@ -38,8 +38,8 @@ op_page: screen(route = "/<api>.<op>.html") {
   @realizes(tools.frontend.screens.op_page.bindings.binding_switch, tools.frontend.screens.op_page.bindings.rpc_header, tools.frontend.screens.op_page.bindings.rpc_facts)
   bindings: region {
     | An op bound to more than one protocol is one contract: its prose, facts and rules are
-    | shown once, and a switch picks the binding the parts that differ are shown for. Buf's
-    | schema registry and the Connect docs are the reference for how an RPC method reads.
+    | shown once, and a switch picks the binding the parts that differ are shown for. The
+    | Buf registry and the Connect docs are the reference for how a method of a service reads.
 
     binding_switch: rule(by = system.docs_generator) {
       where {{ an op has more than one binding }}
@@ -166,7 +166,7 @@ op_page: screen(route = "/<api>.<op>.html") {
 
     rpc_example_forms: rule(language.apis.examples.op_example, by = system.docs_generator) {
       where {{ the binding picked is gRPC, Connect or JSON-RPC }}
-      must {{ show each op example as its request and response messages in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, and the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC }}
+      must {{ show each [op example](#language.apis.examples.op_example) as its request and its response in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, and the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC }}
     }
 
     rpc_try_it: rule(language.apis.rpc.server_url, by = system.docs_generator) {
