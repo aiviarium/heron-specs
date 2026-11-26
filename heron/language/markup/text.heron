@@ -17,6 +17,10 @@ text: section {
     then {{ `` `$limit` `` shows the dollar sign and the name, never the value }}
   }
 
+  entities: rule(language.markup.writing.prose_text, by = product.system.docs_generator) {
+    must {{ read `&amp;`, `&lt;`, `&gt;` and `&quot;` in [prose_text] and in quoted attributes as `&`, `<`, `>` and `"`, and any other `&` as itself }}
+  }
+
   escapes_render: rule(language.grammar.prose.inline_forms.prose_escapes, by = product.system.docs_generator) {
     must {{ render an escape as the character it keeps, without its backslash }}
     example {{ `\$literal` renders as `$literal` }}

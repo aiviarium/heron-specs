@@ -1,9 +1,10 @@
 long_form: section {
   | Prefixing every line suits text that sits between structure, not a page that's mostly
   | text. A [`{{ }}` body](#language.core_format.prose_layer.prose_body) and a [prose file](#language.core_format.prose_layer.prose_file) hold the same prose without prefixes. In a
-  | [prose file](#language.core_format.prose_layer.prose_file), headings declare sections named from the heading text, which becomes the
-  | [display name](#language.core_format.naming.display_name), `{#name}` names one explicitly, and fenced blocks marked `heron` hold
-  | structure, read in place as members of the current section.
+  | [prose file](#language.core_format.prose_layer.prose_file), headings declare sections, each named by its `{#name}` and shown by its text as its
+  | [display name](#language.core_format.naming.display_name), and fenced blocks marked `heron` hold structure, read in place as members
+  | of the current section. A name never comes from a heading's text, so rewording a heading
+  | breaks no link.
   |
   | [A prose file](#language.markup.long_form.markup_prose_file) and [the same page in structure](#language.markup.long_form.markup_page_structure) build the same tree.
 
@@ -12,9 +13,9 @@ long_form: section {
   }
 
   heading_names: rule(language.core_format.prose_layer.prose_file, by = product.system.checker) {
-    must {{ name a heading's section by its `{#name}`, or by its text in lower case, with each run of characters other than letters and digits between two words written as one `_` and dropped at the ends }}
-    example {{ `## Before you start` declares `before_you_start`, and `## Limits {#refund_limits}` declares `refund_limits` }}
-    then {{ the heading text is the section's [display name](#language.core_format.naming.display_name) either way }}
+    must {{ name a heading's section by its `{#name}`, and report [heading needs a name](#language.markup.long_form.diagnostics.heading_needs_name) at a heading without one }}
+    example {{ `## Limits {#refund_limits}` declares `refund_limits`; `## Before you start` alone is reported }}
+    then {{ the heading text is the section's [display name](#language.core_format.naming.display_name) }}
   }
 
   sections_are_structure: rule(language.markup.writing.prose_text, by = product.actors.author) {
@@ -29,20 +30,20 @@ long_form: section {
     | import = ["std/doc@1"]
     | ~~~
     |
-    | # Refund guide
+    | # Refund guide {#refund_guide}
     |
     | How support issues a refund from the console. Every refund follows
     | the [refund window](#window).
     |
     | <toc depth={2} />
     |
-    | ## Before you start
+    | ## Before you start {#before_you_start}
     |
     | You need the **Refunds** role, under *Settings → Roles*.
     |
     | <warning>A refund can't be undone once the payment provider confirms it.</warning>
     |
-    | ## Disputes
+    | ## Disputes {#disputes}
     |
     | A [dispute](#dispute) locks the payment until the provider resolves it.
     |
@@ -153,5 +154,13 @@ long_form: section {
     |   | $checklist("review")
     | }
     | ```
+  }
+
+  diagnostics: section {
+    @display("Heading needs a name")
+    heading_needs_name: diagnostic("unnamed", by = product.system.checker) {
+      message = "the heading ‹text› declares a section and needs a {#name}"
+      | A heading in a [prose_file] without `{#name}`; its text is shown, never turned into a name.
+    }
   }
 }

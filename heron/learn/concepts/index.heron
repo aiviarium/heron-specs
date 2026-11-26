@@ -5,6 +5,7 @@ include = [
   "./specs_and_projects.heron",
   "./lenses.heron",
   "./versioning.heron",
+  "./writing_prose.heron.md",
 ]
 
 @lens(user, developer)

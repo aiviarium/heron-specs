@@ -19,6 +19,10 @@ tree_sitter: section {
       must {{ parse a [short link](#language.markup.links.short_link) and a prose escape in prose, and capture a [short_link], its brackets included, as a link }}
     }
 
+    elements_captured: rule(tools.tree_sitter.query_files, by = product.system.editor_grammar) {
+      must {{ parse a [kind element](#language.markup.tags.component_tag)'s attributes, an `@name` one included, and capture its name as a tag and an `@name` attribute as an annotation }}
+    }
+
     highlight_scope: rule(tools.tree_sitter.query_files, by = product.system.editor_grammar) {
       must {{ register the grammar for the file type `heron` under the scope `source.heron`, with its highlight and fold queries }}
     }

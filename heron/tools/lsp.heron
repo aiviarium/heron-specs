@@ -158,6 +158,11 @@ lsp: section {
       must {{ answer definition and hover as on any path, for the node the link resolves to }}
     }
 
+    definition_element: rule(tools.lsp.definition, by = product.system.language_server) {
+      where {{ the cursor is on a [kind element](#language.markup.tags.component_tag)'s name, or on the target of a `<ref to="…">` }}
+      must {{ answer definition and hover for the kind the element names, or the node the reference resolves to }}
+    }
+
     definition_into_std: rule(tools.lsp.definition, by = product.system.language_server) {
       where {{ the target is declared in a standard package }}
       must {{ answer with its `heron:/std/<path>` URI, whose text the client reads with [heron/source](#tools.lsp.extensions.source_request) }}

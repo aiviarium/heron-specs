@@ -48,7 +48,7 @@ prose: section {
     }
 
     tags: rule(tree.Tag, by = product.system.parser) {
-      must {{ read `<` directly followed by a path as a tag when attributes, each a name alone, `name="…"` or `name={expr}`, follow it up to `/>` or `>`; after `>`, read its content up to `</path>` }}
+      must {{ read `<` directly followed by a path as a tag when attributes, each a name alone, `name="…"` or `name={expr}`, a name with an `@` before it included, follow it up to `/>` or `>`; after `>`, read its content up to `</path>` }}
       unless {{ the head doesn't parse, and then the `<` is text, so `a < b` and `<-` stay text }}
     }
 
@@ -99,7 +99,7 @@ prose: section {
     /// A node of the path's kind, written in the text.
     Tag: production {{ TagOpen Path TagAttr* TagEnd? TagSelfEnd? Inline* TagClose? }}
     TagClose: production {{ TagCloseOpen Path TagEnd }}
-    TagAttr: production {{ Ident Eq? StringLit? LBrace? Expr? RBrace? }}
+    TagAttr: production {{ At? Ident Eq? StringLit? LBrace? Expr? RBrace? }}
     /// A fenced block, line by line.
     Fence: production {{ FenceLine* }}
     /// A `.heron.md` file.

@@ -22,6 +22,11 @@ writing: section {
     then {{ moving text from `|` lines into a `{{ }}` body, or from a value into a doc comment, never changes what it says }}
   }
 
+  one_prose_syntax: rule(prose_text, by = product.system.parser) {
+    must {{ read [prose text](#language.markup.writing.prose_text) as one syntax, Heron-flavored Markdown: Markdown's forms and [kind elements](#language.markup.tags.component_tag) freely mixed, the same in `|` lines, a `{{ }}` body and a [prose file](#language.core_format.prose_layer.prose_file), and Markdown inside an element read as Markdown }}
+    then {{ a [prose file](#language.core_format.prose_layer.prose_file) of elements alone is a [prose_file] like any other, and `<em>text</em>` and `*text*` build the one `std/doc` node }}
+  }
+
   markup_strings: rule(prose_text, by = product.system.prose_linter) {
     where {{ a string literal is the value of a field or node typed `Prose` }}
     must {{ read its inserts and project it as prose, with its inline code masked }}

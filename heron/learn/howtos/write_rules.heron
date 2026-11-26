@@ -48,5 +48,8 @@ write_rules: howto {
   check_it: step {
     | Run ${cli.check.name}, then ${cli.lint.name}: the lints ask you to link a term where
     | prose uses it, and flag weak words such as "should" in a `must`.
+    |
+    | <tip>`heron lint -fix` applies the fixes that are no guess, such as wrapping a node's name
+    | in brackets to link it.</tip>
   }
 }

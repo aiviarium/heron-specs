@@ -32,6 +32,10 @@ links: section {
     then {{ a [short_link] never falls back to text: a bracket meant as text is escaped, `\[optional]`, or inside inline code }}
   }
 
+  ref_element: rule(short_link, by = product.system.checker) {
+    must {{ read `<ref to="name"/>` as the element form of `[name]`, and `<ref to="name" code/>` as that of ``[`name`]``, resolved and reported alike }}
+  }
+
   short_link_text: rule(short_link, by = product.system.docs_generator) {
     must {{ render `[name]` as a link whose text is the node as it reads inside a sentence, a term by its word and any other node by its [display name](#language.core_format.naming.display_name) with its first letter in lower case, keeping a type's name and a name written in capitals as written; and ``[`name`]`` as a link whose text is the path as inline code }}
     example {{ `[refund_window]` reads "refund window" and ``[`refund_window`]`` reads `refund_window`, each linking to the term }}

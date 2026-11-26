@@ -1,22 +1,75 @@
+@display("Kind elements")
 tags: section {
-  | A tag writes a node inside text: `<warning>…</warning>`, `<kbd>R</kbd>` or
-  | `<toc depth={2} />`. It names a kind, and its attributes are the kind's arguments. There's
-  | no raw HTML: a tag that names no kind is an error, never markup passed through.
+  | A kind element writes a node in text, in the form HTML writes an element:
+  | `<warning>…</warning>`, `<kbd>R</kbd>`, `<toc depth="2" />`, or
+  | `<step id="install">…</step>`, a named node with a page of its own. Its name is a kind,
+  | its attributes are the kind's arguments, and its content is the kind's body. There's no
+  | raw HTML: an element that names no kind is an error, never markup passed through, and a
+  | `class`, a `style` or a `<script>` is an error like any other undeclared name.
 
+  @display("Kind element")
   component_tag: term {{
-    A tag in [prose text](#language.markup.writing.prose_text) naming a kind in scope: `<kind attr="text" other={expr} flag>content</kind>`,
+    An element in [prose text](#language.markup.writing.prose_text) naming a kind in scope: `<kind attr="text" other={expr} flag>content</kind>`,
     or `<kind … />` with no content. On lines of its own it's a block; inside a sentence it's
     inline. Either may span several lines and nest.
   }}
 
   tag_attribute: term {{
-    `name="text"`, `name={expr}` or a bare `name` in a tag's head: an argument of the tag's
-    kind by name. A bare attribute is `true`; a string may hold inserts.
+    `name="text"`, `name={expr}` or a bare `name` in an element's head: an argument of the
+    element's kind by name. A bare attribute is `true`. `id` names the element's node, and
+    `@name` is an annotation on it.
   }}
 
   tags_are_kinds: rule(component_tag, by = product.system.checker) {
-    must {{ resolve a tag's name as a kind in scope, and report [unknown tag](#language.core_format.prose_layer.diagnostics.unknown_tag) with the closest kind where it names nothing }}
+    must {{ resolve an element's name as a name in code is resolved, and where that names nothing, by suffix as [a link's path](#language.core_format.naming.link_lookup) is, to a kind; and report [unknown tag](#language.core_format.prose_layer.diagnostics.unknown_tag) with the closest kind where it names none }}
     then {{ prose holds no raw HTML: `<div>` is an error unless a package declares `div` }}
+  }
+
+  element_ids: rule(component_tag, by = product.system.checker) {
+    must {{ read an element with an `id` attribute as a node named by the `id`, of the element's kind, a child of the node whose text or body holds it, with a [node path](#language.core_format.naming.node_path), an anchor and, as the lens's depth says, a page of its own }}
+    then {{ its [display name](#language.core_format.naming.display_name) comes from its `@display` or its name, never from its text, so rewording the text breaks no link }}
+  }
+
+  element_bodies: rule(component_tag, by = product.system.checker) {
+    must {{ read a named element's content as its kind's body: its text as the node's prose, and each element on lines of its own as a member, named by its `id` or anonymous, in the order written }}
+    then {{ `<rule id="late" by="desk"><must>refuse it</must></rule>` is the rule `late: rule(by = desk) { must {{ refuse it }} }` }}
+  }
+
+  anonymous_elements: rule(component_tag, by = product.system.checker) {
+    where {{ an element has no `id` and stands in a node's text or inside a sentence, rather than on lines of its own in a named element's body }}
+    must {{ read it as content of that text, which renders in place and declares no node }}
+  }
+
+  element_needs_id: rule(component_tag, by = product.system.checker) {
+    if {{ an element whose kind has `heading = true`, or a term, has no `id` }}
+    must {{ report [element needs an id](#language.markup.tags.diagnostics.element_needs_id) at it }}
+  }
+
+  annotation_attributes: rule(tag_attribute, by = product.system.checker) {
+    must {{ read an attribute `@name="args"` or `@name={args}` as the annotation `@name(args)` on the element's node, and a bare `@name` as `@name` with no arguments }}
+    example {{ `<concept id="lenses" @lens="user, developer" @display="Lenses">` is `@lens(user, developer) @display("Lenses") lenses: concept` }}
+  }
+
+  code_stays_in_heron: rule(component_tag, by = product.system.checker) {
+    if {{ an element's kind has a code body, a `do` block, and no prose }}
+    must {{ report [code in an element](#language.markup.tags.diagnostics.code_in_element) at it }}
+    then {{ tasks and funcs are written in a [Heron file](#language.core_format.files.heron_file) }}
+  }
+
+  quoted_attributes: rule(tag_attribute, by = product.system.parser) {
+    if {{ an attribute's value is written without quotes or braces, as `depth=2` }}
+    must {{ report [unquoted attribute](#language.markup.tags.diagnostics.unquoted_attribute) at it and keep the element in the tree }}
+    then {{ an element is never repaired as a browser repairs HTML: every element is closed and every value quoted or braced }}
+  }
+
+  forms_kept: rule(component_tag, by = product.system.formatter) {
+    mustNot {{ turn a Markdown form into an element, or an element into a Markdown form }}
+    then {{ the tree records which form each node was written in, and `heron fmt` writes it back so }}
+  }
+
+  prose_kinds_render_alike: rule(component_tag, by = product.system.docs_generator) {
+    must {{ render an element of a kind a Markdown form builds as that form renders: `<p>`, `<em>`, `<strong>`, `<strike>`, `<code>`, `<quote>`, `<list>` with `<item>`s, `<table>` with `<row>`s and `<cell>`s, `<link>`, `<ref>` and `<divider>` }}
+    example {{ `<em>now</em>` and `*now*` render the same, and so do ``<code>x</code>`` and `` `x` `` }}
   }
 
   tag_names_a_kind: rule(component_tag, by = product.system.linter) {
@@ -28,9 +81,8 @@ tags: section {
   }
 
   attribute_values: rule(tag_attribute, by = product.system.checker) {
-    must {{ check an attribute written `{expr}` against its parameter's type, as an argument, and an attribute written as a string against `String` or `Prose` }}
-    unless {{ the parameter's type is another primitive, such as `Int` or `Bool`, when the string is the value's text and only its inserts are checked }}
-    example {{ `<toc depth="2" />` and `<toc depth={2} />` both set `depth` to 2, and `<toc depth={true} />` reports [wrong type](#language.core_format.values.diagnostics.wrong_type) }}
+    must {{ read a quoted attribute as a literal of its parameter's type, a string, a number, a boolean, an enum member or a reference resolved as [a link's path](#language.core_format.naming.link_lookup), and an attribute in braces as an expression of Heron's expression language, list literals included, checked against its parameter's type as an argument }}
+    example {{ `<toc depth="2" />` and `<toc depth={2} />` both set `depth` to 2, `<rule by="desk">` names the actor `desk`, and `<toc depth={true} />` reports [wrong type](#language.core_format.values.diagnostics.wrong_type) }}
   }
 
   required_attributes: rule(tag_attribute, by = product.system.checker) {
@@ -58,6 +110,24 @@ tags: section {
 
     tag_not_accepted: diagnostic("accept", by = product.system.checker) {
       message = "<‹kind›> doesn't accept <‹child›>; it accepts ‹kinds›"
+    }
+
+    @display("Element needs an id")
+    element_needs_id: diagnostic("unnamed", by = product.system.checker) {
+      message = "<‹kind›> declares a node and needs an id"
+      | A section, a step, a concept or another kind with a heading, or a term, written as an element without `id`.
+    }
+
+    @display("Code in an element")
+    code_in_element: diagnostic("element-code", by = product.system.checker) {
+      message = "<‹kind›>'s body is code; write it in a .heron file"
+      | A kind whose body is a `do` block, written as an element; code has no element form.
+    }
+
+    @display("Unquoted attribute")
+    unquoted_attribute: diagnostic("syntax", by = product.system.parser) {
+      message = "the value of ‹name› needs quotes or braces"
+      | An attribute written `name=value`; write `name="value"`, or `name={expr}` for an expression.
     }
   }
 }
