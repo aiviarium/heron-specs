@@ -55,6 +55,11 @@ their text, which the core maps back onto the source.
 <then>a provider can scope its checks, such as treating `example` bodies or `outOfScope` differently</then>
 </rule>
 
+<rule id="element_regions" targets="prose_region" by="product.system.prose_linter">
+<must>give the text of an element that declares a node to that node, in a region of its own, as its text in a [Heron file](#language.core_format.files.heron_file) belongs to it</must>
+<then>a term's definition in `<term id="x">…</term>` doesn't ask to link the term, and `should` in a rule's `<must>` is a must's</then>
+</rule>
+
 <rule id="masked_spans" targets="masked_span" by="product.system.prose_linter">
 <must>mask inline code, escapes, inserts, [node links](#language.markup.links.node_link) whole, a tag's head with its attributes and its closing tag, and fenced blocks, as `code`, `insert`, `link` or `tag`</must>
 <then>no linter reads a name, a path or an attribute as a word</then>
