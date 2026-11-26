@@ -38,8 +38,13 @@ its header.
 </rule>
 
 <rule id="intent_first" targets="tools.docs.rendering" by="system.docs_generator">
-<must>render a node's goals and its other intent-layer children, such as what it leaves out, outside the `explore` lens, before the groups of [the content order](#tools.docs.rendering.content_order), whether shown in full or as pages of their own, and list their pages first among its pages in the navigation</must>
-<then>an area reads from its goals down to its rules and then its contract, whatever order its files are included in</then>
+<must>render a node's goals and its other intent-layer children, outside the `explore` lens, right after its lead prose and before the groups of [the content order](#tools.docs.rendering.content_order), each as a block labelled with its kind, such as "Goal", holding its text and its measure</must>
+<then>an area reads from its goals down to its rules and then its contract, and a goal never reads as another child page</then>
+</rule>
+
+<rule id="goals_not_pages" targets="tools.docs.rendering" by="system.docs_generator">
+<mustNot>give a goal a page, an entry in the navigation or a place in the previous and next sequence</mustNot>
+<instead>show it on the page of the area or package it belongs to, the package's goals on its home page</instead>
 </rule>
 
 <rule id="rules_flow" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
