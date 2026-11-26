@@ -1,14 +1,9 @@
 // The extension protocol's messages: JSON-RPC's requests, responses and
 // notifications, sent as length-prefixed CBOR frames over stdio. This file is
 // the one description of them; every side's bindings are generated from it,
-// so another runtime's SDK can be generated the same way.
-import = ["std/types@1"]
-
-/// The wire name of a method, where it isn't the func's own name.
-method(name: String): annotation(on = [func])
-
-/// A method that is sent as a notification: it has no response.
-notification: flag(on = [func])
+// so another runtime's SDK can be generated the same way. Each side's
+// methods are an api bound by std/jsonrpc.
+import = ["std/types@1", "std/jsonrpc@1"]
 
 /// The protocol version both sides send in initialize.
 version: String = "1.0"
@@ -318,46 +313,73 @@ NameParams: type {
 
 Empty: type
 
-/// What the host sends an extension.
-Extension: interface {
-  initialize(params: InitializeParams): func(InitializeResult)
-  call(params: CallParams): func(Any)
-  lint(params: LintParams): func(LintResult)
-  generate(params: GenerateParams): func(GenerateResult)
-  render(params: RenderParams): func(RenderResult)
-  @method("resource/setup")
-  resource_setup(params: ResourceParams): func(ResourceResult)
-  @method("resource/reset")
-  resource_reset(params: ResourceParams): func(ResourceResult)
-  @method("resource/snapshot")
-  resource_snapshot(params: ResourceParams): func(ResourceResult)
-  @method("resource/restore")
-  resource_restore(params: ResourceParams): func(ResourceResult)
-  @method("resource/fork")
-  resource_fork(params: ResourceParams): func(ResourceResult)
-  @method("resource/teardown")
-  resource_teardown(params: ResourceParams): func(ResourceResult)
-  shutdown(params: Empty): func(Empty)
+/// What heron sends an extension.
+@display("Extension protocol: extension")
+@jsonrpc(framing = length_prefixed, encoding = cbor)
+extension: api {
+  @realizes(language.interop.protocol.handshake.initialize_first)
+  initialize(@params params: InitializeParams): op(InitializeResult)
+  @realizes(language.interop.protocol.methods.calls_by_target)
+  call(@params params: CallParams): op(Any)
+  @realizes(language.interop.declaring.registered_by_path)
+  lint(@params params: LintParams): op(LintResult)
+  @realizes(language.interop.declaring.registered_by_path)
+  generate(@params params: GenerateParams): op(GenerateResult)
+  @realizes(language.interop.declaring.registered_by_path)
+  render(@params params: RenderParams): op(RenderResult)
+  @realizes(language.interop.timing.instance_per_run)
+  @jsonrpc("resource/setup")
+  resource_setup(@params params: ResourceParams): op(ResourceResult)
+  @realizes(language.interop.timing.instance_per_run)
+  @jsonrpc("resource/reset")
+  resource_reset(@params params: ResourceParams): op(ResourceResult)
+  @realizes(language.interop.timing.instance_per_run)
+  @jsonrpc("resource/snapshot")
+  resource_snapshot(@params params: ResourceParams): op(ResourceResult)
+  @realizes(language.interop.timing.instance_per_run)
+  @jsonrpc("resource/restore")
+  resource_restore(@params params: ResourceParams): op(ResourceResult)
+  @realizes(language.interop.timing.instance_per_run)
+  @jsonrpc("resource/fork")
+  resource_fork(@params params: ResourceParams): op(ResourceResult)
+  @realizes(language.interop.timing.teardown_at_end)
+  @jsonrpc("resource/teardown")
+  resource_teardown(@params params: ResourceParams): op(ResourceResult)
+  @realizes(language.interop.host.supervising.shutdown)
+  shutdown(@params params: Empty): op(Empty)
 }
 
-/// What an extension sends the host: the way back into Heron, `ctx`.
-Host: interface {
+/// What an extension sends heron: the way back into Heron, `ctx`.
+@display("Extension protocol: heron")
+@jsonrpc(framing = length_prefixed, encoding = cbor)
+host: api {
   /// The node at a path, or null when nothing is there.
-  node(params: NodeParams): func(Node)
-  call(params: CallParams): func(Any)
-  resource(params: NameParams): func(Any)
-  secret(params: NameParams): func(String)
-  temp(params: NameParams): func(String)
+  @realizes(language.interop.host.services.ctx_node)
+  node(@params params: NodeParams): op(Node)
+  @realizes(language.interop.host.services.ctx_call_in_run)
+  call(@params params: CallParams): op(Any)
+  @realizes(language.interop.timing.run_id_travels)
+  resource(@params params: NameParams): op(Any)
+  @realizes(language.interop.host.services.ctx_secret)
+  secret(@params params: NameParams): op(String)
+  @realizes(language.interop.host.services.ctx_temp)
+  temp(@params params: NameParams): op(String)
 }
 
-/// Notifications either side may send.
-Notifications: interface {
-  @method("$/cancel")
-  cancel(params: CancelParams): func<notification>
-  @method("$/log")
-  log(params: LogParams): func<notification>
-  @method("$/progress")
-  progress(params: ProgressParams): func<notification>
-  @method("$/stream")
-  stream(params: StreamParams): func<notification>
+/// The notifications either side may send.
+@display("Extension protocol: notifications")
+@jsonrpc(framing = length_prefixed, encoding = cbor)
+notifications: api {
+  @realizes(language.interop.protocol.methods.cancel)
+  @jsonrpc("$/cancel")
+  cancel(@params params: CancelParams): op
+  @realizes(language.interop.protocol.methods.log_and_progress)
+  @jsonrpc("$/log")
+  log(@params params: LogParams): op
+  @realizes(language.interop.protocol.methods.log_and_progress)
+  @jsonrpc("$/progress")
+  progress(@params params: ProgressParams): op
+  @realizes(language.interop.protocol.methods.stream)
+  @jsonrpc("$/stream")
+  stream(@params params: StreamParams): op
 }

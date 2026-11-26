@@ -1,0 +1,341 @@
+@display("gRPC and Connect")
+grpc: section {
+  | `@proto("acme.parcels.v1")` of `std/proto` on an api binds each of its ops to a method
+  | of one gRPC service, and every type the methods reach to a protobuf message. The
+  | projection is fixed by the rules below, so the docs, `heron generate proto` and a
+  | transport agree on every name and number without a second description. The service is
+  | served over gRPC by default, and over gRPC-Web and Connect where `protocols` says so.
+
+  proto_service: term {{
+    The gRPC service an api is bound to by `@proto(package)`. Its fully qualified name is
+    the package, a dot and the service's name, as `acme.parcels.v1.ParcelsService`, and
+    each method is called at `/<package>.<Service>/<Method>`.
+  }}
+
+  @display("Protocol")
+  proto_protocol: term {{
+    A wire protocol a [service](#language.apis.grpc.proto_service) is served with, from `std/proto`'s
+    `Protocol`: `grpc`, gRPC over HTTP/2; `grpc_web`, gRPC-Web for browsers; and
+    `connect`, the Connect protocol, whose unary calls are plain HTTP with JSON bodies.
+  }}
+
+  request_message: term {{
+    The message a method takes, `<Method>Request`, made from the op's parameters. Each
+    method has its own, as protobuf's style asks, so a type the op takes is a field of
+    it, never the request itself.
+  }}
+
+  response_message: term {{
+    The message a method answers with, `<Method>Response`, with one field that holds the
+    op's [result](#language.apis.responses.result_type), or none for an op that returns
+    nothing.
+  }}
+
+  field_number: term {{
+    A field's number on the protobuf wire: `@field(3)` of `std/proto` on a member, a
+    parameter or an enum value, or the number [declaration order](#language.apis.grpc.numbering.auto_numbers) gives it.
+  }}
+
+  @display("JSON name")
+  json_name: term {{
+    A field's name in protobuf's JSON form, which Connect and the docs use: the field's name
+    in lower camel case, `weight_grams` as `weightGrams`.
+  }}
+
+  @display("Metadata")
+  proto_metadata: term {{
+    The headers of a gRPC call. A parameter marked `@metadata` of `std/proto`, or
+    `@metadata("x-tenant")` for a name of its own, travels in it rather than in the
+    [request message](#language.apis.grpc.request_message).
+  }}
+
+  service: section {
+    proto_ops: rule(proto_service, by = system.checker) {
+      must {{ bind every op of an api that carries `@proto` with a `package` to a method of its [service](#language.apis.grpc.proto_service), and report proto outside a service at an op's `@proto` when its api carries none }}
+    }
+
+    proto_arguments: rule(proto_service, by = system.checker) {
+      must {{ report proto argument misplaced at `package`, `service` or `protocols` in an op's `@proto`, and at `method`, `idempotency` or `timeout` in an api's }}
+      then {{ the service is named once, on the api, and each method on its op }}
+    }
+
+    package_names: rule(proto_service, by = system.checker) {
+      if {{ a `package` isn't lower-case identifiers joined by dots }}
+      must {{ report invalid proto package at it }}
+      example {{ `@proto("Acme-Parcels")` reports "Acme-Parcels isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1" }}
+    }
+
+    service_name: rule(proto_service) {
+      must {{ name the service by `@proto`'s `service`, or else by the api's name in upper camel case followed by `Service`, unless it ends in `Service` already }}
+      example {{ `parcels: api` is `ParcelsService`, and `@proto("acme.parcels.v1", service = "Tracking")` is `Tracking` }}
+    }
+
+    method_name: rule(language.apis.rpc.rpc_method) {
+      must {{ name a method by its op's `@proto(method = …)`, or else by the op's name in upper camel case }}
+      example {{ `get_parcel` is `GetParcel` }}
+    }
+
+    default_protocol: rule(proto_protocol) {
+      must {{ serve a [service](#language.apis.grpc.proto_service) over the [protocols](#language.apis.grpc.proto_protocol) its `@proto(protocols = […])` lists, and over gRPC alone where it lists none }}
+    }
+  }
+
+  messages: section {
+    request_fields: rule(request_message) {
+      must {{ make the [request message](#language.apis.grpc.request_message) from the op's parameters in the order written, leaving out those that travel as [metadata](#language.apis.grpc.proto_metadata), with each field named after its parameter, and a streamed parameter as one field of the stream's element type }}
+      then {{ each message of a client stream carries one element }}
+      example {{ `get_parcel(@path id: String)` takes `GetParcelRequest { string id = 1; }` }}
+    }
+
+    response_field: rule(response_message) {
+      must {{ give the [response message](#language.apis.grpc.response_message) one field, numbered 1, of the [result type](#language.apis.responses.result_type), or of its element type for a streamed result, named after that type in snake case where it's a record, a union or an enum, `items` for a list or a set, `entries` for a map, and `value` for anything else }}
+      then {{ an op with no result, or a `Null` one, answers with an empty message }}
+      example {{ `get_parcel(…): op(Parcel)` answers `GetParcelResponse { Parcel parcel = 1; }`, and `watch_parcel` streams `WatchParcelResponse { ParcelEvent parcel_event = 1; }` }}
+    }
+
+    message_names_taken: rule(request_message) {
+      where {{ a type the service reaches already has the name `<Method>Request` or `<Method>Response` }}
+      must {{ name the method's message with the service's name before it, as `<Service><Method>Request` }}
+    }
+
+    type_messages: rule(request_message) {
+      must {{ make a message of every record, union and [error type](#language.data.types.error_type) a method's messages reach, named as the type, and of an instance of a [generic type](#language.data.types.generic_type) named after the type and then its arguments }}
+      example {{ `Page(Parcel)` is the message `PageParcel` }}
+    }
+
+    client_stream_alone: rule(request_message, by = system.checker) {
+      if {{ an op takes a streamed parameter and another parameter that doesn't travel as [metadata](#language.apis.grpc.proto_metadata) }}
+      must {{ report stream with fields at the other parameter }}
+      then {{ what a client stream needs once is metadata, sent before the first message }}
+    }
+  }
+
+  numbering: section {
+    | A message is numbered by its `@field` annotations or, where it has none, by the order
+    | its fields are written in. Adding a field at the end keeps every number; moving one
+    | changes them, so a service that's deployed numbers its fields.
+
+    auto_numbers: rule(field_number) {
+      must {{ number a message's fields by their `@field(n)`, or, where none of them carries one, 1, 2, 3 and on in the order written, skipping the numbers the type's `@reserved` names }}
+      example {{ a type with `@reserved(2)` and the fields `id` and `status` numbers them 1 and 3 }}
+    }
+
+    all_or_none: rule(field_number, by = system.checker) {
+      if {{ some fields of a message carry `@field` and others don't }}
+      must {{ report mixed numbering at the first field without one }}
+      then {{ a number is never half written and half derived }}
+    }
+
+    unique_numbers: rule(field_number, by = system.checker) {
+      if {{ two fields of a message, or two values of an enum, have one number }}
+      must {{ report number used twice at the second }}
+    }
+
+    number_range: rule(field_number, by = system.checker) {
+      if {{ a field's number is below 1, above 536870911 or from 19000 to 19999, or an enum value's is below 1 }}
+      must {{ report number out of range at it }}
+      then {{ 0 stays every enum's unspecified value }}
+    }
+
+    reserved_numbers: rule(field_number, by = system.checker) {
+      if {{ a field's number is one its type's `@reserved` names }}
+      must {{ report reserved number at it }}
+    }
+  }
+
+  types: section {
+    | | Heron                             | Protobuf                                   | JSON                           |
+    | | --------------------------------- | ------------------------------------------ | ------------------------------ |
+    | | `String`, `Bool`, `Bytes`          | `string`, `bool`, `bytes`                  | a string, a boolean, base64    |
+    | | `Int`, `Int(bits = 32)`            | `int64`, `int32`                           | a string, a number             |
+    | | `u32`, `u64`                       | `uint32`, `uint64`                         | a number, a string             |
+    | | `Float`, `f32`                     | `double`, `float`                          | a number                       |
+    | | `Decimal`                          | `string`                                   | a string                       |
+    | | `Timestamp`, `Duration`            | `google.protobuf.Timestamp`, `Duration`    | RFC 3339, as `"1.5s"`          |
+    | | `Any`, `Map(String, Any)`          | `google.protobuf.Value`, `Struct`          | any value, an object           |
+    | | `List(T)`, `Set(T)`                | `repeated T`                               | an array                       |
+    | | `Map(K, V)`                        | `map<K, V>`                                | an object                      |
+    | | `T?`                               | `optional T`                               | left out when unset            |
+    | | `T \| Null`, of a primitive `T`     | `google.protobuf.StringValue` and the other wrappers | the value or `null`  |
+    | | an enum, a union, a record         | an enum, a message with a `oneof`, a message | a string, an object          |
+
+    scalar_mapping: rule(field_number) {
+      must {{ map each field's type to protobuf and to JSON by the [table](#heron.language.markup.components.table), and every other type of `std/types`, such as `Money`, to a message of the service's package like the tree's own }}
+    }
+
+    int_encodings: rule(field_number) {
+      where {{ an integer field's `@field` is flagged `<sint>` or `<fixed>` }}
+      must {{ encode it as `sint32` or `sint64`, or as `fixed32`, `fixed64`, `sfixed32` or `sfixed64` by its size and sign }}
+    }
+
+    enum_values: rule(field_number) {
+      must {{ map an enum to a protobuf enum of its name whose values are the enum's name and the value's in upper snake case, after a zero value `<ENUM>_UNSPECIFIED`, numbered by their `@field` or from 1 in the order written }}
+      then {{ JSON writes a value as its protobuf name, as `"PARCEL_STATUS_IN_TRANSIT"` }}
+    }
+
+    union_oneof: rule(field_number) {
+      must {{ map a union to a message with one `oneof`, named after the union in snake case, whose fields are its variants numbered like a message's }}
+    }
+
+    json_names: rule(json_name) {
+      must {{ name each field in JSON by its [JSON name](#language.apis.grpc.json_name), and leave a field out of JSON where it has its default and no presence }}
+    }
+
+    unmappable_types: rule(field_number, by = system.checker) {
+      if {{ a type a method reaches has no protobuf form: a list or map of lists or maps, a map keyed by anything but a string, an integer or a boolean, a list or map as a union's variant, or a union expression other than `T | Null` of a primitive type }}
+      must {{ report no protobuf mapping at the type, saying why }}
+    }
+  }
+
+  status_codes: section {
+    | | `@code`               | Connect code          | HTTP status |
+    | | --------------------- | --------------------- | ----------- |
+    | | `CANCELLED`           | `canceled`            | 499         |
+    | | `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `OUT_OF_RANGE` | `invalid_argument`, `failed_precondition`, `out_of_range` | 400 |
+    | | `UNAUTHENTICATED`     | `unauthenticated`     | 401         |
+    | | `PERMISSION_DENIED`   | `permission_denied`   | 403         |
+    | | `NOT_FOUND`           | `not_found`           | 404         |
+    | | `ALREADY_EXISTS`, `ABORTED` | `already_exists`, `aborted` | 409   |
+    | | `RESOURCE_EXHAUSTED`  | `resource_exhausted`  | 429         |
+    | | `UNIMPLEMENTED`       | `unimplemented`       | 501         |
+    | | `UNAVAILABLE`         | `unavailable`         | 503         |
+    | | `DEADLINE_EXCEEDED`   | `deadline_exceeded`   | 504         |
+    | | `UNKNOWN`, `INTERNAL`, `DATA_LOSS` | `unknown`, `internal`, `data_loss` | 500 |
+
+    @display("gRPC code")
+    grpc_code: term {{
+      The [error code](#language.apis.rpc.rpc_code) of `std/proto`, `@code(NOT_FOUND)`: one of
+      gRPC's canonical status codes but `OK`, from its `Code` enum.
+    }}
+
+    error_status: rule(grpc_code) {
+      when {{ a method fails with an error it declares }}
+      must {{ answer with a gRPC status of the error's [code](#language.apis.grpc.status_codes.grpc_code), its message, and one detail: for a type, the type's own message, and for an `error` node, a `google.rpc.ErrorInfo` with the error's id as `reason`, the service's package as `domain` and its fields as `metadata` }}
+      then {{ a client reads which error it got from the detail, never from the message }}
+    }
+
+    connect_errors: rule(grpc_code) {
+      where {{ a service is served over Connect }}
+      must {{ answer an error with the HTTP status of the [table](#heron.language.markup.components.table) and a JSON body of its Connect `code`, its `message` and its `details`, each with its `type`, its `value` and its fields as `debug` }}
+    }
+
+    uncoded_errors: rule(grpc_code, by = system.linter) {
+      if {{ an op bound to a [service](#language.apis.grpc.proto_service) throws an error with no `@code` of `std/proto` }}
+      should {{ report uncoded gRPC error at the error }}
+      then {{ the docs show the error as `UNKNOWN`, the code a server sends for a failure it doesn't name }}
+    }
+  }
+
+  calls: section {
+    metadata_params: rule(proto_metadata) {
+      must {{ send a parameter marked `@metadata` as the metadata its name gives, or the parameter's name, and a parameter marked `@header` of an op bound to HTTP too as the metadata named after its header in lower case, a `Bytes` value base64-encoded under a name ending `-bin` }}
+      example {{ `@header("Tenant") tenant?: String` travels as `tenant` }}
+    }
+
+    idempotency_level: rule(language.apis.rpc.rpc_method) {
+      where {{ an op's `@proto` sets `idempotency`, `no_side_effects` or `idempotent` }}
+      must {{ give its method that idempotency level, which marks it safe to retry, and serve a `no_side_effects` method over Connect with GET as well as POST }}
+    }
+
+    default_deadline: rule(language.apis.rpc.rpc_method) {
+      where {{ an op's `@proto` sets `timeout` }}
+      must {{ end each of its calls after that time unless the caller sets another }}
+    }
+
+    connect_unary: rule(proto_protocol) {
+      where {{ a unary method is served over Connect }}
+      must {{ take it as POST to `/<package>.<Service>/<Method>` with the [request message](#language.apis.grpc.request_message)'s JSON as the body and `application/json` as its type, and, for a `no_side_effects` method, as GET with the query `encoding=json`, `message` and `connect=v1` }}
+    }
+
+    connect_streams: rule(proto_protocol) {
+      where {{ a streaming method is served over Connect }}
+      must {{ frame each message as `application/connect+json`: a flags byte, a 4-byte big-endian length and the message's JSON, with an end-of-stream message flagged `2` last, holding the error, if any }}
+      then {{ a browser can call unary and server-streaming methods, and only gRPC and Connect over HTTP/2 carry client and bidirectional streams }}
+    }
+  }
+
+  errors: section {
+    @realizes(language.apis.grpc.service.proto_ops)
+    @display("Proto outside a service")
+    proto_outside_service: error("proto", by = system.checker) {
+      title = "{op} carries @proto, but its api names no protobuf package"
+      op: field(String)
+      | An op's `@proto` sets its method's options, which need the service its api's `@proto(package)` declares.
+    }
+
+    @realizes(language.apis.grpc.service.proto_arguments)
+    @display("Proto argument misplaced")
+    proto_argument_misplaced: error("proto", by = system.checker) {
+      title = "@proto on {kind} doesn't take {argument}"
+      kind: field(String)
+      argument: field(String)
+    }
+
+    @realizes(language.apis.grpc.service.package_names)
+    @display("Invalid proto package")
+    invalid_proto_package: error("proto", by = system.checker) {
+      title = "{package} isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1"
+      package: field(String)
+    }
+
+    @realizes(language.apis.grpc.messages.client_stream_alone)
+    @display("Stream with fields")
+    stream_with_fields: error("proto", by = system.checker) {
+      title = "{op} streams from the client, so {param} can only travel as @metadata"
+      op: field(String)
+      param: field(String)
+    }
+
+    @realizes(language.apis.grpc.numbering.all_or_none)
+    @display("Mixed numbering")
+    mixed_numbering: error("field-number", by = system.checker) {
+      title = "{message} numbers some fields with @field and not {field}: number all of them or none"
+      message: field(String)
+      field: field(String)
+    }
+
+    @realizes(language.apis.grpc.numbering.unique_numbers)
+    @display("Number used twice")
+    duplicate_field_number: error("field-number", by = system.checker) {
+      title = "{field} has number {number}, which {other} already has in {message}"
+      related = "the field that has it first"
+      message: field(String)
+      field: field(String)
+      other: field(String)
+      number: field(String)
+    }
+
+    @realizes(language.apis.grpc.numbering.number_range)
+    @display("Number out of range")
+    field_number_out_of_range: error("field-number", by = system.checker) {
+      title = "{number} can't number {field}: use 1 to 536870911, outside 19000 to 19999"
+      field: field(String)
+      number: field(String)
+    }
+
+    @realizes(language.apis.grpc.numbering.reserved_numbers)
+    @display("Reserved number")
+    reserved_field_number: error("field-number", by = system.checker) {
+      title = "{field} has number {number}, which {message} reserves"
+      message: field(String)
+      field: field(String)
+      number: field(String)
+    }
+
+    @realizes(language.apis.grpc.types.unmappable_types)
+    @display("No protobuf mapping")
+    no_proto_mapping: error("proto", by = system.checker) {
+      title = "{type} has no protobuf form: {reason}"
+      type: field(String)
+      reason: field(String)
+    }
+
+    @realizes(language.apis.grpc.status_codes.uncoded_errors)
+    @display("Uncoded gRPC error")
+    uncoded_grpc_error: error("rpc-code", severity = Severity.warning, by = system.linter) {
+      title = "{error} is thrown by {op}, a gRPC method, and has no @code: it's answered as UNKNOWN"
+      error: field(String)
+      op: field(String)
+    }
+  }
+}

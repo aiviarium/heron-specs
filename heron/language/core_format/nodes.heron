@@ -141,6 +141,12 @@ nodes: section {
       while {{ the annotation is outside the prelude's, such as `@doc` and `@display`, which exist without an import }}
     }
 
+    ambiguous_annotations: rule(annotation_term, by = system.checker) {
+      if {{ an annotation's name is unqualified and more than one package the file imports declares an annotation of that name }}
+      must {{ report ambiguous annotation, naming each package's qualified form }}
+      then {{ `@code` in a file that imports `std/proto` and `std/jsonrpc` is written `@proto.code` or `@jsonrpc.code` }}
+    }
+
     annotation_placement: rule(annotation_term, by = system.linter) {
       if {{ an annotation stands where its declaration's `on` doesn't allow it, or twice on one node without being `<repeatable>` }}
       should {{ report annotation placement, naming where it attaches }}
@@ -231,6 +237,13 @@ nodes: section {
     not_an_annotation: error("not-an-annotation", by = system.checker) {
       title = "{name} is not an annotation"
       name: field(String)
+    }
+
+    @realizes(language.core_format.nodes.annotations.ambiguous_annotations)
+    ambiguous_annotation: error("ambiguous", by = system.checker) {
+      title = "@{name} is declared by more than one imported package: write {forms}"
+      name: field(String)
+      forms: field(String)
     }
 
     @realizes(language.core_format.nodes.locals.unused_locals)

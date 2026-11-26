@@ -13,6 +13,31 @@ api_page: screen(route = "/<api>.html") {
     }
   }
 
+  @realizes(tools.frontend.screens.api_page.service.service_lead, tools.frontend.screens.api_page.service.methods_grouped, tools.frontend.screens.api_page.service.signature_each)
+  service: region {
+    | An api bound to a gRPC service or to JSON-RPC reads as a service: its name, its
+    | protocols, and its methods by their signatures.
+
+    service_lead: rule(by = system.docs_generator) {
+      where {{ an api is bound by `std/proto` or `std/jsonrpc` }}
+      must {{ show the service's fully qualified name with a copy button, the [protocols](#language.apis.grpc.proto_protocol) it's served over, its JSON-RPC [framing](#language.apis.jsonrpc.jsonrpc_framing) and encoding, whether it takes batches, and its [server URLs](#language.apis.rpc.server_url) }}
+    }
+
+    methods_grouped: rule(by = system.docs_generator) {
+      where {{ an api is bound by `std/proto` or `std/jsonrpc` }}
+      must {{ group a gRPC service's methods by [streaming kind](#language.apis.rpc.streaming_kind), unary first, and a JSON-RPC api's by the part of the method's name before its first `/` or `.`, [notifications](#language.apis.jsonrpc.jsonrpc_notification) last }}
+    }
+
+    signature_each: rule(by = system.docs_generator) {
+      must {{ show each method on one line: its streaming kind as a badge, its signature as `Method(Request) returns (stream Response)` or its JSON-RPC name, its [display name](#language.core_format.naming.display_name) linked to its page, and the first sentence of its prose }}
+    }
+
+    both_indexes: rule(by = system.docs_generator) {
+      where {{ an api has more than one binding }}
+      must {{ show each binding's index under the [binding switch](#tools.frontend.screens.op_page.bindings.binding_switch) }}
+    }
+  }
+
   @realizes(tools.frontend.screens.api_page.ops.ops_grouped, tools.frontend.screens.api_page.ops.one_line_each)
   ops: region {
     | The ops, grouped.

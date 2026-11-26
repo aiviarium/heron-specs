@@ -1,0 +1,52 @@
+// The language server's own methods, beyond the language server protocol's,
+// described as JSON-RPC with std/jsonrpc: the api, its types and its errors.
+import = ["std/types@1", "std/jsonrpc@1"]
+
+| The requests [the language server](#system.language_server) answers beyond the language
+| server protocol's own, described as the JSON-RPC methods they are, with the protocol's
+| `Content-Length` framing. The [extensions](#tools.lsp.extensions) say what they do.
+
+@display("Heron language server")
+@jsonrpc(framing = content_length)
+language_server: api {
+  | The methods a client sends `heron lsp`, or the `/lsp` socket of [the server](#system.server), beside the protocol's.
+
+  @realizes(tools.lsp.extensions.source_request, tools.lsp.extensions.source_request_otherwise)
+  @jsonrpc("heron/source")
+  @throws(errors.no_file)
+  source(@params request: SourceParams): op(SourceText) {
+    | A file's current text by its URI, such as a standard package's embedded file, which an
+    | editor opens read-only.
+
+    std_file: example {
+      request = SourceParams(uri = "heron:/std/doc/package.heron")
+      returns = SourceText(text = "// std/doc: the components prose places.")
+    }
+
+    missing: example {
+      request = SourceParams(uri = "heron:/std/nothing.heron")
+      throws = errors.no_file
+    }
+  }
+}
+
+/// What `heron/source` asks for.
+SourceParams: type {
+  /// A `file:` URI under the workspace's root, or a `heron:/std/` one.
+  uri: String
+}
+
+/// A file's text, as the session holds it.
+SourceText: type {
+  text: String
+}
+
+errors: section {
+  @realizes(tools.lsp.extensions.source_request_otherwise)
+  @code(-32602)
+  no_file: error("lsp.NO_FILE", by = system.language_server) {
+    title = "no file {uri}"
+    uri: field(String)
+    | An invalid-parameters error: the URI names no open document, loaded file or file on disk.
+  }
+}

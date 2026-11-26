@@ -7,9 +7,10 @@ protocol: section {
   | calls back into Heron on the same connection. The messages are declared once, in
   | Heron, and [included below](#language.interop.protocol.messages) as they stand; both
   | sides' bindings are generated from them. A frame is a [Message](#language.interop.protocol.messages.Message); the methods each side
-  | serves are the interfaces [Extension](#language.interop.protocol.messages.Extension), [Host](#language.interop.protocol.messages.Host) and
-  | [Notifications](#language.interop.protocol.messages.Notifications), and each other type is the `params` or `result`
-  | of one of them.
+  | serves are the apis [extension](#language.interop.protocol.messages.extension), [host](#language.interop.protocol.messages.host) and
+  | [notifications](#language.interop.protocol.messages.notifications), bound by `std/jsonrpc` with
+  | `length_prefixed` framing and `cbor` encoding, and each other type is the `params` or
+  | `result` of one of their methods.
 
   cbor_rpc: term(aliases = ["CBOR-RPC"]) {{
     The protocol: a message is a map with `id`, `method`, `params`, `result`, `error` and
@@ -151,7 +152,7 @@ protocol: section {
   }
 
   generated_sides: rule(cbor_rpc, by = system.extension_host) {
-    must {{ generate the host's and the JS runtime's bindings from the messages, with `@method` giving a wire name such as `resource/setup` and `<notification>` a method without a response, and fail CI when either is stale }}
+    must {{ generate the host's and the JS runtime's bindings from the messages, each api's ops as its methods, named on the wire by their `@jsonrpc` as `resource/setup`, an op without a result as a [notification](#language.apis.jsonrpc.jsonrpc_notification), and fail CI when either is stale }}
   }
 
 }

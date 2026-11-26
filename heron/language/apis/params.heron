@@ -11,11 +11,14 @@ params: section {
   | | `@query`          | `std/http`  | in the query string                                  |
   | | `@header(name)`   | `std/http`  | in the header `name`, or the parameter's own name     |
   | | `@body`           | `std/http`  | as the request body                                  |
-  | | `@field(n)`       | `std/proto` | as field `n` of the request message                  |
+  | | `@field(n)`       | `std/proto` | as field `n` of the [request message](#language.apis.grpc.request_message) |
+  | | `@metadata(name)` | `std/proto` | in the gRPC metadata `name`, or the parameter's own name |
+  | | `@params`         | `std/jsonrpc` | as the whole of a JSON-RPC request's `params`      |
 
   param_location: term {{
     Where a transport puts a parameter's value in a request: in the path, the query, a
-    header or the body for HTTP, or a numbered field of the request message for gRPC. It's
+    header or the body for HTTP, a numbered field of the [request message](#language.apis.grpc.request_message) or the metadata
+    for gRPC, or a member of `params` for JSON-RPC. It's
     stated by an annotation on the parameter, or by the transport's default binding.
   }}
 

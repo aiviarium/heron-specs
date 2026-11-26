@@ -30,12 +30,14 @@ contract: section {
     `name: error("id", by = part) { title = "…" }`, one problem the product reports, with one
     identity wherever it's reported. Its `title` is the message, with a `{name}` for each part
     filled in where it happens, each a `field` of the error. Where a surface reports it, a
-    projection says how: `status`, the HTTP status; `exit`, the command's exit status;
-    `severity` and the site, for a diagnostic; a `field`, for a form.
+    projection says how: `status`, the HTTP status; `@code`, its [error code](#language.apis.rpc.rpc_code) on a gRPC
+    or JSON-RPC binding; `exit`, the command's exit status; `severity` and the site, for a
+    diagnostic; a `field`, for a form.
   }}
 
   error_projection: term {{
-    How one surface reports an error: its `status` on an API, its `exit` on a command line,
+    How one surface reports an error: its `status` on an API over HTTP, its `@code` over
+    gRPC or JSON-RPC, its `exit` on a command line,
     its `severity` and site as a diagnostic, or the field it's shown at on a screen.
   }}
 
@@ -95,7 +97,7 @@ contract: section {
   }
 
   errors_on_surfaces: rule(error_kind, by = system.docs_generator) {
-    must {{ show on each [surface entry](#heron.language.specifications.contract.surface_entry) the errors it reports with their projection there: an op's with their status, a command's with their exit status }}
+    must {{ show on each [surface entry](#heron.language.specifications.contract.surface_entry) the errors it reports with their projection there: an op's with their status and their codes on its RPC bindings, a command's with their exit status }}
   }
 
   error_granularity: rule(error_kind, by = actors.author) {

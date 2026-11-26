@@ -3,12 +3,17 @@ type_page: screen(route = "/<type>.html") {
   | A type's page in the API reference: its definition, its fields, its rules, its
   | [lifecycles](#language.specifications.lifecycles.lifecycle) and where it's used. The top bar and the sidebar are the [op page](#tools.frontend.screens.op_page)'s.
 
-  @realizes(tools.frontend.screens.type_page.signature.definition_first)
+  @realizes(tools.frontend.screens.type_page.signature.definition_first, tools.frontend.screens.type_page.signature.proto_definition)
   signature: region {
     | The definition as a Heron signature in a code block titled with its file.
 
     definition_first: rule(by = system.docs_generator) {
       must {{ open the page with the type's declaration as written, moved to the left margin, without its docs and body, with every type in it linked to its page }}
+    }
+
+    proto_definition: rule(by = system.docs_generator) {
+      where {{ a type is a message or an enum of a [gRPC service](#language.apis.grpc.proto_service) }}
+      must {{ show beside its declaration, as tabs, its `.proto` definition with every [field number](#language.apis.grpc.field_number), as `heron generate proto` writes it, and its JSON form, each field by its [JSON name](#language.apis.grpc.json_name) with a value of its type }}
     }
   }
 

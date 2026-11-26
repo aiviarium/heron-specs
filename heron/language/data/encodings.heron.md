@@ -10,7 +10,7 @@ the types.
 | ----------- | --------------------------------------------------------------------------------------------------------- |
 | `std/json`  | Field names and casing, the discriminator field of a union, and 64-bit integers written as strings       |
 | `std/cbor`  | Semantic tags, such as 0 and 1 for time or 2 and 3 for bignums, and integer map keys                     |
-| `std/proto` | Field numbers `@field(3)`, `@reserved(4, 5)`, wire encodings such as `sint` and `fixed`, and an enum's zero value. `api` and `op` map to services and rpcs, and `Stream(T)` to streaming |
+| `std/proto` | [Field numbers](#language.apis.grpc.field_number) `@field(3)`, `@reserved(4, 5)`, wire encodings `@field<sint>` and `@field<fixed>`, and an enum's zero value, as [gRPC and Connect](#language.apis.grpc.types) maps each type. `api` and `op` map to services and methods, and `Stream(T)` to streaming |
 | `std/xml`   | `@xml(attribute = true)`, element names, namespaces, and wrapped or unwrapped lists. Mixed content maps to prose bodies |
 
 <section id="json">

@@ -3,5 +3,6 @@ apis: part {
   | The [extension point](#language.interop.declaring.extension_point) transports implement, so a new protocol is bound with `js(…)` and needs no new build.
   |
   | Its surface is declared in `std/apis/package.heron`, whose types the API reference renders.
-  | `Transport`, `Response` and `transport` are specified in [Transports](#language.apis.transports.transport_binding).
+  | `Transport`, `Response` and `transport` are specified in [Transports](#language.apis.transports.transport_binding),
+  | and `@server` in [RPC bindings](#language.apis.rpc.server_url).
 }

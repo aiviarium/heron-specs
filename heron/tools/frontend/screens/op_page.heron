@@ -8,13 +8,20 @@ op_page: screen(route = "/<api>.<op>.html") {
     | switch and the theme switch.
   }
 
-  @realizes(tools.frontend.screens.op_page.sidebar.ops_by_resource)
+  @realizes(tools.frontend.screens.op_page.sidebar.ops_by_resource, tools.frontend.screens.op_page.sidebar.types_by_api)
   sidebar: region {
-    | The API reference's navigation: the API's ops, each with its method in a fixed-width
-    | mono [column](#heron.language.grammar.lexical.column), then its types, [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
+    | The API reference's navigation: each API's ops, each with its method, or an RPC
+    | method's [streaming kind](#language.apis.rpc.streaming_kind), in a fixed-width mono
+    | [column](#heron.language.grammar.lexical.column), then its types, and the
+    | [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
 
     ops_by_resource: rule(by = system.docs_generator) {
-      must {{ list each api's ops under it, in the order written, each with its method and its [display name](#language.core_format.naming.display_name), then the tree's types and errors as groups of their own }}
+      must {{ list each api's ops under it, in the order written, each with its HTTP method, or for an op bound by RPC alone its [streaming kind](#language.apis.rpc.streaming_kind), and its [display name](#language.core_format.naming.display_name), then the tree's errors as a group of their own }}
+    }
+
+    types_by_api: rule(by = system.docs_generator) {
+      must {{ list each api's types as a group right after its ops, each type under the first api that names it, and the types no api names grouped by the scope that declares them }}
+      then {{ an HTTP api's types and an RPC service's messages are never listed as one group }}
     }
   }
 
@@ -25,6 +32,37 @@ op_page: screen(route = "/<api>.<op>.html") {
 
     op_header: rule(by = system.docs_generator) {
       must {{ show the method, and the path with the api's base path dimmed before the op's own, and a copy button for the whole path }}
+    }
+  }
+
+  @realizes(tools.frontend.screens.op_page.bindings.binding_switch, tools.frontend.screens.op_page.bindings.rpc_header, tools.frontend.screens.op_page.bindings.rpc_facts)
+  bindings: region {
+    | An op bound to more than one protocol is one contract: its prose, facts and rules are
+    | shown once, and a switch picks the binding the parts that differ are shown for. Buf's
+    | schema registry and the Connect docs are the reference for how an RPC method reads.
+
+    binding_switch: rule(by = system.docs_generator) {
+      where {{ an op has more than one binding }}
+      must {{ show a switch of its bindings, HTTP, gRPC, Connect and JSON-RPC in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, and keep the reader's pick from page to page }}
+      then {{ an op bound to HTTP and gRPC has one page, never one per binding }}
+    }
+
+    op_bindings: rule(by = system.docs_generator) {
+      must {{ count as an op's bindings HTTP where it has a route or a socket, gRPC where its [service](#language.apis.grpc.proto_service) is served over gRPC or gRPC-Web, Connect where it's served over Connect, and JSON-RPC where it's a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method) }}
+    }
+
+    rpc_header: rule(by = system.docs_generator) {
+      where {{ the binding picked is gRPC or Connect }}
+      must {{ show the method's path, `/<package>.<Service>/<Method>`, with a copy button, its signature as `Method(Request) returns (stream Response)` with each message linked to its part of the page, and its [streaming kind](#language.apis.rpc.streaming_kind) as a badge }}
+    }
+
+    jsonrpc_header: rule(by = system.docs_generator) {
+      where {{ the binding picked is JSON-RPC }}
+      must {{ show the method's wire name with a copy button, and mark a [notification](#language.apis.jsonrpc.jsonrpc_notification) as one }}
+    }
+
+    rpc_facts: rule(by = system.docs_generator) {
+      must {{ show an RPC method's idempotency level and its default time limit as facts, beside the op's own }}
     }
   }
 
@@ -58,7 +96,7 @@ op_page: screen(route = "/<api>.<op>.html") {
       }
     }
 
-    @realizes(tools.frontend.screens.op_page.body.parameters.grouped_params, tools.frontend.screens.op_page.body.parameters.schema_trees)
+    @realizes(tools.frontend.screens.op_page.body.parameters.grouped_params, tools.frontend.screens.op_page.body.parameters.schema_trees, tools.frontend.screens.op_page.body.parameters.rpc_messages)
     parameters: region {
       grouped_params: rule(by = system.docs_generator) {
         must {{ group the parameters by where they go, path, query, header and body, a header by its wire name, each row with its name, its type linked to the type's page, whether it's required, its default, its constraints and its docs }}
@@ -70,12 +108,22 @@ op_page: screen(route = "/<api>.<op>.html") {
         must {{ put the rows under one heading }}
       }
 
+      rpc_messages: rule(by = system.docs_generator) {
+        where {{ the binding picked is gRPC or Connect }}
+        must {{ show the [request message](#language.apis.grpc.request_message) and the [response message](#language.apis.grpc.response_message) as lists of their fields, each with its [field number](#language.apis.grpc.field_number), its name, its protobuf type linked to its type's page, its [JSON name](#language.apis.grpc.json_name), whether it's optional and its docs, and then the [metadata](#language.apis.grpc.proto_metadata) the method reads, by name }}
+      }
+
+      jsonrpc_params: rule(by = system.docs_generator) {
+        where {{ the binding picked is JSON-RPC }}
+        must {{ show the method's params by name or by position, as its [params structure](#language.apis.jsonrpc.params_structure) says, a `@params` record by its fields }}
+      }
+
       schema_trees: rule(by = system.docs_generator) {
         must {{ show a body and a response as an expandable tree of its type, each nested type a collapsible row that opens in place with its fields, the first level open and deeper ones closed, a union's variants as tabs, optional and nullable fields marked, and a type already open above shown as a link instead of expanding again }}
       }
     }
 
-    @realizes(tools.frontend.screens.op_page.body.responses.responses_by_outcome, tools.frontend.screens.op_page.body.responses.streams_shown)
+    @realizes(tools.frontend.screens.op_page.body.responses.responses_by_outcome, tools.frontend.screens.op_page.body.responses.streams_shown, tools.frontend.screens.op_page.body.responses.errors_by_code)
     responses: region {
       responses_by_outcome: rule(by = system.docs_generator) {
         must {{ list the success response first with status 200, then each error the op or its api throws, an interface by each type that implements it, with its `@status` and the rule or condition behind it }}
@@ -84,6 +132,11 @@ op_page: screen(route = "/<api>.<op>.html") {
       error_projections: rule(by = system.docs_generator) {
         where {{ an op throws an `error` node }}
         must {{ show it as an outcome with its HTTP status, its id as the body's `code`, its title with each `{field}` marked, its fields and its prose }}
+      }
+
+      errors_by_code: rule(by = system.docs_generator) {
+        where {{ the binding picked is gRPC, Connect or JSON-RPC }}
+        must {{ list the errors the op throws keyed by the binding's code, the gRPC code's name, the Connect code with its HTTP status, or the JSON-RPC integer, each with its title with every `{field}` marked, its fields and what causes it, as a list rather than a [table](#heron.language.markup.components.table) }}
       }
 
       streams_shown: rule(by = system.docs_generator) {
@@ -109,6 +162,22 @@ op_page: screen(route = "/<api>.<op>.html") {
       where {{ an op has no example }}
       must {{ show its request body and its response as JSON built from their types, each field with a value of its type, as they travel on the wire }}
       then {{ a reader sees every message as JSON before writing a request }}
+    }
+
+    rpc_example_forms: rule(language.apis.examples.op_example, by = system.docs_generator) {
+      where {{ the binding picked is gRPC, Connect or JSON-RPC }}
+      must {{ show each op example as its request and response messages in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, and the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC }}
+    }
+
+    rpc_try_it: rule(language.apis.rpc.server_url, by = system.docs_generator) {
+      where {{ the op's api declares a [server URL](#language.apis.rpc.server_url) and the binding picked is Connect, for a unary or server-streaming method, or JSON-RPC framed for HTTP }}
+      must {{ offer Try it, which sends the example's request as JSON to that server, editable, and shows each message of the response as it arrives, or the error with its code }}
+    }
+
+    grpc_no_try_it: rule(by = system.docs_generator) {
+      where {{ the binding picked is gRPC, or Connect for a client-streaming or bidirectional method }}
+      mustNot {{ offer Try it }}
+      instead {{ show the `grpcurl` call to copy, since a browser can't speak gRPC or stream from the client }}
     }
 
     served_try_it: rule(by = system.docs_generator) {

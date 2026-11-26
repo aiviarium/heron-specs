@@ -19,7 +19,7 @@ streams: section {
 
   stream_directions: rule(stream_type, by = system.docs_generator) {
     where {{ an op streams its result, a parameter or both }}
-    must {{ show its messages by direction, client to server for a streamed parameter and server to client for a streamed result, framed as server-sent events over HTTP and as WebSocket messages on a socket }}
+    must {{ show its messages by direction, client to server for a streamed parameter and server to client for a streamed result, framed as server-sent events over HTTP, as WebSocket messages on a socket, and as stream messages of the method over gRPC and Connect }}
   }
 
   op_socket_overrides: rule(ws_socket, by = system.docs_generator) {

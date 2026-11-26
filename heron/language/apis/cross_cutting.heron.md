@@ -11,12 +11,12 @@ written.
 | Auth          | `@auth(scopes = ["refunds:write"])` on an api or an op              |
 | Rate limits   | `@rate_limit(per_minute = 60)` on an api or an op                   |
 | Pagination    | a `Page(T)` [result type](#language.apis.responses.result_type) and a `@query cursor?: String` parameter    |
-| Idempotency   | `@idempotent` on an op, with the key as a `@header` parameter       |
+| Idempotency   | `@idempotent` on an op, with the key as a `@header` parameter; a gRPC method's idempotency level is its `@proto(idempotency)` |
 
 <term id="cross_cutting_annotation">
 An annotation on an op or its api that isn't the op's binding, errors or transitions:
-`@http`, `@ws`, `@throws`, `@performs`, `@display`, `@doc` and `@lint` are the op's
-own, and every other annotation is cross-cutting.
+`@http`, `@ws`, `@proto`, `@jsonrpc`, `@server`, `@throws`, `@performs`, `@display`,
+`@doc` and `@lint` are the op's own, and every other annotation is cross-cutting.
 </term>
 
 <rule id="declared_in_packages" targets="cross_cutting_annotation" by="actors.author">

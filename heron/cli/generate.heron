@@ -3,7 +3,8 @@ generate: command("heron generate") {
   usage = ["heron generate [--entry file] [targets…]"]
 
   | Checks the tree, loads what its extensions implement, and runs the adapters of the
-  | generation targets asked for, or of every registered target for none, writing their
+  | generation targets asked for, or of every registered target that isn't run on request
+  | alone for none, writing their
   | files under the working folder and printing `wrote ‹path›` for each file it changed.
   | Run with no targets, it also writes its section of the managed ignore block in the
   | working folder's `.gitignore`: `/.heron/` and every file an adapter marks as a build
@@ -15,6 +16,12 @@ generate: command("heron generate") {
     |
     | - `ts` writes `.heron/types.ts` and `.heron/bindings.ts`, the TS types and `bind` of the tree's declarations.
     | - `docs` writes the documentation site, under `.heron/docs/`.
+    |
+    | And those run only when they're named, for outside tooling:
+    |
+    | - `asyncapi` writes an [AsyncAPI](#tools.asyncapi) document of each api, under `.heron/asyncapi/`.
+    | - `proto` writes the [`.proto` files](#tools.proto) of the tree's gRPC services, under `.heron/proto/`.
+    | - `openrpc` writes an [OpenRPC](#tools.openrpc) document of each api with JSON-RPC methods, under `.heron/openrpc/`.
     |
     | An extension's generators add their targets the same way.
   }
@@ -37,6 +44,11 @@ generate: command("heron generate") {
   unknown_target: rule(by = system.generator) {
     when {{ a target has no adapter }}
     must {{ fail naming it and listing the targets that have one, as `no adapter is registered for target "‹target›"; targets: docs, ts` }}
+  }
+
+  on_request_targets: rule(by = system.generator) {
+    mustNot {{ run a target that runs on request alone, as `asyncapi`, `proto` and `openrpc` do, unless it's named }}
+    example {{ `heron generate` writes the TS types and the docs, and `heron generate proto` the `.proto` files alone }}
   }
 
   block_only_for_all: rule(by = system.generator) {

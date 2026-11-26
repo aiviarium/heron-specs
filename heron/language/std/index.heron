@@ -12,6 +12,7 @@ include = [
   "./http.heron",
   "./ws.heron",
   "./proto.heron",
+  "./jsonrpc.heron",
   "./apis.heron",
   "./js.heron",
   "./process.heron",

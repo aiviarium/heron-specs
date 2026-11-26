@@ -1,7 +1,8 @@
 @display("std/proto")
 proto: part {
-  | Binds apis to gRPC services and types to protobuf messages.
+  | Binds apis to gRPC services, served over gRPC, gRPC-Web and Connect, and types to protobuf messages.
   |
   | Its surface is declared in `std/proto/package.heron`, whose types the API reference renders.
-  | `@proto`, `@field` and `@reserved` are specified in [Encodings](#language.data.encodings) and [transports](#language.apis.transports).
+  | `@proto`, `@field`, `@reserved`, `@metadata`, `@code` and their enums are specified in
+  | [gRPC and Connect](#language.apis.grpc), and the encodings in [Encodings](#language.data.encodings).
 }

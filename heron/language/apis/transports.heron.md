@@ -10,7 +10,8 @@ whose annotation stands on it or on its api.
 | Package     | Binds | Streams |
 | ----------- | ----- | ------- |
 | `std/http`  | `@http<method>(path)` on ops, with the method as a flag such as `<post>` and [path parameters](#language.apis.params.path_parameter) written `:name`, and `@http(base_path = …)` on apis. Parameters take `@path`, `@query`, `@header(name)` or `@body`. `@status(code)` maps errors. | A streamed result is server-sent events. Streamed parameters aren't allowed. |
-| `std/proto` | Each op is an rpc. Its parameters become the request message, numbered with `@field(n)`, and `@proto(package = …)` names the service. | Result, parameter or both map to server, client and bidirectional streaming. |
+| `std/proto` | `@proto(package)` on an api makes it a gRPC service and each op a method, served over gRPC, gRPC-Web or Connect. Parameters become the [request message](#language.apis.grpc.request_message), numbered with `@field(n)` or in order, or travel as `@metadata`. `@code(NOT_FOUND)` maps errors. [gRPC and Connect](#language.apis.grpc) has the rules. | Result, parameter or both map to server, client and bidirectional streaming. |
+| `std/jsonrpc` | `@jsonrpc(method)` on an api or op makes each op a JSON-RPC 2.0 method, and one with no result a notification. Parameters travel by name, by position or as `@params`. `@code(-32004)` maps errors. [JSON-RPC](#language.apis.jsonrpc) has the rules. | No streams: a method answers once. |
 | `std/ws`    | `@ws(path)` on an api or op opens a socket. Each op becomes a message type on it. | Streams in both directions are the socket's messages. |
 
 <term id="transport_kind">
@@ -58,5 +59,5 @@ the op's calls through that transport, as `@inventory.in_memory` sends
 </rule>
 
 <rule id="std_transports" targets="transport_kind" by="system.extension_host">
-<must>implement transports for `std/http`, `std/proto` and `std/ws` in `heron`, so the standard protocols work without a third-party package</must>
+<must>implement transports for `std/http`, `std/proto`, `std/jsonrpc` and `std/ws` in `heron`, so the standard protocols work without a third-party package</must>
 </rule>
