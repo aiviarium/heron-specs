@@ -17,6 +17,7 @@ standard_lenses: section {
     |   nav = LensNav.TASK
     |   show = [docs.authored, docs.step, spec.example, doc.term, tech.command, tech.argument, tech.option, tech.exit, tech.diagnostic]
     |   hide = [spec.rule, spec.condition, tech.production, tech.invariant]
+    |   depth = 2
     |   prefix = ""
     | }
     |
@@ -43,7 +44,8 @@ standard_lenses: section {
   user_lens: section {
     | For a person who wants to use the product: compact and task first. It shows the pages
     | written for them and the facts they act on, and none of the rules that bind an
-    | implementation.
+    | implementation. Its reference is shallow: a page per part of the tree, with the
+    | terms, examples and errors of the concerns below it.
 
     user_shows: rule(tools.docs.standard_lenses.user_lens, by = product.system.docs_generator) {
       must {{ render in full, in the `user` lens, the [authored pages](#language.markup.authored_pages.authored_page) with their steps, the examples, the terms, the commands with their arguments, options and exit codes, and the diagnostics }}

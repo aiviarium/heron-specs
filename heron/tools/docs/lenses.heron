@@ -12,7 +12,8 @@ lenses: section {
     lens is the one served at the site's root; `show`, the kinds and categories it renders
     in full; `summarize`, the kinds it renders as one line that expands; `hide`, the kinds
     it leaves out; `nav`, how its navigation is ordered; `entry`, the [authored pages](#language.markup.authored_pages.authored_page) it puts
-    first; and `prefix`, the folder of the site its pages are written in.
+    first; `depth`, how many levels of sections get pages of their own in it, in place of
+    the [docs block](#tools.docs.extending.docs_block)'s; and `prefix`, the folder of the site its pages are written in.
   }}
 
   lens_nav: term {{
@@ -31,7 +32,7 @@ lenses: section {
     | in scope shadows an imported one.
 
     lens_fields: rule(tools.docs.lenses.lens_kind, by = product.system.checker) {
-      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav` and `prefix` a `String` }}
+      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int` and `prefix` a `String` }}
       example {{ `nav = LensNav.PAGES` reports "LensNav has no member PAGES" }}
     }
 
@@ -145,6 +146,12 @@ lenses: section {
       where {{ a node's kind and its categories are in none of the lens's three lists }}
       must {{ treat the node as its parent is treated, and treat a child of the tree's root as rendered in full when the lens sets no `show` and as left out when it does }}
       then {{ `show` lists what a lens keeps: in the `user` lens a guide's own sections show with it, and the tree's sections don't }}
+    }
+
+    lens_depth: rule(tools.docs.lenses.lens_kind, by = product.system.docs_generator) {
+      where {{ a lens sets `depth` }}
+      must {{ give pages of their own, in that lens, to the sections and [folder scopes](#guide.layout.folder_scope) less than its `depth` levels down, in place of the [docs block](#tools.docs.extending.docs_block)'s `depth`, and show a deeper section on its nearest ancestor's page, under its heading }}
+      then {{ the `user` lens's language reference is a page per part of the language, while `developer` and `explore` keep a page per concern }}
     }
 
     containers_kept: rule(tools.docs.lenses.what_a_lens_shows, by = product.system.docs_generator) {
