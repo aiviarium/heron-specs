@@ -101,8 +101,8 @@ jsonrpc: section {
     }
 
     wire_names: rule(params_structure) {
-      must {{ name a method's params, by name, and the fields of its params and result by their names in JSON, where an api's `@json(case)` sets the case of its ops' parameters and of every type they reach that sets none }}
-      then {{ `@json(case = camel)` on an api gives it the language server protocol's names, as `textDocument` for `text_document` }}
+      must {{ name a method's params, by name, and the fields of its params and result by their names in JSON, where an api's `@keys(case)` sets the case of its ops' parameters and of every type they reach that sets none }}
+      then {{ `@keys(camel)` on an api gives it the language server protocol's names, as `textDocument` for `text_document` }}
     }
 
     params_alone: rule(params_structure, by = system.checker) {
@@ -138,10 +138,12 @@ jsonrpc: section {
   @display("A language server in JSON-RPC")
   jsonrpc_example: example {
     | ```heron
-    | import = ["std/types@1", "std/jsonrpc@1"]
+    | import = ["std/types@1", "std/jsonrpc@1", "std/json@1"]
     |
-    | // The language server protocol's own framing, with each method's params as one record.
+    | // The language server protocol's own framing, with each method's params as one
+    | // record, its fields named in lower camel case, as textDocument.
     | @jsonrpc(framing = content_length)
+    | @keys(camel)
     | language_server: api {
     |   @jsonrpc("textDocument/hover")
     |   @throws(ContentModified)

@@ -44,7 +44,7 @@ For JSON-RPC, import `std/jsonrpc` and put `@jsonrpc("parcels.get")` on an op, o
 otherwise. An op without a result is a notification. A language-server style api takes
 each method's params as one record, marked `@params`, frames its messages with
 `@jsonrpc(framing = content_length)`, and names its fields in lower camel case with
-`@json(case = camel)` of `std/json`.
+`@keys(camel)` of `std/json`.
 
 <example id="rpc_howto_example" @display="One api, four protocols">
 ```heron
