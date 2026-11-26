@@ -9,5 +9,6 @@ json: part {
   | | ---------------------------- | ----------------------------------------------------------------------------------------------------------- |
   | | `json`                       | [Typed strings](#language.data.typed_strings)                                                               |
   | | `decode`, `encode`           | [JSON](#language.data.encodings.json)                                                                       |
+  | | `@json`, `Case`              | [JSON](#language.data.encodings.json.json_names), [JSON-RPC](#language.apis.jsonrpc.params.wire_names)       |
   | | `DecodeError`, `EncodeError` | [JSON](#language.data.encodings.json), [declared errors](#language.scripting.code.failures.declared_errors) |
 }

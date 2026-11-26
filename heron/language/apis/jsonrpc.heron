@@ -100,6 +100,11 @@ jsonrpc: section {
       example {{ `hover(@params p: HoverParams)` takes `"params": {"textDocument": …, "position": …}`, the fields of `HoverParams` }}
     }
 
+    wire_names: rule(params_structure) {
+      must {{ name a method's params, by name, and the fields of its params and result by their names in JSON, where an api's `@json(case)` sets the case of its ops' parameters and of every type they reach that sets none }}
+      then {{ `@json(case = camel)` on an api gives it the language server protocol's names, as `textDocument` for `text_document` }}
+    }
+
     params_alone: rule(params_structure, by = system.checker) {
       if {{ a parameter marked `@params` isn't its op's only parameter, or its type isn't a record }}
       must {{ report params not alone at it }}

@@ -8,7 +8,7 @@ the types.
 
 | Package     | Annotations and rules                                                                                     |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
-| `std/json`  | Field names and casing, the discriminator field of a union, and 64-bit integers written as strings       |
+| `std/json`  | Field names and casing with `@json(name, case)`, the discriminator field of a union, and 64-bit integers written as strings |
 | `std/cbor`  | Semantic tags, such as 0 and 1 for time or 2 and 3 for bignums, and integer map keys                     |
 | `std/proto` | [Field numbers](#language.apis.grpc.field_number) `@field(3)`, `@reserved(4, 5)`, wire encodings `@field<sint>` and `@field<fixed>`, and an enum's zero value, as [gRPC and Connect](#language.apis.grpc.types) maps each type. `api` and `op` map to services and methods, and `Stream(T)` to streaming |
 | `std/xml`   | `@xml(attribute = true)`, element names, namespaces, and wrapped or unwrapped lists. Mixed content maps to prose bodies |
@@ -39,8 +39,13 @@ back as the type.
 <then>a peer that reads them back gets plain maps, since JSON has no tags</then>
 </rule>
 
+<rule id="json_names" targets="language.data.encodings.json" by="system.interpreter">
+<must>write and read each field of a record by its name in JSON: a member's `@json(name)`, or else its name in the case its type's `@json(case)` sets, `camel` for lower camel case, and its name as written for none</must>
+<example>a value of `@json(case = camel) Position: type { line_number: Int }` is written `{"lineNumber": 1}`, and `{"lineNumber": 1}` read back as one</example>
+</rule>
+
 <rule id="json_annotations" targets="language.data.encodings.json" by="system.interpreter">
-<must>apply `std/json`'s annotations when a value is written or read: field names and casing, a union's discriminator field, and 64-bit integers as strings</must>
+<must>apply the rest of `std/json`'s annotations when a value is written or read: a union's discriminator field, and 64-bit integers as strings</must>
 </rule>
 </section>
 

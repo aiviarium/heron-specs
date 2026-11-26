@@ -3,6 +3,7 @@
 include = [
   "./write_rules.heron.md",
   "./define_an_api.heron.md",
+  "./describe_an_rpc_api.heron.md",
   "./run_a_task.heron.md",
   "./add_a_ts_extension.heron.md",
   "./use_the_editor.heron.md",

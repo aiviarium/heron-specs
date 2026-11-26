@@ -8,7 +8,7 @@ op_page: screen(route = "/<api>.<op>.html") {
     | switch and the theme switch.
   }
 
-  @realizes(tools.frontend.screens.op_page.sidebar.ops_by_resource, tools.frontend.screens.op_page.sidebar.types_by_api)
+  @realizes(tools.frontend.screens.op_page.sidebar.ops_by_resource, tools.frontend.screens.op_page.sidebar.types_by_api, tools.frontend.screens.op_page.sidebar.methods_follow_binding)
   sidebar: region {
     | The API reference's navigation: each API's ops, each with its method, or an RPC
     | method's [streaming kind](#language.apis.rpc.streaming_kind), in a fixed-width mono
@@ -17,6 +17,11 @@ op_page: screen(route = "/<api>.<op>.html") {
 
     ops_by_resource: rule(by = system.docs_generator) {
       must {{ list each api's ops under it, in the order written, each with its HTTP method, or for an op bound by RPC alone its [streaming kind](#language.apis.rpc.streaming_kind), and its [display name](#language.core_format.naming.display_name), then the tree's errors as a group of their own }}
+    }
+
+    methods_follow_binding: rule(by = system.docs_generator) {
+      must {{ show beside each op the method of the binding the reader picked last, where the op has that binding, and of its first binding otherwise, before the page paints }}
+      example {{ with gRPC picked, Get parcel shows RPC rather than GET }}
     }
 
     types_by_api: rule(by = system.docs_generator) {
@@ -35,7 +40,7 @@ op_page: screen(route = "/<api>.<op>.html") {
     }
   }
 
-  @realizes(tools.frontend.screens.op_page.bindings.binding_switch, tools.frontend.screens.op_page.bindings.rpc_header, tools.frontend.screens.op_page.bindings.rpc_facts)
+  @realizes(tools.frontend.screens.op_page.bindings.binding_switch, tools.frontend.screens.op_page.bindings.rpc_header, tools.frontend.screens.op_page.bindings.rpc_facts, tools.frontend.screens.op_page.bindings.outline_follows_binding)
   bindings: region {
     | An op bound to more than one protocol is one contract: its prose, facts and rules are
     | shown once, and a switch picks the binding the parts that differ are shown for. The
@@ -43,7 +48,7 @@ op_page: screen(route = "/<api>.<op>.html") {
 
     binding_switch: rule(by = system.docs_generator) {
       where {{ an op has more than one binding }}
-      must {{ show a switch of its bindings, HTTP, gRPC, Connect and JSON-RPC in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, and keep the reader's pick from page to page }}
+      must {{ show a switch of its bindings, HTTP, gRPC, Connect and JSON-RPC in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, with the switch's selected binding always the one shown, and keep the reader's pick from page to page, applied before the page paints }}
       then {{ an op bound to HTTP and gRPC has one page, never one per binding }}
     }
 
@@ -62,7 +67,12 @@ op_page: screen(route = "/<api>.<op>.html") {
     }
 
     rpc_facts: rule(by = system.docs_generator) {
-      must {{ show an RPC method's idempotency level and its default time limit as facts, beside the op's own }}
+      must {{ show a gRPC method's idempotency level and its default time limit as facts of its gRPC and Connect parts }}
+    }
+
+    outline_follows_binding: rule(by = system.docs_generator) {
+      where {{ a page has a binding switch }}
+      must {{ list in the page's outline the headings of the binding shown alone }}
     }
   }
 
