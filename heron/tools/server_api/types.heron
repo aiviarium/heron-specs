@@ -1,0 +1,239 @@
+// The types the server's ops name, each one JSON object on the wire.
+
+/// What the preview renders: the files being edited, as typed, and where
+/// the cursor is, as a position or as an offset.
+PreviewRequest: type {
+  /// The file the cursor is in, relative to the workspace.
+  file: String
+  /// The cursor as the language server protocol counts: a 0-based line and
+  /// a 0-based character offset in UTF-16 code units. It wins over `offset`.
+  position?: Position
+  /// The cursor as a 0-based offset in bytes of the file's UTF-8 text.
+  offset?: Int
+  /// Unsaved text of open files, by path relative to the workspace.
+  overlays: Map(String, String)
+}
+
+/// A place in a text as the language server protocol counts it.
+Position: type {
+  /// 0-based.
+  line: Int
+  /// 0-based, in UTF-16 code units.
+  character: Int
+}
+
+/// The current node as the docs render it.
+Preview: type {
+  /// The node's path in the tree; empty for the file itself.
+  path: String
+  /// Its kind, which picks the renderer.
+  kind: String
+  html: String
+  /// The error that stopped the render, shown in place.
+  error?: String
+  /// A generated file, shown as it would be written.
+  generated?: GeneratedFile
+  results: NodeResults
+}
+
+/// A generated file as it would be written.
+GeneratedFile: type {
+  path: String
+  text: String
+}
+
+/// The latest records for a node and its children, from whichever units
+/// provide them.
+NodeResults: type {
+  path: String
+  results: List(NodeResult)
+}
+
+/// One result beside a node, such as a task's last run.
+NodeResult: type {
+  /// The provider that made it, such as `run`.
+  source: String
+  /// The node it belongs to.
+  path: String
+  /// `ok`, `failed` or `running`.
+  status: String
+  /// A short value for the gutter, such as a duration.
+  summary: String
+  record_id?: String
+  time?: String
+}
+
+/// A stored record.
+Record: type {
+  kind: String
+  id: String
+  time: String
+  data: Any
+}
+
+/// One message of the language server protocol, as JSON text.
+LspMessage: type {
+  json: String
+}
+
+/// The repository the server runs on.
+Workspace: type {
+  name: String
+  /// The folder on disk.
+  root: String
+  /// The `file:` URI of the folder: every language-server URI of a
+  /// workspace file starts with it, and the rest is the file's path.
+  root_uri: String
+  /// The [entry point](#language.core_format.files.entry_point), relative to the workspace.
+  entry: String
+  branch: String
+  /// The files the tree reaches, relative to the workspace.
+  files: List(String)
+}
+
+/// Every file and folder under a folder of the workspace.
+FileList: type {
+  entries: List(FileEntry)
+}
+
+/// A file or a folder, by path relative to the workspace.
+FileEntry: type {
+  path: String
+  dir: Bool
+  /// In bytes; 0 for a folder.
+  size: Int
+  /// When it last changed, as RFC 3339.
+  mtime: String
+  /// Whether the tree reaches the file.
+  in_tree: Bool
+}
+
+/// A file's content and what identifies this version of it.
+FileContent: type {
+  path: String
+  /// The content: text, or base64 when `encoding` is `base64`.
+  text: String
+  /// `utf-8` or `base64`.
+  encoding: String
+  size: Int
+  mtime: String
+  /// Changes whenever the content does; `write_file` takes it as `if_match`.
+  etag: String
+}
+
+/// A file to save.
+WriteRequest: type {
+  path: String
+  text: String
+  /// `utf-8`, the default, or `base64`.
+  encoding?: String
+  /// Save only while the file has this entity tag; empty for a file that
+  /// mustn't exist yet.
+  if_match?: String
+}
+
+/// What a write, a rename or a new folder left on disk.
+Saved: type {
+  path: String
+  size: Int
+  mtime: String
+  etag: String
+}
+
+/// A file or folder that was removed.
+Removed: type {
+  path: String
+}
+
+/// A move from one path of the workspace to another.
+RenameRequest: type {
+  from: String
+  to: String
+}
+
+/// A path of the workspace.
+PathRequest: type {
+  path: String
+}
+
+/// One change in the workspace.
+WorkspaceEvent: type {
+  /// `ready`, which opens the stream once the server is watching, then
+  /// `file`, `problems` or `results`.
+  type: String
+  /// For a `file` event, the file, relative to the workspace.
+  path?: String
+  /// For a `file` event: `created`, `changed` or `removed`.
+  change?: String
+}
+
+/// The standard packages' files, as `std/doc/package.heron`.
+StdFiles: type {
+  files: List(String)
+}
+
+/// The tree with the given unsaved texts.
+TreeRequest: type {
+  overlays: Map(String, String)
+}
+
+/// The tree's diagnostics.
+Problems: type {
+  problems: List(Problem)
+}
+
+/// One diagnostic, with 1-based lines and characters.
+Problem: type {
+  file: String
+  line: Int
+  column: Int
+  end_line: Int
+  end_column: Int
+  severity: String
+  code: String
+  message: String
+  /// What reported it, such as `check` or `lint`.
+  source: String
+}
+
+/// Runs a task by its path.
+RunRequest: type {
+  path: String
+}
+
+/// One step of a run: output while it runs, then its result.
+RunEvent: type {
+  /// `output` or `done`.
+  type: String
+  text?: String
+  result?: NodeResult
+}
+
+/// What `heron generate` would write, without writing it.
+GeneratedFiles: type {
+  files: List(GeneratedFile)
+}
+
+/// A file of the tree with the given unsaved texts.
+OutlineRequest: type {
+  file: String
+  overlays: Map(String, String)
+}
+
+/// The nodes a file declares, in reading order.
+Outline: type {
+  file: String
+  nodes: List(OutlineNode)
+}
+
+/// A node and the lines it spans, 1-based.
+OutlineNode: type {
+  path: String
+  name: String
+  kind: String
+  depth: Int
+  line: Int
+  end_line: Int
+  /// Whether it can be run from the gutter.
+  runnable: Bool
+}

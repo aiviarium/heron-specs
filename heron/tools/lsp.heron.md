@@ -277,6 +277,11 @@ Beyond the protocol, a session answers one request and serves one URI scheme.
 <must>name a standard package's embedded file `heron:/std/<package>/<file>`, and read `heron:std/<path>` as the same file</must>
 </rule>
 
+<rule id="workspace_uris" targets="tools.lsp.extensions" by="system.language_server">
+<must>name each file of the workspace by its `file:` URI under the workspace's root URI, which [the server API's `workspace`](#tools.server_api.spec_server.workspace) answers as `root_uri`, in every location and diagnostic it sends, each standard file by its `heron:/std/` URI, and a workspace file in hover text by its path relative to the workspace</must>
+<then>a client maps a URI to the file's workspace path by taking the root URI off it, and needs no copy of the server's folders</then>
+</rule>
+
 <rule id="capabilities" targets="tools.lsp.extensions" by="system.language_server">
 <must>announce UTF-16 positions, incremental sync with open, close and save, the completion triggers, hover, definition, references, rename with prepare, formatting, document symbols, folding, quick-fix code actions, the commands and full semantic tokens, and serve nothing else</must>
 </rule>

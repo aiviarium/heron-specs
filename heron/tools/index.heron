@@ -6,8 +6,13 @@ include = [
   "./tree_sitter.heron.md",
   "./docs/",
   "./server.heron.md",
+  "./server_api/",
+  "./asyncapi.heron.md",
   "./frontend/",
 ]
+
+@display("Server API")
+server_api {}
 
 | What the development tools do, as their users see it: the language server, prose linting,
 | the editor grammar, the docs, the server and the frontend.

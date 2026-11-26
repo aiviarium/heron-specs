@@ -1,0 +1,143 @@
+// The server's API: `spec_server`, its types and its errors. An
+// implementation generates its handlers and its client from this folder,
+// and every client, the frontend among them, reads the same description.
+// Extensions add their ops by entering `spec_server` from their own files.
+import = ["std/types@1", "std/http@1", "std/ws@1"]
+
+include = ["./types.heron", "./errors.heron"]
+
+| The API `heron serve` publishes: JSON over HTTP, its streams as server-sent events, and the
+| language server as JSON-RPC over a websocket. Every client uses it the same way, the
+| frontend included, through a client generated from this description.
+
+@display("Heron server API")
+@http(base_path = "/api/v1")
+spec_server: api {
+  | Every op of the server, beside the ops the mounted extensions add.
+
+  @realizes(tools.server.ops.unsaved_texts, tools.server.ops.preview_position, tools.server.ops.preview_styling)
+  @http<post>("/preview")
+  @throws(not_in_workspace)
+  preview(@body request: PreviewRequest): op(Preview) {
+    | The node at a position of a file rendered as the docs render it, with the files being
+    | edited as typed.
+  }
+
+  @realizes(tools.server.ops.run_results)
+  @http<get>("/results")
+  results(@query path: String): op(NodeResults) {
+    | The latest results of the nodes under a path, such as each task's last run.
+  }
+
+  @realizes(tools.server.ops.run_results)
+  @http<get>("/records/:id")
+  @throws(no_record)
+  get_record(@path id: String): op(Record) {
+    | One stored record, such as a run, by its id.
+  }
+
+  @realizes(tools.server.serving.lsp_socket)
+  @ws("/lsp")
+  @throws(no_language_server)
+  lsp(messages: Stream(LspMessage)): op(Stream(LspMessage)) {
+    | The language server, one JSON-RPC message per websocket frame.
+  }
+
+  @realizes(tools.lsp.extensions.workspace_uris)
+  @http<get>("/workspace")
+  workspace(): op(Workspace) {
+    | The workspace: its [entry point](#language.core_format.files.entry_point), the files its tree reaches, its branch and the root URI
+    | the language server's URIs start with.
+  }
+
+  @realizes(tools.server.ops.file_listing)
+  @http<get>("/files")
+  @throws(not_in_workspace)
+  list_files(@query dir?: String): op(FileList) {
+    | Every file and folder under the workspace, or under one folder of it, whether the tree
+    | reaches it or not, with its size and the time it last changed.
+  }
+
+  @realizes(tools.server.ops.file_versions, tools.server.ops.binary_content)
+  @http<get>("/file")
+  @throws(not_in_workspace, no_such_file)
+  read_file(@query path: String, @query encoding?: String): op(FileContent) {
+    | A file's content, as text or, with `encoding` set to `base64`, as base64, with its size,
+    | modification time and entity tag.
+  }
+
+  @realizes(tools.server.ops.file_versions, tools.server.ops.conditional_write, tools.server.ops.binary_content)
+  @http<post>("/file")
+  @throws(not_in_workspace, file_changed)
+  write_file(@body request: WriteRequest): op(Saved) {
+    | Saves a file, creating its folders, and answers its new size, modification time and
+    | entity tag; with `if_match`, only while the file still has that tag.
+  }
+
+  @realizes(tools.server.ops.file_changes)
+  @http<delete>("/file")
+  @throws(not_in_workspace, no_such_file)
+  delete_file(@query path: String): op(Removed) {
+    | Removes a file, or an empty folder.
+  }
+
+  @realizes(tools.server.ops.file_changes)
+  @http<post>("/file/rename")
+  @throws(not_in_workspace, no_such_file, file_exists)
+  rename_file(@body request: RenameRequest): op(Saved) {
+    | Moves a file or a folder to another path of the workspace.
+  }
+
+  @realizes(tools.server.ops.file_changes)
+  @http<post>("/dir")
+  @throws(not_in_workspace, file_exists)
+  make_dir(@body request: PathRequest): op(Saved) {
+    | Creates a folder and the folders above it.
+  }
+
+  @realizes(tools.server.ops.workspace_events)
+  @http<get>("/events")
+  watch(): op(Stream(WorkspaceEvent)) {
+    | A stream of what changes in the workspace while the client listens: files written,
+    | created or removed, by anyone, the tree's problems and the nodes' results.
+  }
+
+  @realizes(tools.server.ops.std_sources)
+  @http<get>("/std")
+  std_files(): op(StdFiles) {
+    | The files of the standard packages built into the server.
+  }
+
+  @realizes(tools.server.ops.std_sources)
+  @http<get>("/std/file")
+  @throws(no_such_file)
+  std_source(@query path: String): op(FileContent) {
+    | A standard file's text, read-only, by its path as `std_files` lists it.
+  }
+
+  @realizes(tools.server.ops.unsaved_texts)
+  @http<post>("/problems")
+  problems(@body request: TreeRequest): op(Problems) {
+    | Every diagnostic of the tree with the given unsaved texts, with what reported it.
+  }
+
+  @realizes(tools.server.ops.task_runs)
+  @http<post>("/run")
+  @throws(already_running)
+  run_task(@body request: RunRequest): op(Stream(RunEvent)) {
+    | Runs a task and streams its output, then its result.
+  }
+
+  @realizes(tools.server.ops.unsaved_texts)
+  @http<post>("/outline")
+  @throws(not_in_workspace)
+  outline(@body request: OutlineRequest): op(Outline) {
+    | The nodes a file declares, which of them run, and the lines they span.
+  }
+
+  @realizes(tools.server.ops.unsaved_texts)
+  @http<post>("/generated")
+  generated(@body request: TreeRequest): op(GeneratedFiles) {
+    | The files generation would write, without writing them.
+  }
+}

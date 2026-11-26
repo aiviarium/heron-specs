@@ -6,12 +6,18 @@ base ones.
 
 ## Serving {#serving}
 
-| Path            | Serves                                                             |
-| --------------- | ------------------------------------------------------------------ |
-| `/api/v1/…`     | the base API and every mounted extension's ops                     |
-| `/api/v1/lsp`   | the language server, over a websocket                              |
-| `/docs/…`       | the spec browser: the docs site of the tree, rendered live         |
-| anything else   | the frontend, with `index.html` for every path it has no file for  |
+| Path              | Serves                                                                   |
+| ----------------- | ------------------------------------------------------------------------ |
+| `/api/v1/…`       | [the server API](#tools.server_api.spec_server) and every mounted extension's ops |
+| `/api/v1/lsp`     | the language server, over a websocket                                    |
+| `/docs/…`         | the spec browser: the docs site of the tree, rendered live               |
+| `/docs/_assets/…` | the docs' stylesheet and script, which style a preview in any client     |
+| anything else     | the frontend, with `index.html` for every path it has no file for        |
+
+The API is JSON over HTTP: each request and response body is one JSON object, a stream is
+server-sent events with one JSON object per `data:` line, and the language server speaks
+JSON-RPC over the websocket. CBOR is the [extension protocol](#language.interop.protocol)'s
+alone; no op of the server reads or writes it.
 
 <rule id="address" targets="tools.server.serving" by="system.server">
 <must>listen on `--addr`, `127.0.0.1:7340` unless given, where port 0 picks a free one, serve the tree of the [entry point](#language.core_format.files.entry_point) given as the argument, a file or a folder with an index.heron (`.` unless given), and print the address as `http://<addr>/`</must>
@@ -25,7 +31,39 @@ base ones.
 
 <rule id="unknown_op" targets="tools.server.serving" by="system.server">
 <if>a request under `/api/` matches no op</if>
-<must>answer 404 with `{"error": "no op at ‹method› ‹path›"}`</must>
+<must>answer it with [no op](#tools.server_api.no_op)</must>
+<then>the server routes only the ops the API declares</then>
+</rule>
+
+<rule id="json_wire" targets="tools.server.serving" by="system.server">
+<must>read and write every op's request and response body as JSON, with `Content-Type: application/json`, and an error as `{"error": message, "code": id}` with the error's HTTP status</must>
+</rule>
+
+<rule id="compressed_assets" targets="tools.server.serving" by="system.server">
+<where>a request for a file of the frontend or of `/docs/_assets/` accepts gzip</where>
+<must>answer it gzip-compressed, from the file's `.gz` sibling, compressed ahead of time, where one exists, with `Content-Encoding: gzip` and `Vary: Accept-Encoding`</must>
+</rule>
+
+<rule id="loopback_default" targets="tools.server.serving" by="system.server">
+<must>listen on the loopback address unless `--addr` names another, and authenticate no request: whoever reaches the address reads and writes the workspace</must>
+<then>a server stays private to its machine unless someone binds it elsewhere on purpose</then>
+</rule>
+
+<rule id="non_loopback_warning" targets="tools.server.serving" by="system.server">
+<when>`--addr` names an address other than a loopback one</when>
+<must>print a warning to standard error that the server has no authentication and anyone who reaches the address can change the workspace</must>
+</rule>
+
+<rule id="same_origin" targets="tools.server.serving" by="system.server">
+<if>a request under `/api/` carries an `Origin` other than the server's own and the ones `--allow-origin` names</if>
+<must>refuse it with [origin not allowed](#tools.server_api.origin_not_allowed), the upgrade to a websocket included</must>
+<then>a web page of another site can't drive a server on the reader's machine</then>
+</rule>
+
+<rule id="allowed_origins" targets="tools.server.serving" by="system.server">
+<when>a request comes from an origin `--allow-origin` names, which may be given more than once</when>
+<must>answer it and its preflight with `Access-Control-Allow-Origin` set to that origin, the methods and headers the API uses, and `Access-Control-Allow-Private-Network: true` where the preflight asks for private network access</must>
+<then>a client served from elsewhere, as vscode.dev is, can reach a server on localhost once its origin is allowed</then>
 </rule>
 
 <rule id="spec_browser" targets="tools.server.serving" by="system.server">
@@ -40,7 +78,7 @@ base ones.
 
 <rule id="lsp_socket_otherwise" targets="tools.server.serving" by="system.server">
 <if>the shell has no language server</if>
-<must>answer 503 "no language server is installed"</must>
+<must>answer the upgrade with [no language server](#tools.server_api.no_language_server)</must>
 </rule>
 
 <rule id="one_session_per_socket" targets="tools.server.serving" by="system.server">
@@ -65,10 +103,57 @@ extension [mounts](#language.core_format.mounts.mount) them. The shell itself do
 
 ## Ops {#ops}
 
-The base API's ops, beyond the four of [the base API](#tools.server.api.base_api), are the editor's, [added the way an extension adds its own](#tools.server.api).
+What the ops of [the server API](#tools.server_api.spec_server) do beyond what their pages say.
 
 <rule id="path_in_workspace" targets="tools.server.ops" by="system.server">
-<must>take every file path as relative to the workspace's folder, with slashes, and refuse a path that leaves it with 400 "‹path› is not a path in the workspace"</must>
+<must>take every file path as relative to the workspace's folder, with slashes, and refuse a path that is absolute or leaves it with [not in workspace](#tools.server_api.not_in_workspace)</must>
+</rule>
+
+<rule id="file_listing" targets="tools.server.ops" by="system.server">
+<must>answer `list_files` with every file and folder under the folder asked for, the workspace's when none is, whether the tree reaches it or not, leaving out `.git` and `.heron`, each with its size, its modification time and whether the tree reaches it</must>
+<then>a client shows a README, a configuration file or a file not yet included as any editor's file tree would</then>
+</rule>
+
+<rule id="file_versions" targets="tools.server.ops" by="system.server">
+<must>answer `read_file`, `write_file`, `rename_file` and `make_dir` with the file's size, modification time and an entity tag that changes whenever its content does</must>
+</rule>
+
+<rule id="conditional_write" targets="tools.server.ops" by="system.server">
+<if>a `write_file` names an `if_match` that isn't the file's current entity tag, or is empty while the file exists</if>
+<must>leave the file as it is and answer [file changed](#tools.server_api.file_changed)</must>
+<then>a client never overwrites a change someone else made since it read the file</then>
+</rule>
+
+<rule id="file_changes" targets="tools.server.ops" by="system.server">
+<must>delete a file or an empty folder with `delete_file`, move one with `rename_file`, refusing a target that exists with [file exists](#tools.server_api.file_exists), create a folder and its parents with `make_dir`, and answer [no such file](#tools.server_api.no_such_file) for a path that doesn't exist</must>
+</rule>
+
+<rule id="binary_content" targets="tools.server.ops" by="system.server">
+<must>read a file as base64 when `read_file` asks for `encoding = "base64"` or its content isn't valid UTF-8, saying which in `encoding`, and write a `write_file`'s text as base64 when its `encoding` is `base64`</must>
+<then>a client opens and saves images and other binary files through the same ops as text</then>
+</rule>
+
+<rule id="workspace_events" targets="tools.server.ops" by="system.server">
+<must>open the stream of `watch` with a `ready` event once the server watches, then send, while the client listens, a `file` event for each file of the workspace that is created, changed or removed, by the server or anyone else, within two seconds, a `problems` event whenever a file of the tree changes, and a `results` event when a run records a result</must>
+<then>a client refreshes its file tree, its open files, its problems and its gutter when they change, without polling</then>
+</rule>
+
+<rule id="std_sources" targets="tools.server.ops" by="system.server">
+<must>list the standard packages' files with `std_files`, as `std/doc/package.heron`, and answer `std_source` with one's text, read-only</must>
+</rule>
+
+<rule id="preview_position" targets="tools.server.ops" by="system.server">
+<must>read a `preview`'s cursor from its `position`, a 0-based line and a 0-based character offset in UTF-16 code units as the language server protocol counts, and from its `offset`, a 0-based offset in bytes of the UTF-8 text, only when it has no position</must>
+</rule>
+
+<rule id="preview_styling" targets="tools.server.ops" by="system.server">
+<must>render a `preview`'s HTML with the markup of the docs' pages, styled by the docs' stylesheet, which the server serves at `/docs/_assets/docs.css`</must>
+<then>any client styles a preview by loading that stylesheet beside it</then>
+</rule>
+
+<rule id="client_state" targets="tools.server.ops" by="system.server">
+<mustNot>keep a client's settings or state, such as its open files, its layout or its theme</mustNot>
+<instead>leave them to the client, which keeps them where it runs, because one server serves every client of the workspace and each person's state belongs to them and their device</instead>
 </rule>
 
 <rule id="unsaved_texts" targets="tools.server.ops" by="system.server">
@@ -92,41 +177,15 @@ The base API's ops, beyond the four of [the base API](#tools.server.api.base_api
 
 ## API {#api}
 
-The server's API is a spec like any other: `spec_server`, with its types beside it and
-the editor's ops entered from another file the way an extension adds its own.
+The server's API is a spec like any other: [`spec_server`](#tools.server_api.spec_server), with its types and its
+errors beside it, in a folder that checks on its own. The server's handlers and every client
+are generated from it; an extension adds its ops by entering `spec_server` from its own files.
 
-| Op          | Method and path            | Answers                                            |
-| ----------- | -------------------------- | -------------------------------------------------- |
-| `preview`   | `POST /api/v1/preview`     | a node or a file rendered as the docs render it    |
-| `results`   | `GET /api/v1/results`      | the latest results of the nodes under a path       |
-| `get_record`| `GET /api/v1/records/:id`  | one run record, or 404                             |
-| `lsp`       | `/api/v1/lsp`, a websocket | the language server                                |
-| `workspace` | `GET /api/v1/workspace`    | the [entry point](#language.core_format.files.entry_point), its files and its branch |
-| `read_file` | `GET /api/v1/file`         | a file's text, or 404                              |
-| `write_file`| `POST /api/v1/file`        | saves a file                                       |
-| `problems`  | `POST /api/v1/problems`    | every diagnostic of the tree, with its source      |
-| `run_task`  | `POST /api/v1/run`         | a task's run, streamed                             |
-| `outline`   | `POST /api/v1/outline`     | a file's nodes, which of them run, and their lines |
-| `generated` | `POST /api/v1/generated`   | the files generation would write                   |
+<rule id="api_only" targets="tools.server.api" by="system.frontend">
+<must>send every request the frontend makes to the server through the client generated from [`spec_server`](#tools.server_api.spec_server), the language server's socket included, with no request to a path the API doesn't declare</must>
+<then>the frontend is one client of the published API among others, and anything it needs is an API change first</then>
+</rule>
 
-<example id="base_api">
-```heron
-import = ["std/types@1", "std/http@1", "std/ws@1"]
-
-@http(base_path = "/api/v1")
-spec_server: api {
-  @http<post>("/preview")
-  preview(@body request: PreviewRequest): op(Preview)
-
-  @http<get>("/results")
-  results(@query path: String): op(NodeResults)
-
-  @http<get>("/records/:id")
-  get_record(@path id: String): op(Record)
-
-  // The language server, for Monaco and the preview.
-  @ws("/lsp")
-  lsp(messages: Stream(LspMessage)): op(Stream(LspMessage))
-}
-```
-</example>
+<rule id="api_static_paths" targets="tools.server.api" by="system.frontend">
+<may>load the docs' assets under `/docs/_assets/` and the pages under `/docs/`, which the serving [table](#heron.language.markup.components.table) lists</may>
+</rule>

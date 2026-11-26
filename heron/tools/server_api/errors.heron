@@ -1,0 +1,61 @@
+// The errors the server's ops answer: each with its HTTP status, the
+// message its body carries as `error` and its id as `code`.
+
+@realizes(tools.server.ops.path_in_workspace)
+not_in_workspace: error("server.NOT_IN_WORKSPACE", status = 400) {
+  title = "{path} is not a path in the workspace"
+  path: field(String)
+  | A path that is absolute or leaves the workspace's folder.
+}
+
+@realizes(tools.server.ops.file_changes)
+no_such_file: error("server.NO_SUCH_FILE", status = 404) {
+  title = "{path}: no such file"
+  path: field(String)
+}
+
+@realizes(tools.server.ops.file_changes)
+file_exists: error("server.FILE_EXISTS", status = 409) {
+  title = "{path} already exists"
+  path: field(String)
+}
+
+@realizes(tools.server.ops.conditional_write)
+file_changed: error("server.FILE_CHANGED", status = 412) {
+  title = "{path} changed since it was read"
+  path: field(String)
+  | The file's entity tag isn't the one `if_match` names: someone else wrote it. The client
+  | reads it again and decides what to keep.
+}
+
+@realizes(tools.server.ops.run_results)
+no_record: error("server.NO_RECORD", status = 404) {
+  title = "no record {id}"
+  id: field(String)
+}
+
+@realizes(tools.server.ops.task_runs_otherwise)
+already_running: error("server.ALREADY_RUNNING", status = 409) {
+  title = "{path} is already running"
+  path: field(String)
+}
+
+@realizes(tools.server.serving.lsp_socket_otherwise)
+no_language_server: error("server.NO_LANGUAGE_SERVER", status = 503) {
+  title = "no language server is installed"
+}
+
+@realizes(tools.server.serving.unknown_op)
+no_op: error("server.NO_OP", status = 404) {
+  title = "no op at {method} {path}"
+  method: field(String)
+  path: field(String)
+}
+
+@realizes(tools.server.serving.same_origin)
+origin_not_allowed: error("server.ORIGIN_NOT_ALLOWED", status = 403) {
+  title = "{origin} may not call this server"
+  origin: field(String)
+  | A request from a page of another origin than the server's, which `--allow-origin`
+  | doesn't name.
+}
