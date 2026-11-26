@@ -55,6 +55,11 @@ guide: section {
       must {{ give its scope a [display name](#language.core_format.naming.display_name) with `@display` in the index that includes the folder, right after the include list, as `@display("CLI") cli {}` }}
     }
 
+    prose_in_markdown: rule(guide.layout, by = product.actors.author) {
+      must {{ write prose-heavy content, as the tutorial, the how-tos and the concepts, in [prose files](#language.core_format.prose_layer.prose_file) with [kind elements](#language.markup.tags.component_tag) where a node needs its kind, and keep in [Heron files](#language.core_format.files.heron_file) the package's indexes and includes, its configuration and its functional content: grammar productions, commands with their arguments and options, APIs, [schemas](#schema), diagnostics, and rules whose arguments need lists or expressions }}
+      then {{ `learn/` is written in `.heron.md`, and `language/`, `cli/` and `tools/` stay in `.heron` with their prose in `|` lines }}
+    }
+
     folder_lenses: rule(guide.layout.folder_scope, by = product.actors.author) {
       where {{ a folder is for some [lenses](#tools.docs.lenses.lens_kind) of the docs alone }}
       must {{ mark its scope with `@lens` in the index that includes the folder, right after the include list, as `@lens(developer) tools {}` }}

@@ -1,13 +1,13 @@
 // The how-tos of the user lens: one task each, in the order a new user meets
 // them.
 include = [
-  "./write_rules.heron",
-  "./define_an_api.heron",
-  "./run_a_task.heron",
-  "./add_a_ts_extension.heron",
-  "./use_the_editor.heron",
-  "./split_spec_and_implementation.heron",
-  "./version_a_product.heron",
+  "./write_rules.heron.md",
+  "./define_an_api.heron.md",
+  "./run_a_task.heron.md",
+  "./add_a_ts_extension.heron.md",
+  "./use_the_editor.heron.md",
+  "./split_spec_and_implementation.heron.md",
+  "./version_a_product.heron.md",
 ]
 
 @lens(user)

@@ -1,10 +1,10 @@
 // The concepts of the user lens: the ideas the how-tos and the reference
 // take for granted.
 include = [
-  "./trees_files_and_packages.heron",
-  "./specs_and_projects.heron",
-  "./lenses.heron",
-  "./versioning.heron",
+  "./trees_files_and_packages.heron.md",
+  "./specs_and_projects.heron.md",
+  "./lenses.heron.md",
+  "./versioning.heron.md",
   "./writing_prose.heron.md",
 ]
 

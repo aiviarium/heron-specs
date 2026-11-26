@@ -1,7 +1,7 @@
 // What a person who uses Heron reads: getting started, the how-tos and the
 // concepts, each an authored page of the user lens.
 include = [
-  "./getting_started.heron",
+  "./getting_started.heron.md",
   "./howtos/",
   "./concepts/",
 ]

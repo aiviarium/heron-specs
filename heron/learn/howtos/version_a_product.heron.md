@@ -1,0 +1,39 @@
+<howto id="version_a_product" @lens="user" @display="Version a product">
+A spec and its implementation share one version line. The spec's version is three
+numbers, and an implementation's version starts with the spec version it implements.
+
+<step id="version_the_spec">
+Set the spec package's `version` to three numbers, and raise the patch for a
+correction, the minor for a new behaviour, and the major for a behaviour removed or
+changed.
+</step>
+
+<step id="version_builds">
+Give the implementation the spec version it implements, and count its builds of that
+version after a `+`, as `0.2.0+build1`, then `0.2.0+build2`. The build counts from 1
+again when the spec version changes, and a label such as `rc` takes the place of
+`build`, as `0.2.0+rc1`.
+</step>
+
+<step id="four_numbers">
+Where an implementation's own fixes need a version that orders, opt into a fourth
+number, the implementation patch, with the scheme `SM.Sm.Sp.IP`: `0.2.0.1` is the
+first patch on spec 0.2.0.
+
+```heron
+shop_app: implements(shop, at = "0.2.0") {
+  version = "0.2.0.1+rc1"
+
+  versioning.{
+    scheme = "SM.Sm.Sp.IP"
+  }
+}
+```
+</step>
+
+<step id="record_releases">
+Record each release with `release("0.2.0+build1")` in the implementation's tree, and
+tag it `v0.2.0+build1`. ${cli.check.name} reports a version that doesn't start with
+the spec version, or doesn't fit the scheme.
+</step>
+</howto>
