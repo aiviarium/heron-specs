@@ -1,9 +1,9 @@
 // The frontend: the design system, the shell, the editor and the preview.
 include = [
   "./design_system.heron",
-  "./writing.heron",
+  "./writing.heron.md",
   "./screens/",
-  "./shell.heron",
+  "./shell.heron.md",
   "./editor.heron",
   "./preview.heron",
 ]

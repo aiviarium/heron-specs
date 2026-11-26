@@ -1,12 +1,12 @@
 // APIs: apis and ops, their params, responses and streams, the annotations
 // that cut across them, the transports that carry them, and examples.
 include = [
-  "./apis_and_ops.heron",
+  "./apis_and_ops.heron.md",
   "./params.heron",
   "./responses.heron",
   "./streams.heron",
-  "./cross_cutting.heron",
-  "./transports.heron",
+  "./cross_cutting.heron.md",
+  "./transports.heron.md",
   "./examples.heron",
 ]
 

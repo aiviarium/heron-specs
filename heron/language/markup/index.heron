@@ -2,17 +2,17 @@
 // read; this folder says what each form builds, what renders and what the
 // prose view projects.
 include = [
-  "./writing.heron",
-  "./text.heron",
+  "./writing.heron.md",
+  "./text.heron.md",
   "./links.heron",
-  "./inserts.heron",
+  "./inserts.heron.md",
   "./tags.heron",
-  "./components.heron",
+  "./components.heron.md",
   "./from_markdown.heron",
   "./long_form.heron",
   "./authored_pages.heron",
-  "./lens_marks.heron",
-  "./prose_view.heron",
+  "./lens_marks.heron.md",
+  "./prose_view.heron.md",
 ]
 
 @lens(user, developer)

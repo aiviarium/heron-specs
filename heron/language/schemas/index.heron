@@ -1,16 +1,16 @@
 // Schemas: kinds, categories, flags and annotations, and how packages declare them.
 include = [
-  "./kinds.heron",
+  "./kinds.heron.md",
   "./accept.heron",
   "./modes.heron",
-  "./categories.heron",
+  "./categories.heron.md",
   "./flags.heron",
   "./annotations.heron",
-  "./overloads.heron",
-  "./generics.heron",
-  "./highlighting.heron",
-  "./mixing.heron",
-  "./extending_types.heron",
+  "./overloads.heron.md",
+  "./generics.heron.md",
+  "./highlighting.heron.md",
+  "./mixing.heron.md",
+  "./extending_types.heron.md",
   "./extensions.heron",
 ]
 

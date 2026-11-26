@@ -2,17 +2,17 @@
 // std/product and std/tech, and how a spec tree is laid out.
 include = [
   "./projects.heron",
-  "./context.heron",
+  "./context.heron.md",
   "./requirements.heron",
   "./lifecycles.heron",
   "./qualities.heron",
-  "./planning.heron",
+  "./planning.heron.md",
   "./traceability.heron",
   "./implementations.heron",
   "./quality_checks.heron",
   "./product_kinds.heron",
   "./tech_kinds.heron",
-  "./layout.heron",
+  "./layout.heron.md",
 ]
 
 @lens(user, developer)

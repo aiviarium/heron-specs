@@ -4,15 +4,15 @@ include = [
   "./nodes.heron",
   "./naming.heron",
   "./imports.heron",
-  "./mounts.heron",
-  "./exports.heron",
+  "./mounts.heron.md",
+  "./exports.heron.md",
   "./amends.heron",
   "./conflicts.heron",
   "./values.heron",
-  "./expressions.heron",
+  "./expressions.heron.md",
   "./prose_layer.heron",
-  "./code_layer.heron",
-  "./tour.heron",
+  "./code_layer.heron.md",
+  "./tour.heron.md",
 ]
 
 @lens(user, developer)

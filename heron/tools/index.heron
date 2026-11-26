@@ -1,11 +1,11 @@
 // The development tools' behaviour: the language server, prose linting, the
 // editor grammar, the docs, the server and the frontend.
 include = [
-  "./lsp.heron",
+  "./lsp.heron.md",
   "./prose.heron",
-  "./tree_sitter.heron",
+  "./tree_sitter.heron.md",
   "./docs/",
-  "./server.heron",
+  "./server.heron.md",
   "./frontend/",
 ]
 

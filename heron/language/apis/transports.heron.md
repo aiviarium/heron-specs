@@ -1,0 +1,62 @@
+# Transports {#transports}
+
+A transport carries an api's ops over a protocol. It's declared with the
+`transport` kind of `std/apis` in a package, beside the annotations that bind ops to it, and
+implemented by code the run registers: built into `heron`, or a TS package through a
+binding of [Interop](#language.interop), so a new protocol never needs a new build of `heron`.
+The annotation is the binding: an op is carried by the transport of the package
+whose annotation stands on it or on its api.
+
+| Package     | Binds | Streams |
+| ----------- | ----- | ------- |
+| `std/http`  | `@http<method>(path)` on ops, with the method as a flag such as `<post>` and [path parameters](#language.apis.params.path_parameter) written `:name`, and `@http(base_path = …)` on apis. Parameters take `@path`, `@query`, `@header(name)` or `@body`. `@status(code)` maps errors. | A streamed result is server-sent events. Streamed parameters aren't allowed. |
+| `std/proto` | Each op is an rpc. Its parameters become the request message, numbered with `@field(n)`, and `@proto(package = …)` names the service. | Result, parameter or both map to server, client and bidirectional streaming. |
+| `std/ws`    | `@ws(path)` on an api or op opens a socket. Each op becomes a message type on it. | Streams in both directions are the socket's messages. |
+
+<term id="transport_kind">
+A protocol that carries ops, declared as `carrier: transport` in a package and
+implemented through the `Transport` interface of `std/apis`: `send(op, request)` sends one
+request of an op and returns its response.
+</term>
+
+<term id="transport_binding">
+An annotation on an op or its api, from a package that declares a transport, that sends
+the op's calls through that transport, as `@inventory.in_memory` sends
+`shelf.find` through `inventory.memory`.
+</term>
+
+<rule id="binding_by_package" targets="transport_binding" by="product.system.interpreter">
+<when>an op is called in a run</when>
+<must>send the call through the one transport declared in the packages of the annotations on the op and on its api</must>
+</rule>
+
+<rule id="request_by_parameter" targets="transport_kind" by="product.system.interpreter">
+<must>give the transport the op's path and its arguments by parameter name, and return what the transport answers as the call's result</must>
+</rule>
+
+<rule id="unbound_op" targets="transport_binding" by="product.system.interpreter">
+<if>an op called in a run has no annotation from a package, on it or on its api</if>
+<must>fail the call with "op ‹op› has no binding: annotate it or its api with a transport package's annotation"</must>
+</rule>
+
+<rule id="binding_without_transport" targets="transport_binding" by="product.system.interpreter">
+<if>the packages of an op's annotations declare no transport</if>
+<must>fail the call with "op ‹op› is bound by ‹annotations›, but no transport of those packages is declared"</must>
+<example>an op with only `@http<get>` fails so until `std/http` has a transport</example>
+</rule>
+
+<rule id="several_transports" targets="transport_binding" by="product.system.interpreter">
+<if>an op's annotations name packages that declare more than one transport</if>
+<must>fail the call, naming the transports in sorted order</must>
+<then>a binding is never a guess</then>
+<example>an op bound to three transports fails with "… (twin.left, twin.right, wire.carrier); a run can't pick one"</example>
+</rule>
+
+<rule id="unimplemented_transport" targets="transport_kind" by="product.system.interpreter">
+<if>the run has no implementation registered for the op's transport</if>
+<must>fail the call with "op ‹op› is carried by transport ‹transport›, but nothing implements it"</must>
+</rule>
+
+<rule id="std_transports" targets="transport_kind" by="product.system.extension_host">
+<must>implement transports for `std/http`, `std/proto` and `std/ws` in `heron`, so the standard protocols work without a third-party package</must>
+</rule>

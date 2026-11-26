@@ -3,10 +3,10 @@
 include = [
   "./declaring.heron",
   "./host.heron",
-  "./data_mapping.heron",
-  "./timing.heron",
+  "./data_mapping.heron.md",
+  "./timing.heron.md",
   "./protocol.heron",
-  "./packaging.heron",
+  "./packaging.heron.md",
 ]
 
 @lens(user, developer)

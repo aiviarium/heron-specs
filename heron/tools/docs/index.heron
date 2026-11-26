@@ -1,18 +1,18 @@
 // The docs generator: the site it writes, the lenses it's read through, how
 // each page is laid out and rendered, and the parts a tree extends.
 include = [
-  "./site.heron",
+  "./site.heron.md",
   "./lenses.heron",
-  "./standard_lenses.heron",
-  "./explore.heron",
-  "./page_layout.heron",
-  "./rendering.heron",
-  "./renderers.heron",
-  "./extending.heron",
-  "./islands.heron",
-  "./search.heron",
-  "./diagrams.heron",
-  "./versions.heron",
+  "./standard_lenses.heron.md",
+  "./explore.heron.md",
+  "./page_layout.heron.md",
+  "./rendering.heron.md",
+  "./renderers.heron.md",
+  "./extending.heron.md",
+  "./islands.heron.md",
+  "./search.heron.md",
+  "./diagrams.heron.md",
+  "./versions.heron.md",
 ]
 
 | What the docs generator makes of a checked tree: a documentation site of plain files that

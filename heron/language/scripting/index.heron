@@ -2,7 +2,7 @@
 // macros and templates.
 include = [
   "./code.heron",
-  "./processes_and_files.heron",
+  "./processes_and_files.heron.md",
   "./tasks.heron",
   "./funcs_and_templates.heron",
 ]

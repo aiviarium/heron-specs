@@ -2,9 +2,9 @@
 include = [
   "./values.heron",
   "./typed_strings.heron",
-  "./configuration.heron",
+  "./configuration.heron.md",
   "./types.heron",
-  "./encodings.heron",
+  "./encodings.heron.md",
 ]
 
 @lens(user, developer)

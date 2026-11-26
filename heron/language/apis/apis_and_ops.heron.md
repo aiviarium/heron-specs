@@ -1,0 +1,98 @@
+# APIs and ops {#apis_and_ops}
+
+An api describes operations, never a transport. Its ops take ordinary parameters and
+return ordinary types, and transport packages bind them with annotations, so one op can
+carry bindings for several protocols at once. An api with no bindings is a plain
+interface in the language, whose ops become methods in generated code. `api`, `op` and
+`example` are kinds of `std/types`, so a file that writes them imports `std/types@1`.
+
+The [payments api](#language.apis.apis_and_ops.apis_example) shows all of it: one api bound to HTTP,
+gRPC and WebSockets, and one with no bindings.
+
+<term id="api_kind" @display="API kind">
+A group of operations, declared as `name: api { … }`. Its body holds `|` lines and
+[ops](#language.apis.apis_and_ops.op_kind); an annotation on it applies to all of its
+ops, as `@http(base_path = "/v1")` above `payments: api` does.
+</term>
+
+<term id="op_kind">
+An operation: `create_refund(request: RefundRequest): op(Refund)`. Its parameters are
+its inputs and its first argument is its [result type](#language.apis.responses.result_type), short for
+`op(returns = Refund)`. An op stands in an api, or alone at any level of a file.
+</term>
+
+<rule id="api_body" targets="api_kind" by="product.system.checker">
+<must>accept `|` lines and ops in an api's body, and report [doesn't accept](#language.schemas.accept.diagnostics.doesnt_accept) at any other child</must>
+<example>a type declared inside an api reports "api doesn't accept type; it accepts op"</example>
+</rule>
+
+<rule id="op_body" targets="op_kind" by="product.system.checker">
+<must>accept `|` lines and named [op examples](#language.apis.examples.op_example) in an op's body</must>
+</rule>
+
+<rule id="op_prose_value" targets="op_kind" by="product.system.checker">
+<where>an op has only documentation</where>
+<may>take it as a prose value</may>
+<example>`get_refund(@path id: String): op(Refund) =| Returns one refund.`</example>
+</rule>
+
+<rule id="op_without_result" targets="op_kind" by="product.system.checker">
+<must>accept an op written `op`, with no [result type](#language.apis.responses.result_type), as an op that returns nothing</must>
+</rule>
+
+<rule id="ops_called_by_parameters" targets="op_kind" by="product.system.interpreter">
+<must>call an op by its parameters, as a func is called, never by its transport</must>
+<then>`payments.create_refund(request = RefundRequest(…))` runs against whatever binding carries the op</then>
+</rule>
+
+<rule id="ops_as_methods" targets="api_kind" by="product.system.generator">
+<where>an api has no [transport binding](#language.apis.transports.transport_binding)</where>
+<must>generate it as an interface whose methods are its ops, with their parameters and [result types](#language.apis.responses.result_type)</must>
+</rule>
+
+<example id="apis_example" @display="The payments api">
+```heron
+import = ["std/types@1", "std/http@1", "std/proto@1", "std/ws@1"]
+
+@http(base_path = "/v1")
+@proto(package = "acme.payments.v1")
+payments: api {
+  @http<post>("/refunds")
+  @throws(RefundError)
+  create_refund(@body request: RefundRequest): op(Refund) {
+    | Creates a refund for a captured payment, subject to the [refund window](#window).
+
+    partial_refund: example {
+      request = RefundRequest(payment_id = "pay_123", amount = "40.00 EUR")
+      returns = Refund(id = "re_1", payment_id = "pay_123", amount = "40.00 EUR")
+    }
+
+    too_late: example {
+      request = RefundRequest(payment_id = "pay_old")
+      throws = RefundWindowExpired
+    }
+  }
+
+  @http<get>("/payments/:payment_id/refunds")
+  list_refunds(@path payment_id: String, @query cursor?: String): op(Page(Refund))
+
+  @http<patch>("/refunds/:id")
+  update_refund(@path id: String, @body changes: Patch(RefundRequest)): op(Refund)
+
+  // One op, three protocols: server-sent events over HTTP, messages over a
+  // WebSocket, and a server stream over gRPC.
+  @http<get>("/payments/:payment_id/refunds/events")
+  @ws("/payments/:payment_id/events")
+  watch(@path payment_id: String): op(Stream(RefundEvent))
+
+  // Streams both ways: a WebSocket here, a bidirectional stream over gRPC.
+  @ws("/support/chat")
+  support_chat(messages: Stream(ChatMessage)): op(Stream(ChatMessage))
+}
+
+// No bindings: an in-language interface whose ops are methods.
+ledger: api {
+  balance(payment_id: String): op(Money)
+}
+```
+</example>

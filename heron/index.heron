@@ -14,7 +14,7 @@ import = [
 
 heron: package(version = "0.2.0", sealed = true) {
   include = [
-    "./guide.heron",
+    "./guide.heron.md",
     "./product/",
     "./language/",
     "./cli/",
