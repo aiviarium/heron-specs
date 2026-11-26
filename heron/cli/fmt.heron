@@ -1,3 +1,4 @@
+@realizes(cli.fmt.check_changes_nothing)
 fmt: command("heron fmt") {
   usage = ["heron fmt [--check] [--stdout] [paths…]"]
 

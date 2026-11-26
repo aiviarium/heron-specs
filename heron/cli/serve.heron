@@ -1,3 +1,4 @@
+@realizes(cli.serve.serves_workspace)
 serve: command("heron serve") {
   usage = ["heron serve [--addr host:port] [entry point]"]
 
@@ -25,4 +26,7 @@ serve: command("heron serve") {
 
   example {{ `heron serve --addr 127.0.0.1:0 petstore` serves a sample tree on a free port and prints its URL. }}
 
+  serves_workspace: rule(by = system.server) {
+    must {{ serve the workspace and its spec browser over HTTP until it's stopped }}
+  }
 }

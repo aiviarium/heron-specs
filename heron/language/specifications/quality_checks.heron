@@ -16,8 +16,8 @@ quality_checks: section {
   | | Well formed  | compound rules, negations without a condition, long or scripted scenarios, missing measures |
 
   unambiguous_wording: rule(language.specifications.requirements.rule_strength, by = system.prose_linter) {
-    should {{ report weak modal where the text under `must` or `mustNot` says "should", "may", "might", "could" or "ideally", and vague word where a rule no quality measures uses a word such as "fast", "robust" or "several" }}
-    while {{ it's not the case that the word is quoted, in code or masked, so it's mentioned rather than used }}
+    should {{ report weak modal where the text under `must` or `mustNot` says "should", "may", "might", "could" or "ideally", and vague word where a rule that serves no quality and stands beside no quality scenario uses a word such as "fast", "robust" or "several" }}
+    while {{ the word is used rather than mentioned: unquoted, outside code and unmasked }}
   }
 
   nodes_linked: rule(language.specifications.context.term_kind, by = system.prose_linter) {
@@ -65,9 +65,16 @@ quality_checks: section {
     should {{ report negation without a condition at the word }}
   }
 
+  negated_condition: rule(language.specifications.requirements.rule_condition, by = system.prose_linter) {
+    if {{ a condition says "not the case that", or negates twice in one clause, as `isn't … no` or `not … never` }}
+    should {{ report a negated condition at the words }}
+    then {{ an exception migrated from `unless` reads as the state the rule applies in }}
+  }
+
   design_words: rule(language.specifications.layers.layer, by = system.prose_linter) {
-    if {{ the text of an intent or specification node says a design word: "database", "table", "class", "microservice", "endpoint", "column" or "[schema](#heron.language.schemas.kinds.schema) migration" }}
-    should {{ report design word at the word, outside code spans and links }}
+    if {{ the text of an intent or specification node says a design word, `database`, `table`, `class`, `microservice`, `endpoint`, `column` or `schema migration`, and the tree declares no term of that name }}
+    should {{ report a design word at the word, outside code spans, links and quotes }}
+    then {{ a product whose domain has such things, as a document tool has its [tables](#heron.language.markup.components.table), declares them as terms }}
   }
 
   measure_missing: rule(language.specifications.intent.quality_kind, by = system.linter) {
@@ -91,6 +98,7 @@ quality_checks: section {
   }
 
   errors: section {
+    @realizes(language.specifications.quality_checks.nodes_linked)
     @display("Unlinked term")
     unlinked_term: error("Spec.UnlinkedTerm", severity = Severity.warning, by = system.prose_linter) {
       title = "\"{phrase}\" is the term {path}; link it"
@@ -99,6 +107,7 @@ quality_checks: section {
       | A term's phrase in prose outside the term, not linked.
     }
 
+    @realizes(language.specifications.quality_checks.unambiguous_wording)
     @display("Ruled-out synonym")
     ruled_out_synonym: error("Spec.Synonym", severity = Severity.warning, by = system.prose_linter) {
       title = "\"{alias}\" is a synonym the term {path} rules out; use the term"
@@ -107,6 +116,7 @@ quality_checks: section {
       | One of a term's [aliases](#language.data.values.alias), used where the term should be.
     }
 
+    @realizes(language.specifications.quality_checks.unambiguous_wording)
     @display("Two senses")
     two_senses: error("Spec.TwoSenses", severity = Severity.warning, by = system.prose_linter) {
       title = "\"{phrase}\" is defined by two terms, here and {path}, so it's used in two senses"
@@ -197,6 +207,13 @@ quality_checks: section {
     delivery_word: error("Spec.DeliveryWord", severity = Severity.warning, by = system.prose_linter) {
       title = "\"{word}\" is delivery vocabulary; plan work in the project, not the spec"
       word: field(String)
+    }
+
+    @realizes(negated_condition)
+    @display("Negated condition")
+    negated_condition_found: error("Spec.NegatedCondition", severity = Severity.warning, by = system.prose_linter) {
+      title = "\"{words}\" negates the condition; say the state the rule applies in, or write the exception as a rule of its own"
+      words: field(String)
     }
   }
 }

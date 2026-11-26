@@ -21,7 +21,7 @@ recovery: section {
 
   syntax_errors: rule(lossless_tree, by = system.parser) {
     must {{ report every syntax error as an error coded `syntax` at the offset where the parser expected something else, with a message saying what it expected }}
-    while {{ it's not the case that the message repeats the one before it at the same offset, which is dropped so one position gets one diagnostic }}
+    while {{ the message differs from the one before it at the same offset }}
   }
 
   checking_goes_on: rule(lossless_tree, by = system.checker) {
@@ -98,81 +98,97 @@ recovery: section {
       | A line in structure starts with none of the forms a member starts with.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_brace: error("syntax", by = system.parser) {
       title = "expected `}`"
       | A body, a map, a code block or an insert lacks its `}`; at the end of the input when nothing closes it.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_double_brace: error("syntax", by = system.parser) {
       title = "expected `}}`"
       | A `{{ }}` body lacks its `}}`, reported at the end of the input.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_set_value: error("syntax", by = system.parser) {
       title = "expected a value after `=`"
       | A set has `=` and nothing after it.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_let_equals: error("syntax", by = system.parser) {
       title = "expected `=`"
       | A `let` lacks its `=`.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_value: error("syntax", by = system.parser) {
       title = "expected a value"
       | An expression lacks a value where one must stand.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_type: error("syntax", by = system.parser) {
       title = "expected a type"
       | A `:` isn't followed by a type.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_name: error("syntax", by = system.parser) {
       title = "expected a name"
       | A path or a `for` lacks a name.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_in: error("syntax", by = system.parser) {
       title = "expected `in`"
       | A `for` lacks its `in`.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_block: error("syntax", by = system.parser) {
       title = "expected `{`"
       | An `if` or a `for` lacks its code block.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_param_name: error("syntax", by = system.parser) {
       title = "expected a parameter name"
       | A parameter list holds an entry that doesn't start with a name.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_param_type: error("syntax", by = system.parser) {
       title = "expected `:` and a type"
       | A parameter's name isn't followed by `:` and a type.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_paren: error("syntax", by = system.parser) {
       title = "expected `)`"
       | A group, an argument list or a type lacks its `)`.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_bracket: error("syntax", by = system.parser) {
       title = "expected `]`"
       | An array lacks its `]`.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     missing_angle: error("syntax", by = system.parser) {
       title = "expected `>`"
       | A flag list or a tag lacks its `>`.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     unterminated_string: error("syntax", by = system.parser) {
       title = "unterminated string"
       | A string lacks its closing quote: at the line end for a one-quote string, at the end of the input for a triple-quoted one.
     }
 
+    @realizes(language.grammar.recovery.missing.missing_parts)
     unterminated_raw: error("syntax", by = system.parser) {
       title = "unterminated raw string"
       | A raw string lacks the backtick run that closes it.
@@ -208,6 +224,7 @@ recovery: section {
       | A map entry's path isn't followed by `=`.
     }
 
+    @realizes(language.grammar.recovery.lists.map_entries)
     map_separator: error("syntax", by = system.parser) {
       title = "expected `,`, a new line or `}`"
       | A map entry is followed by something other than `,`, a line end or `}`.

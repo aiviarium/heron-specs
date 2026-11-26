@@ -31,7 +31,6 @@ it. Its prefixes and the common indentation of a `{{ }}` body are not part of it
 <rule id="markup_strings" targets="prose_text" by="system.prose_linter">
 <where>a string literal is the value of a field or node typed `Prose`</where>
 <must>read its inserts and project it as prose, with its inline code masked</must>
-<while>it's not the case that the string is the value of any other type, when it's plain text and no linter reads it</while>
 </rule>
 
 <rule id="paragraphs" targets="prose_text" by="system.prose_linter">

@@ -66,13 +66,13 @@ their text, which the core maps back onto the source.
 </rule>
 
 <rule id="projected_text" targets="prose_region" by="system.prose_linter">
-<must>project the text of a [URL link](#language.markup.links.url_link) and the content of a tag as words, and keep emphasis markers and table cells as the text written</must>
+<must>project the text of a [URL link](#language.markup.links.url_link) and the content of a tag as words, and keep emphasis markers and [table](#heron.language.markup.components.table) cells as the text written</must>
 <example>in `<abbr title="simply">Simply a tip</abbr>` the head is masked and `Simply a tip` is read</example>
 </rule>
 
 <rule id="no_titles" targets="prose_region" by="system.prose_linter">
 <mustNot>project a section's title, since it comes from a name</mustNot>
-<while>it's not the case that the section is a heading of a [prose file](#language.core_format.prose_layer.prose_file), whose text is projected as a heading region</while>
+<while>the section is declared in a [Heron file](#language.core_format.files.heron_file)</while>
 </rule>
 
 <rule id="exact_map" targets="source_map" by="system.prose_linter">

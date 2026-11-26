@@ -75,7 +75,7 @@ protocol: section {
     | | `timeout_ms`    | 30 000     | how long a request waits for its response     |
 
     offered_limits: rule(cbor_rpc, by = system.extension_host) {
-      must {{ offer the limits of the table in `initialize`, with an extension's `files`, `network` and `commands` beside them, and apply them on both sides }}
+      must {{ offer the limits of the [table](#heron.language.markup.components.table) in `initialize`, with an extension's `files`, `network` and `commands` beside them, and apply them on both sides }}
     }
 
     in_flight_limit: rule(cbor_rpc, by = system.extension_host) {
@@ -85,7 +85,7 @@ protocol: section {
     }
 
     timeouts: rule(cbor_rpc, by = system.extension_host) {
-      where {{ a request is sent without a deadline of its own }}
+      where {{ a request is sent without a time limit of its own }}
       must {{ give it `timeout_ms`, and when that passes, send `$/cancel` and fail it with the timeout code }}
     }
   }

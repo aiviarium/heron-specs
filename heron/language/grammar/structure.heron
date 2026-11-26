@@ -98,7 +98,7 @@ structure: section {
 
     flag_lists: rule(by = system.parser) {
       must {{ read `<` directly after a name or a kind as a flag list only when names separated by commas, then `>`, follow it }}
-      while {{ it's not the case that anything else follows the `<`, when it's the comparison operator }}
+      then {{ a `<` followed by anything else is the comparison operator }}
       example {{ `a<b` and `a < b` compare, while `task<confirm>` flags }}
     }
 
@@ -113,13 +113,23 @@ structure: section {
 
     newlines_end_members: rule(by = system.parser) {
       must {{ end a member at the end of its line, so that nothing but a trailing comment or a closing `}` follows it on that line }}
-      while {{ it's not the case that an open bracket, a trailing operator or a value still to come after `=` continues it onto the next line }}
+      while {{ the line closes every bracket it opens and ends on a complete value }}
       example {{ `x =` with `1` on the next line, and an argument list wrapped one entry per line with a trailing comma: one member each }}
+    }
+
+    newlines_end_members_otherwise: rule(by = system.parser) {
+      when {{ a line ends inside an open bracket, after a trailing operator, or before the value after `=` }}
+      must {{ continue the member onto the next line }}
     }
 
     doc_lines_attach: rule(by = system.parser) {
       must {{ join consecutive [doc lines](#language.core_format.prose_layer.doc_lines) into one `Doc` and attach it to the member on the next line }}
-      while {{ it's not the case that a blank line, a comment or a `}` follows them, which then stand alone as a `Doc` member }}
+      while {{ a member follows the [doc lines](#heron.language.core_format.prose_layer.doc_lines) on the next line }}
+    }
+
+    doc_lines_attach_otherwise: rule(by = system.parser) {
+      when {{ a blank line, a comment or a `}` follows [doc lines](#heron.language.core_format.prose_layer.doc_lines) }}
+      must {{ read them as a `Doc` member of their own }}
     }
 
     annotation_lines: rule(by = system.parser) {

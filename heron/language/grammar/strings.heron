@@ -46,13 +46,13 @@ strings: section {
 
     insert_forms: rule(by = system.parser) {
       must {{ read `$` followed by `{` as an expression insert up to its matching `}`, and `$` followed by a name as a path insert whose path ends at a `.` that no name follows }}
-      while {{ it's not the case that anything else follows the `$`, when the `$` is text }}
+      then {{ a `$` followed by anything else is text }}
       example {{ `"$ 5"` and `"US$"` need no escape, and in `"$a.b."` the last `.` is text }}
     }
 
     insert_calls: rule(by = system.parser) {
       must {{ read a list directly after a path insert as the call's arguments only when it parses as an argument list with no errors and no parameters }}
-      while {{ it's not the case that the list has errors or parameters, when the `(` and what follows it are text }}
+      then {{ a list with errors or parameters stays text, with the `(` that opens it }}
       example {{ `$schema(T)`: a call; `get_$name(@path id: Int)` in a template: the insert `$name`, then text }}
     }
 

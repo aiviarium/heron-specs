@@ -1,7 +1,7 @@
 # Page layout {#page_layout}
 
 Every page has the same frame, after Fumadocs: the top bar, the navigation, the page
-and a right column.
+and a right [column](#heron.language.grammar.lexical.column).
 
 <rule id="frame" targets="tools.docs.page_layout" by="system.docs_generator">
 <must>lay out a page as a top bar with the logo, the [site areas](#tools.docs.site.site_area), the lens switcher, search with its shortcut, the version switch and the theme switch; the navigation tree of its [site area](#tools.docs.site.site_area) on the left; a breadcrumb and the page in the middle; and on the right the page's outline, or an op's examples, sticky as the page scrolls</must>
@@ -33,7 +33,7 @@ and a right column.
 
 <rule id="narrow_screens" targets="tools.docs.page_layout" by="system.docs_generator">
 <when>the window is 1180 px wide or less</when>
-<must>drop the right column below the page, and at 820 px or less collapse to one column with the navigation behind a button</must>
+<must>drop the right [column](#heron.language.grammar.lexical.column) below the page, and at 820 px or less collapse to one [column](#heron.language.grammar.lexical.column) with the navigation behind a button</must>
 </rule>
 
 <rule id="theme_before_paint" targets="tools.docs.page_layout" by="system.docs_generator">

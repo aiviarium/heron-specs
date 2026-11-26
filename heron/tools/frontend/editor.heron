@@ -56,7 +56,7 @@ editor: section {
 
     completion_triggers: rule(tools.frontend.editor.language, by = system.editor) {
       must {{ ask the language server for completion on `.`, `@`, `<`, `#`, `$`, `(` and `:`, and as a word is typed }}
-      while {{ it's not the case that the cursor is in prose, a `|` line or a `{{ }}` body, outside a link's `(#…)` and a `$` insert, which asks nothing }}
+      while {{ the cursor is in structure or code, or inside a link's `(#…)` or a `$` insert }}
     }
 
     prose_coloured_as_text: rule(tools.frontend.editor.language, by = system.editor) {
@@ -111,4 +111,13 @@ editor: section {
       [actors.author] accepts the word in the vocabulary. Back to 4.
   }}
 
+  errors: section {
+    @realizes(tools.frontend.editor.fix_a_diagnostic.1a)
+    @display("Language server not connected")
+    lsp_disconnected: error("editor.LSP_DISCONNECTED", by = system.editor) {
+      title = "the language server isn't connected: {reason}"
+      reason: field(String)
+      | Shown in the status bar, with a retry action.
+    }
+  }
 }

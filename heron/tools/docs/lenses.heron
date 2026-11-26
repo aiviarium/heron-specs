@@ -134,7 +134,7 @@ lenses: section {
     }}
 
     named_nodes_decided: rule(tools.docs.lenses.what_a_lens_shows, by = system.docs_generator) {
-      must {{ decide each named node of the tree on its own, and render the nodes a node's prose builds, such as its paragraphs, lists, tables and tags, with that node }}
+      must {{ decide each named node of the tree on its own, and render the nodes a node's prose builds, such as its paragraphs, lists, [tables](#heron.language.markup.components.table) and tags, with that node }}
     }
 
     kind_lists: rule(tools.docs.lenses.lens_kind, by = system.docs_generator) {

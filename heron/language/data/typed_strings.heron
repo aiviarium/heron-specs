@@ -31,7 +31,7 @@ typed_strings: section {
   other_literals: rule(typed_string, by = system.checker) {
     if {{ a literal other than a string, such as `30`, is written where a typed-string type is expected }}
     must {{ report wrong type }}
-    while {{ it's not the case that it's a [record value](#language.data.values.record_value) of the type, as `Duration(days = 30)`, which is checked as any record }}
+    while {{ the literal is no [record value](#language.data.values.record_value) of the type, as `Duration(days = 30)` is, which is checked as any record }}
   }
 
   duration_form: rule(language.data.typed_strings.typed_string, by = system.checker) {
@@ -70,11 +70,13 @@ typed_strings: section {
       text: field(String)
     }
 
+    @realizes(language.data.typed_strings.timestamp_form)
     not_a_timestamp: error("typed-string", by = system.checker) {
       title = "\"{text}\" is not a timestamp; write an RFC 3339 time or a date, as in \"2026-03-01\""
       text: field(String)
     }
 
+    @realizes(language.data.typed_strings.version_form)
     not_a_version: error("typed-string", by = system.checker) {
       title = "\"{text}\" is not a version; write two or three numbers, as in \"1.0\" or \"2.1.4\""
       text: field(String)

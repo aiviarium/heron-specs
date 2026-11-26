@@ -19,7 +19,7 @@ The catalogue of every string the tools show that doesn't come from a spec, in
 
 <rule id="app_text_sourced" targets="tools.frontend.writing.visible_text" by="system.editor">
 <must>show on the [editor screen](#tools.frontend.screens.editor_screen) only text from the spec of the served tree and the standard packages it uses, or from the catalogue, in every label, input hint and title a person reads, the palette and the problems panel included</must>
-<while>it's not the case that the text is the code in the editor, or what Monaco draws inside its own widgets, such as the find widget's labels</while>
+<while>the shell itself draws the text, outside the code in the editor and Monaco's own widgets, such as the find widget's labels</while>
 </rule>
 
 <rule id="tools_text_in_widgets" targets="tools.frontend.writing.visible_text" by="system.editor">
@@ -64,8 +64,8 @@ These bind whoever writes a view or a catalogue entry.
 </rule>
 
 <rule id="tables_earn_their_place" targets="tools.frontend.writing.composing_text" by="actors.implementer">
-<mustNot>lay out as a table what has one column or fewer than three rows</mustNot>
-<instead>write a list, or one line per row, and keep tables for data with columns to compare, such as options with their types and defaults</instead>
+<mustNot>lay out as a [table](#heron.language.markup.components.table) what has one [column](#heron.language.grammar.lexical.column) or fewer than three rows</mustNot>
+<instead>write a list, or one line per row, and keep [tables](#heron.language.markup.components.table) for data with [columns](#heron.language.grammar.lexical.column) to compare, such as options with their types and defaults</instead>
 </rule>
 
 <rule id="no_closing_summary" targets="tools.frontend.writing.composing_text" by="actors.implementer">

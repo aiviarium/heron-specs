@@ -6,7 +6,12 @@ extensions: section {
 
   heron_packages_first: rule(language.schemas.extensions, by = actors.author) {
     should {{ add kinds, types, flags, defaults, lints, tasks, funcs and macros as Heron source in a package }}
-    while {{ it's not the case that the behaviour needs code Heron's own `do` blocks can't express, such as a library of another language }}
+    while {{ Heron's own `do` blocks can express the behaviour }}
+  }
+
+  heron_packages_first_otherwise: rule(language.schemas.extensions, by = actors.author) {
+    where {{ the behaviour needs code Heron's own `do` blocks can't express, such as a library of another language }}
+    may {{ declare an extension that implements it }}
   }
 
   extension_process: term {{
@@ -63,7 +68,12 @@ extensions: section {
     trust_first_run: rule(extension_process, by = system.extension_host) {
       when {{ an extension is about to run for the first time on a machine, keyed by a hash of its command and limits }}
       must {{ ask on the terminal, remember the answer in `.heron/trusted-extensions`, and refuse to run it with not trusted where there's no terminal }}
-      while {{ it's not the case that `HERON_TRUST_EXTENSIONS=1` is set, which approves without asking }}
+      while {{ `HERON_TRUST_EXTENSIONS` is unset }}
+    }
+
+    trust_first_run_otherwise: rule(extension_process, by = system.extension_host) {
+      where {{ `HERON_TRUST_EXTENSIONS=1` is set }}
+      must {{ approve the extension without asking }}
     }
 
     js_host_unlimited: rule(extension_process, by = system.extension_host) {

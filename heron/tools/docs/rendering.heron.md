@@ -6,16 +6,16 @@ data has it. How a rule's sentence is built is [the requirements' rendering](#la
 rules say how it and the nodes around it sit on the page.
 
 <term id="small_table">
-Data a page would show as a table that has one column, or fewer than three rows below
+Data a page would show as a [table](#heron.language.markup.components.table) that has one [column](#heron.language.grammar.lexical.column), or fewer than three rows below
 its header.
 </term>
 
 <rule id="rules_as_prose" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
-<must>render a rule as one paragraph holding its sentence, set in the docs body face at the size and level of the page's prose, starting at the left edge of the text column</must>
+<must>render a rule as one paragraph holding its sentence, set in the docs body face at the size and level of the page's prose, starting at the left edge of the text [column](#heron.language.grammar.lexical.column)</must>
 </rule>
 
 <rule id="no_rule_columns" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
-<mustNot>render a rule's strength, conditions or consequences in a label column, in a hanging indent, or in a smaller or fainter style than its sentence</mustNot>
+<mustNot>render a rule's strength, conditions or consequences in a label [column](#heron.language.grammar.lexical.column), in a hanging indent, or in a smaller or fainter style than its sentence</mustNot>
 </rule>
 
 <rule id="formal_parts_on_hover" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
@@ -42,22 +42,22 @@ its header.
 </rule>
 
 <rule id="tables_for_tabular_data" targets="tools.docs.rendering" by="system.docs_generator">
-<must>render as a table only data of at least two columns and at least three rows below its header, such as the fields of a type, the options of a command or a status matrix</must>
+<must>render as a [table](#heron.language.markup.components.table) only data of at least two [columns](#heron.language.grammar.lexical.column) and at least three rows below its header, such as the fields of a type, the options of a command or a status matrix</must>
 </rule>
 
 <rule id="small_tables_as_lines" targets="small_table" by="system.docs_generator">
-<where>data the generator would render as a table is a [small table](#tools.docs.rendering.small_table)</where>
-<must>render each of its rows as one line, its first cell first and every other cell after the label its column has in the [string catalogue](#tools.frontend.writing.string_catalogue)</must>
-<example>a command with one option shows `--addr` String, default `127.0.0.1:7340` on one line, not a table of one row</example>
+<where>data the generator would render as a [table](#heron.language.markup.components.table) is a [small table](#tools.docs.rendering.small_table)</where>
+<must>render each of its rows as one line, its first cell first and every other cell after the label its [column](#heron.language.grammar.lexical.column) has in the [string catalogue](#tools.frontend.writing.string_catalogue)</must>
+<example>a command with one option shows `--addr` String, default `127.0.0.1:7340` on one line, not a [table](#heron.language.markup.components.table) of one row</example>
 </rule>
 
 <rule id="authored_tables_kept" targets="small_table" by="system.docs_generator">
-<must>render a table written in prose as the table it is, whatever its size</must>
+<must>render a [table](#heron.language.markup.components.table) written in prose as the [table](#heron.language.markup.components.table) it is, whatever its size</must>
 <then>a [small table](#tools.docs.rendering.small_table) in prose is the author's to fix, as [the guide](#guide.kinds.no_small_tables) asks</then>
 </rule>
 
 <rule id="lists_stay_lists" targets="tools.docs.rendering" by="system.docs_generator">
-<must>render a list written in prose as a list, and a list of nodes, such as a section's terms or a diagnostics index, as a list of entries, never as a table or a grid of cards</must>
+<must>render a list written in prose as a list, and a list of nodes, such as a section's terms or a diagnostics index, as a list of entries, never as a [table](#heron.language.markup.components.table) or a grid of cards</must>
 </rule>
 
 <rule id="diagnostics_compact" targets="language.specifications.contract.error_kind" by="system.docs_generator">
@@ -65,11 +65,11 @@ its header.
 </rule>
 
 <rule id="one_indent" targets="tools.docs.rendering" by="system.docs_generator">
-<must>indent a page's content at most one level from the left edge of its text column, and show a node's depth by its heading's level and its place in the navigation</must>
+<must>indent a page's content at most one level from the left edge of its text [column](#heron.language.grammar.lexical.column), and show a node's depth by its heading's level and its place in the navigation</must>
 </rule>
 
 <rule id="content_width" targets="tools.docs.rendering" by="system.docs_generator">
-<must>set a page's code blocks, tables, callouts, lists and fields to the width of its prose, the measure of the [type scale](#tools.frontend.design_system.tokens.type_scale), and scroll a code block or a table wider than that inside its own frame</must>
+<must>set a page's code blocks, [tables](#heron.language.markup.components.table), callouts, lists and fields to the width of its prose, the measure of the [type scale](#tools.frontend.design_system.tokens.type_scale), and scroll a code block or a [table](#heron.language.markup.components.table) wider than that inside its own frame</must>
 <then>every block of a page shares one left and one right edge</then>
 </rule>
 

@@ -22,7 +22,7 @@ delivery: section {
 
   story_kind: term {{
     `name: story(adds = [items], changes = [items], serves = goal) { … }`, one change to the
-    spec, small enough to build in one increment: the requirements it adds and changes, the goal
+    spec, small enough to build in one `increment`: the requirements it adds and changes, the goal
     it advances, and a `done` for what delivery alone needs. It's accepted when the items it
     lists are proven at their current [revisions](#heron.language.specifications.layers.revisions.revision).
   }}

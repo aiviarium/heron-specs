@@ -14,7 +14,7 @@ type_page: screen(route = "/<type>.html") {
 
   @realizes(tools.frontend.screens.type_page.fields.field_table, tools.frontend.screens.type_page.fields.variants_listed)
   fields: region {
-    | A bordered table of the fields.
+    | A bordered [table](#heron.language.markup.components.table) of the fields.
 
     field_table: rule(by = system.docs_generator) {
       must {{ list each field with its type, whether it's required, its default, its constraints and its docs }}
@@ -35,7 +35,7 @@ type_page: screen(route = "/<type>.html") {
   @realizes(tools.frontend.screens.type_page.lifecycles.lifecycle_switch)
   lifecycles: region {
     lifecycle_switch: rule(by = system.docs_generator) {
-      must {{ show each [lifecycle](#language.specifications.lifecycles.lifecycle) a field of the type moves through as a state diagram, with a switch to its table }}
+      must {{ show each [lifecycle](#language.specifications.lifecycles.lifecycle) a field of the type moves through as a state diagram, with a switch to its [table](#heron.language.markup.components.table) }}
     }
   }
 

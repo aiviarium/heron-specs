@@ -96,24 +96,28 @@ imports: section {
       package: field(String)
     }
 
+    @realizes(language.core_format.imports.packages.package_versions)
     unknown_package: error("import", by = system.checker) {
       title = "unknown package {name}"
       name: field(String)
       | `std/nosuch@1`: no package of that name is built in or installed.
     }
 
+    @realizes(language.core_format.imports.packages.package_versions)
     no_major: error("import", by = system.checker) {
       title = "{entry}: a package import names a major version, as in {entry}@1"
       entry: field(String)
       | `std/doc`: the entry has no `@`.
     }
 
+    @realizes(language.core_format.imports.packages.package_versions)
     bad_major: error("import", by = system.checker) {
       title = "{entry}: the version after @ is a major version number"
       entry: field(String)
       | `std/doc@x`: what follows `@` isn't a whole number.
     }
 
+    @realizes(language.core_format.imports.packages.package_versions)
     wrong_major: error("import", by = system.checker) {
       title = "{name}@{major}: the package is version {version}"
       name: field(String)
@@ -122,6 +126,7 @@ imports: section {
       | `std/doc@2` when the package is version 1.0.
     }
 
+    @realizes(language.core_format.imports.packages.lock_pins)
     not_installed: error("import", by = system.checker) {
       title = "{entry}: packages from {source} are installed by `heron run setup`, and this one isn't installed yet"
       entry: field(String)
@@ -129,6 +134,7 @@ imports: section {
       | `npm:foo@1`, or `git+https://host/repo//folder@v1`, before `heron run setup` has installed it; ‹source› is npm or git.
     }
 
+    @realizes(language.core_format.imports.packages.file_imports)
     no_such_import: error("import", by = system.checker) {
       title = "cannot import {path}: no such file"
       path: field(String)

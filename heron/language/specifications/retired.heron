@@ -10,7 +10,7 @@ retired: section {
   | | `obligation`                              | a `rule` whose `by` is a part                                        | yes |
   | | `criterion`                               | a `scenario` that illustrates one rule or path                       | yes |
   | | `component`, in a spec                    | a `part`                                             | yes |
-  | | `unless`                                  | `while` with the state the rule applies in, or a rule of its own     | no  |
+  | | `unless`                                  | `while` with the state the rule applies in, said positively, or a rule of its own for the exception's behaviour | no  |
   | | `epic`                                    | the goals an area opens with                                         | no  |
   | | `raises`, `diagnostic`, `exit`            | an `error`, with its projection                                      | no  |
   | | `metric`, `quality` bounds                | a quality scenario with a `measure`                                  | no  |
@@ -29,7 +29,7 @@ retired: section {
   }
 
   retired_fix: rule(retired_kind, by = system.checker) {
-    where {{ the table marks the change as mechanical }}
+    where {{ the [table](#heron.language.markup.components.table) marks the change as mechanical }}
     must {{ offer the fix that rewrites the kind's name, and the condition-free form for `invariant` }}
     then {{ `heron lint -fix` migrates those nodes and leaves the others to their author }}
   }
@@ -39,8 +39,19 @@ retired: section {
     must {{ report it as an error at the import, with the fix that imports `std/spec` in its place }}
   }
 
+  unless_rewritten: rule(retired, by = actors.author) {
+    when {{ a rule with an `unless` is migrated }}
+    must {{ state the condition positively, as `unless {{ a session is open }}` becomes `while {{ the server is idle }}`, or split the exception into a rule of its own with its own `when` or `while` where it has a behaviour of its own }}
+  }
+
+  unless_not_negated: rule(retired, by = actors.author) {
+    when {{ a rule with an `unless` is migrated }}
+    mustNot {{ write the old exception negated, as "it's not the case that" or a double negation }}
+    instead {{ say the state the rule applies in, as the people who use the product would }}
+  }
+
   delivery_in_project: rule(retired, by = actors.author) {
-    must {{ plan the work in the implementation's project, as stories that list the spec items they add or change and increments and milestones that deliver them, and keep no delivery in the spec }}
+    must {{ plan the work in the implementation's project, as `story` nodes that list the spec items they add or change and `increment` and `milestone` nodes that deliver them, and keep no delivery in the spec }}
   }
 
   errors: section {

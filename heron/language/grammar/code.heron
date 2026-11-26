@@ -34,7 +34,7 @@ code: section {
 
   expressions: section {
     | One expression grammar serves code and structure. Binary operators bind by the
-    | table below, tightest last, and associate to the left.
+    | [table](#heron.language.markup.components.table) below, tightest last, and associate to the left.
     |
     | | Level | Operators                              |
     | | ----- | -------------------------------------- |
@@ -45,7 +45,7 @@ code: section {
     | | 5     | `*` `/` `%`                            |
 
     operator_precedence: rule(by = system.parser) {
-      must {{ group binary operators by the levels of the table, a higher level first, and operators of one level from the left }}
+      must {{ group binary operators by the levels of the [table](#heron.language.markup.components.table), a higher level first, and operators of one level from the left }}
       example {{ `a or b and c` is `a or (b and c)`; `1 + 2 * 3` is `1 + (2 * 3)`; `a - b - c` is `(a - b) - c` }}
     }
 
@@ -87,7 +87,7 @@ code: section {
 
     cast_lookahead: rule(cast, by = system.parser) {
       must {{ read `(` as a [cast](#language.grammar.code.expressions.cast) when its bracket closes before any string, line end, brace, `|` or `=`, and a string, a raw string, `[`, `{`, `(`, a digit or a name follows the `)` with no space }}
-      while {{ it's not the case that the bracket or what follows it is anything else, when `(` opens a parenthesised expression }}
+      then {{ any other `(` opens a parenthesised expression }}
       example {{ `(a) + 1` adds, while `(u8)12` converts }}
     }
 

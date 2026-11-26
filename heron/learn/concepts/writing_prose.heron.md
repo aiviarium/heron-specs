@@ -1,5 +1,5 @@
 <concept id="writing_prose" @lens="user, developer" @display="Writing prose">
-Prose in Heron is Markdown with kind elements: `*emphasis*`, lists, tables and code
+Prose in Heron is Markdown with kind elements: `*emphasis*`, lists, [tables](#heron.language.markup.components.table) and code
 fences where Markdown has a form, and an element in HTML's form where a node needs its
 kind, as `<warning>…</warning>` or `<step id="install">…</step>`. Both build the same
 tree, so `<em>now</em>` and `*now*` are one node, and the two mix freely in `|` lines,

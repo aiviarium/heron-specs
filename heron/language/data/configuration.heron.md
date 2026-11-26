@@ -40,7 +40,7 @@ and an `if` expression chooses a value, as in
 <rule id="typed_configuration" targets="value_binding" by="system.checker">
 <if>a path sets a key that the type of the node it amends doesn't declare</if>
 <must>report [no field](#language.core_format.amends.errors.no_field) with the closest field</must>
-<while>it's not the case that the node is an untyped `{ }` map, or another [open node](#language.core_format.amends.open_node)</while>
+<while>the node is typed and closed</while>
 </rule>
 
 <rule id="profiles" targets="profile" by="system.checker">

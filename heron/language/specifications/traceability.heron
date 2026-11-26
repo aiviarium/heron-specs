@@ -16,7 +16,7 @@ traceability: section {
 
   status_flag: term {{
     One of `std/project`'s delivery flags in the group `"status"`: `<planned>`, `<started>`,
-    `<delivered>` and `<deferred>` on a story, an increment or a milestone.
+    `<delivered>` and `<deferred>` on a `story`, an `increment` or a `milestone`.
   }}
 
   coverage: term {{

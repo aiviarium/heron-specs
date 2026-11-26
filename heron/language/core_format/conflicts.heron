@@ -12,7 +12,12 @@ conflicts: section {
   unordered_conflict: rule(language.core_format.conflicts, by = system.checker) {
     if {{ two files set the same path and neither includes the other, directly or through other files }}
     must {{ report set in two files at the later setting }}
-    while {{ it's not the case that one file includes the other, when the including file's setting wins without a report }}
+    while {{ the two files are unrelated by includes }}
+  }
+
+  unordered_conflict_otherwise: rule(language.core_format.conflicts, by = system.checker) {
+    where {{ one of the two files includes the other }}
+    must {{ let the including file's setting win without a report }}
   }
 
   conflicts_keep_first: rule(language.core_format.conflicts, by = system.checker) {
@@ -45,12 +50,14 @@ conflicts: section {
       | A path set in two files, neither including the other.
     }
 
+    @realizes(language.core_format.conflicts.set_once)
     exported_twice: error("conflict", by = system.checker) {
       title = "two packages export {name}"
       name: field(String)
       | A name exported by two packages.
     }
 
+    @realizes(language.core_format.conflicts.set_once)
     exported_and_declared: error("conflict", by = system.checker) {
       title = "{name} is exported by {package} and also declared in this tree"
       related = "declared here"

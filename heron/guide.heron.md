@@ -58,7 +58,7 @@ A file that holds one concern of its folder, as one section or one command.
 <rule id="folder_lenses" targets="guide.layout.folder_scope" by="actors.author">
 <where>a folder is for some [lenses](#tools.docs.lenses.lens_kind) of the docs alone</where>
 <must>mark its scope with `@lens` in the index that includes the folder, right after the include list, as `@lens(developer) tools {}`</must>
-<then>the product, this spec's own backlog, is marked `@lens(explore)`, the tools `@lens(developer)`, and the guide, a file, carries `@lens(explore)` on its section</then>
+<then>the tools are marked `@lens(developer)`, and the guide, a file, carries `@lens(explore)` on its section</then>
 </rule>
 
 <rule id="page_depth" targets="guide.layout" by="actors.author">
@@ -126,8 +126,8 @@ renderer can read it. Prose carries context and reasons, never a behaviour on it
 </rule>
 
 <rule id="no_small_tables" targets="guide.kinds" by="actors.author">
-<mustNot>write a table in prose with one column or fewer than three rows below its header</mustNot>
-<instead>write the rows as a list or a sentence, and keep tables for data with columns to compare</instead>
+<mustNot>write a [table](#heron.language.markup.components.table) in prose with one [column](#heron.language.grammar.lexical.column) or fewer than three rows below its header</mustNot>
+<instead>write the rows as a list or a sentence, and keep [tables](#heron.language.markup.components.table) for data with [columns](#heron.language.grammar.lexical.column) to compare</instead>
 </rule>
 
 <rule id="user_pages" targets="guide.kinds" by="actors.author">

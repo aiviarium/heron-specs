@@ -71,7 +71,7 @@ audiences: section {
   readable_rule: scenario(illustrates = tools.docs.standard_lenses.developer_summarizes) {
     given {{ a rule with a `when`, a `must` and a `then`, targeting the section it stands in }}
     when {{ the page renders }}
-    then {{ the rule is one sentence in the body text, with no label column, no target chip and no border to the next rule }}
+    then {{ the rule is one sentence in the body text, with no label [column](#heron.language.grammar.lexical.column), no target chip and no border to the next rule }}
   }
 
   declared_lens_built: scenario(illustrates = tools.docs.lenses.lenses_built) {

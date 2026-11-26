@@ -53,7 +53,7 @@ types: section {
   closed_records: rule(type_kind, by = system.checker) {
     if {{ a constructor call or a [record value](#language.data.values.record_value) sets a member its type doesn't declare }}
     must {{ report no member with the closest member }}
-    while {{ it's not the case that the type is `type<open>`, which keeps such members as they are }}
+    while {{ the type is closed, as every type without `<open>` is }}
   }
 
   patch_concretized: rule(patch_type, by = system.checker) {

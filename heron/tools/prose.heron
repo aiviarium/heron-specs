@@ -14,12 +14,22 @@ prose: section {
 
     vale_binary: rule(tools.prose.vale, by = system.prose_linter) {
       must {{ find Vale at `HERON_VALE`, then on `PATH`, then in the Go bin directory `go install` writes to }}
-      while {{ it's not the case that none has it, and then the provider reports nothing }}
+      while {{ one of them has Vale }}
+    }
+
+    vale_binary_otherwise: rule(tools.prose.vale, by = system.prose_linter) {
+      where {{ none of them has Vale }}
+      must {{ report nothing from the Vale provider }}
     }
 
     vale_config: rule(tools.prose.vale, by = system.prose_linter) {
       must {{ read `lint { vale { … } }`: `config` relative to the file that sets it, `min_level` (`suggestion` unless set) and `skip` (`["code"]` unless set); without `config`, use the nearest .vale.ini above the [entry point](#language.core_format.files.entry_point) }}
-      while {{ it's not the case that no configuration file exists, and then Vale doesn't run on the tree }}
+      while {{ a configuration file exists }}
+    }
+
+    vale_config_otherwise: rule(tools.prose.vale, by = system.prose_linter) {
+      where {{ no configuration file exists }}
+      mustNot {{ run Vale on the tree }}
     }
 
     config_as_is: rule(tools.prose.vale, by = system.prose_linter) {
@@ -28,7 +38,7 @@ prose: section {
 
     html_projection: rule(tools.prose.vale, by = system.prose_linter) {
       must {{ render a file's regions as one HTML document, with [masked spans](#language.markup.prose_view.masked_span) as `<code>` and each region's block as its element }}
-      while {{ it's not the case that the region's block is a scope `skip` names: `code` or `pre`, `heading` or `h1` to `h3`, `list` or `li`, `blockquote` or `quote`, `paragraph` or `p`, which is left out }}
+      while {{ the region's block is outside the scopes `skip` names: `code` or `pre`, `heading` or `h1` to `h3`, `list` or `li`, `blockquote` or `quote`, `paragraph` or `p` }}
       then {{ Vale's scopes apply to Heron's structure }}
     }
 
@@ -42,8 +52,8 @@ prose: section {
     }
 
     alert_mapping: rule(tools.prose.vale, by = system.prose_linter) {
-      must {{ map each alert's line and 1-based inclusive rune columns to byte offsets of the document, then through the document's regions and their [source maps](#language.markup.prose_view.source_map) to the source, as an alert }}
-      while {{ it's not the case that the alert spans two regions, falls inside a mask, or is below `min_level`, and then it's dropped }}
+      must {{ map each alert's line and 1-based inclusive rune [columns](#heron.language.grammar.lexical.column) to byte offsets of the document, then through the document's regions and their [source maps](#language.markup.prose_view.source_map) to the source, as an alert }}
+      while {{ the alert lies within one region, outside every mask, at or above `min_level` }}
       then {{ an alert lands on the right words, never inside code, links, inserts or tags }}
     }
 
@@ -64,7 +74,12 @@ prose: section {
     vocabulary_edit: rule(tools.prose.vale, by = system.prose_linter) {
       when {{ `heron.vale.accept` or `heron.vale.reject` runs with a .vale.ini, a vocabulary it names and a word }}
       must {{ add the word to `accept.txt` or `reject.txt` under `<StylesPath>/config/vocabularies/<vocabulary>/`, take it out of the other list, and keep their other lines as they are }}
-      while {{ it's not the case that the file isn't a .vale.ini, it names no such vocabulary or has no `StylesPath`, or the word isn't one word, which fails the command with an error saying which }}
+      while {{ the file is a .vale.ini with a `StylesPath` that names the vocabulary, and the word is one word }}
+    }
+
+    vocabulary_edit_otherwise: rule(tools.prose.vale, by = system.prose_linter) {
+      if {{ the file isn't a .vale.ini, it names no such vocabulary or has no `StylesPath`, or the word isn't one word }}
+      must {{ fail the command with an error saying which }}
     }
 
     setup_pin: rule(tools.prose.vale, by = system.prose_linter) {

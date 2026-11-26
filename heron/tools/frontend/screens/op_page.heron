@@ -11,7 +11,7 @@ op_page: screen(route = "/<api>.<op>.html") {
   @realizes(tools.frontend.screens.op_page.sidebar.ops_by_resource)
   sidebar: region {
     | The API reference's navigation: the API's ops, each with its method in a fixed-width
-    | mono column, then its types, [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
+    | mono [column](#heron.language.grammar.lexical.column), then its types, [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
 
     ops_by_resource: rule(by = system.docs_generator) {
       must {{ list each api's ops under it, in the order written, each with its method and its [display name](#language.core_format.naming.display_name), then the tree's types and errors as groups of their own }}
@@ -48,7 +48,12 @@ op_page: screen(route = "/<api>.<op>.html") {
     parameters: region {
       grouped_params: rule(by = system.docs_generator) {
         must {{ group the parameters by where they go, path, query, header and body, a header by its wire name, each row with its name, its type linked to the type's page, whether it's required, its default, its constraints and its docs }}
-        while {{ it's not the case that the op takes no parameter with a location, and then the rows sit under one heading }}
+        while {{ the op takes a parameter with a location }}
+      }
+
+      grouped_params_otherwise: rule(by = system.docs_generator) {
+        when {{ the op takes no parameter with a location }}
+        must {{ put the rows under one heading }}
       }
 
       schema_trees: rule(by = system.docs_generator) {
@@ -74,7 +79,7 @@ op_page: screen(route = "/<api>.<op>.html") {
   }
 
   examples: region {
-    | The sticky right column: the request example with its language tabs, the example
+    | The sticky right [column](#heron.language.grammar.lexical.column): the request example with its language tabs, the example
     | picker, copy and Try it, the response for the selected status, and the page's outline.
 
     example_forms: rule(language.apis.examples.op_example, by = system.docs_generator) {

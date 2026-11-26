@@ -10,7 +10,7 @@ flags: section {
   flag_on: rule(language.core_format.nodes.flags.flag_term, by = system.linter) {
     where {{ a flag is declared with `on`, a list of kinds and categories }}
     should {{ report flag placement where it stands on a node whose kind is none of them and in none of the categories }}
-    while {{ it's not the case that `on` is left out or empty, when the flag may stand on any node }}
+    while {{ the flag's `on` lists kinds or categories }}
   }
 
   flag_on_annotation: rule(language.core_format.nodes.flags.flag_term, by = system.linter) {
@@ -48,6 +48,7 @@ flags: section {
       kinds: field(String)
     }
 
+    @realizes(language.schemas.flags.declaring_flags)
     not_a_flag: error("not-a-flag", by = system.checker) {
       title = "{name} is not a flag"
       name: field(String)

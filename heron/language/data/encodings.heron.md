@@ -26,7 +26,7 @@ back as the type.
 | `Timestamp`                  | an RFC 3339 string                    |
 
 <rule id="json_encode" targets="language.data.encodings.json" by="system.interpreter">
-<must>write a value as one line of JSON by the table, with a map's keys in sorted order and `<`, `>` and `&` written as themselves, and throw `std/json`'s `EncodeError` for a value JSON can't hold</must>
+<must>write a value as one line of JSON by the [table](#heron.language.markup.components.table), with a map's keys in sorted order and `<`, `>` and `&` written as themselves, and throw `std/json`'s `EncodeError` for a value JSON can't hold</must>
 </rule>
 
 <rule id="json_decode" targets="language.data.encodings.json" by="system.interpreter">
@@ -61,7 +61,7 @@ registered.
 | `Ref(K)`          | tag 1214603780, a [node path](#language.core_format.naming.node_path) as a string     |
 
 <rule id="cbor_tags" targets="language.data.encodings.cbor" by="system.extension_host">
-<must>write each value under the tag the table gives it, require the tag when reading one back, and write integers in their shortest form and map keys in canonical order</must>
+<must>write each value under the tag the [table](#heron.language.markup.components.table) gives it, require the tag when reading one back, and write integers in their shortest form and map keys in canonical order</must>
 <then>a value crosses the wire with its type, and a Duration loses whatever is below a millisecond</then>
 </rule>
 </section>

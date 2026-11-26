@@ -89,7 +89,7 @@ layers: section {
     | | `proves`      | a test, in a project                          | any requirement, at a [revision](#heron.language.specifications.layers.revisions.revision)        |
 
     link_kinds: rule(layers.links, by = system.checker) {
-      if {{ a link names a node of a kind its table row doesn't allow }}
+      if {{ a link names a node of a kind its [table](#heron.language.markup.components.table) row doesn't allow }}
       must {{ report the link as an error at the target, naming the kinds it takes }}
       example {{ `serves = [checker]` on a rule reports that `serves` takes a goal or a quality }}
     }

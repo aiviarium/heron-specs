@@ -6,7 +6,12 @@ before that.
 
 <rule id="renderer_per_kind" targets="tools.docs.renderers" by="system.docs_generator">
 <must>render a node through the renderer registered for its kind's declaration path, such as `spec.rule`, with the latest registration winning</must>
-<while>it's not the case that none is registered, and then the node shows as its title, prose, fields and children</while>
+<while>a renderer is registered for the kind</while>
+</rule>
+
+<rule id="renderer_per_kind_otherwise" targets="tools.docs.renderers" by="system.docs_generator">
+<where>no renderer is registered for a kind</where>
+<must>show its nodes as their title, prose, fields and children</must>
 </rule>
 
 <rule id="tag_renderers" targets="language.markup.tags.component_tag" by="system.docs_generator">

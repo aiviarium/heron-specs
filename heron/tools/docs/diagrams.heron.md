@@ -12,7 +12,7 @@ from the theme's tokens, so they work without a script.
 </rule>
 
 <rule id="table_view" targets="tools.docs.diagrams" by="system.docs_generator">
-<must>give every diagram a table with the same information, and a switch between the two</must>
+<must>give every diagram a [table](#heron.language.markup.components.table) with the same information, and a switch between the two</must>
 </rule>
 
 <rule id="task_graph" targets="tools.docs.diagrams" by="system.docs_generator">

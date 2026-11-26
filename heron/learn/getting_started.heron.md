@@ -36,7 +36,7 @@ checkout: section {
 <step id="check">
 Run ${cli.check.name} in the folder. It prints nothing and exits with status 0: the
 tree checks. Now change `by = shopper` to `by = shoper` and run it again. It prints one
-line, the file, line and column, then the message ${language.core_format.naming.errors.unknown_name.title}
+line, the file, line and [column](#heron.language.grammar.lexical.column), then the message ${language.core_format.naming.errors.unknown_name.title}
 with the closest name it found, and exits with status 1. Put the name back.
 </step>
 

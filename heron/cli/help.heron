@@ -1,3 +1,4 @@
+@realizes(cli.help.prints_usage)
 help: command("heron help") {
   usage = ["heron help [command]", "heron [-h | --help]", "heron"]
 
@@ -21,4 +22,7 @@ help: command("heron help") {
 
   example {{ `heron help run` prints `usage: heron run [--json] [--yes] [--undo-on-failure] [--entry file] <task> [--param value…]` and the summary below it. }}
 
+  prints_usage: rule(by = system.command_line) {
+    must {{ print the usage of `heron`, or of the command it names, with the commands there are }}
+  }
 }

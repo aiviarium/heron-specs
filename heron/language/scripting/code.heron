@@ -24,7 +24,7 @@ code: section {
   code_fault: term {{
     A mistake in the code itself that shows only as it runs: an operand of the wrong type,
     a division by zero, a missing argument, a func that calls itself. It names the file,
-    line and column where it happened, fails the run and is never caught.
+    line and [column](#heron.language.grammar.lexical.column) where it happened, fails the run and is never caught.
   }}
 
   values: section {
@@ -269,7 +269,7 @@ code: section {
     }
 
     faults_located: rule(code_fault, by = system.interpreter) {
-      must {{ give a [code fault](#language.scripting.code.code_fault) the file, line and column of the code that caused it, as `index.heron:2:10: Int + String isn't defined` }}
+      must {{ give a [code fault](#language.scripting.code.code_fault) the file, line and [column](#heron.language.grammar.lexical.column) of the code that caused it, as `index.heron:2:10: Int + String isn't defined` }}
     }
   }
 

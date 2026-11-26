@@ -36,7 +36,7 @@ values: section {
 
   record_value: term {{
     A constructor call, `BranchPolicy(branch = "main", tests = all)`; an untyped record
-    is a map, `{ key = value }`. An array of records of one type is a table, and
+    is a map, `{ key = value }`. An array of records of one type is a [table](#heron.language.markup.components.table), and
     renderers show it as one.
   }}
 

@@ -10,7 +10,7 @@ islands' strings, because browsers refuse module scripts and fetches from `file:
 | hover cards    | a term's definition or a type's signature, on hovering or focusing a link to it     |
 | Try it         | sends an op's request to a server                                                   |
 | diagram        | pan and zoom, a node's neighbours highlighted on hover, and its page on click       |
-| diagram view   | the switch between a diagram and its table                                          |
+| diagram view   | the switch between a diagram and its [table](#heron.language.markup.components.table)                                          |
 | tabs           | a union's variants and an example's languages, with arrow keys, Home and End        |
 | examples       | the example picker of an op                                                         |
 | copy           | the copy button of a code block                                                     |
@@ -23,7 +23,7 @@ islands' strings, because browsers refuse module scripts and fetches from `file:
 </rule>
 
 <rule id="islands_work" targets="tools.docs.islands" by="system.docs_generator">
-<must>make every island the table lists work from `file://`, with no script error</must>
+<must>make every island the [table](#heron.language.markup.components.table) lists work from `file://`, with no script error</must>
 </rule>
 
 <rule id="try_it" targets="tools.docs.islands" by="system.docs_generator">

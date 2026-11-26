@@ -12,7 +12,12 @@ prose: section {
 
     inline_on_one_line: rule(by = system.parser) {
       must {{ read the inline forms of a `|` or `///` line within that line }}
-      while {{ it's not the case that a tag or a fenced block is open, which continues onto the following lines that have the same prefix }}
+      while {{ every tag and fenced block the line opens closes on it }}
+    }
+
+    inline_on_one_line_otherwise: rule(by = system.parser) {
+      when {{ a tag or a fenced block stays open at the end of a `|` or `///` line }}
+      must {{ continue it onto the following lines that have the same prefix }}
     }
 
     block_closes: rule(by = system.parser) {
@@ -32,24 +37,23 @@ prose: section {
 
     code_spans: rule(by = system.parser) {
       must {{ close inline code opened with a run of backticks at the next run of the same length on the same line, reading nothing inside it }}
-      while {{ it's not the case that no such run follows on the line, and then the backticks are text }}
-      then {{ inserts, links, tags and `}}` are plain characters in inline code }}
+      then {{ inserts, links, tags and `}}` are plain characters in inline code, and a run with no closing run on its line is text }}
     }
 
     links: rule(by = system.parser) {
       must {{ read `[text](#path)` as a link to a node and `[text](url)` as a link to a URL, on one line, where the URL ends before a space or `)` and can hold inserts }}
-      while {{ it's not the case that no `](` follows the matching `]` on the line, or the target doesn't close with `)`, and then the `[` is text }}
+      then {{ a `[` whose `]` has no `](` after it on the line, or whose target doesn't close with `)`, is text }}
     }
 
     short_links: rule(by = system.parser) {
       must {{ read `[` followed by a name or a dotted path of names, alone or inside one pair of single backticks, then `]` not followed by `(`, as a [short link](#language.markup.links.short_link), on one line }}
-      while {{ it's not the case that the text between the brackets is anything else, such as `[entry points…]` or `[ ]`, and then the brackets are text }}
+      then {{ brackets around anything else, such as `[entry points…]` or `[ ]`, are text }}
       example {{ `[refund_window]`, ``[`refund_window`]`` and `[refunds.refund_window]` are [short links](#short_link); `[ ]`, `[1]` and `[a b]` are text }}
     }
 
     tags: rule(by = system.parser) {
       must {{ read `<` directly followed by a path as a tag when attributes, each a name alone, `name="…"` or `name={expr}`, a name with an `@` before it included, follow it up to `/>` or `>`; after `>`, read its content up to `</path>` }}
-      while {{ it's not the case that the head doesn't parse, and then the `<` is text, so `a < b` and `<-` stay text }}
+      then {{ a `<` whose head doesn't parse is text, so `a < b` and `<-` stay text }}
     }
 
     tag_closing: rule(by = system.parser) {
@@ -73,7 +77,7 @@ prose: section {
 
     heron_fences: rule(by = system.parser) {
       must {{ read the lines of a fence whose info string is `heron` as members, closed by a line that closes the fence }}
-      while {{ it's not the case that the fence is inside a [kind element](#language.markup.tags.component_tag), where it's a fenced block of code, as an example's }}
+      while {{ the fence stands outside every [kind element](#language.markup.tags.component_tag), inside which it's a fenced block of code, as an example's }}
     }
 
     unclosed_fence: rule(by = system.parser) {

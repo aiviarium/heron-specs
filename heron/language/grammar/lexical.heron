@@ -4,6 +4,10 @@ lexical: section {
   | characters every mode shares, how a line says what it is, and the token kinds the
   | [lossless tree](#language.grammar.recovery.lossless_tree) holds.
 
+  column: term {{
+    A position within a line of a file, counted from 1 at its first character, as a diagnostic and an editor report it.
+  }}
+
   trivia: term {{
     The tokens that carry layout rather than meaning: `Whitespace`, `Newline` and
     `Comment`. They stay in the tree, so the text can be printed back, but no production
@@ -12,7 +16,7 @@ lexical: section {
 
   line_kinds: rule(by = system.parser) {
     must {{ tell what a line is from how it starts, after its indentation: `|` starts a prose line, `///` a doc line, `//` a comment, and anything else structure }}
-    while {{ it's not the case that the line is inside a multi-line string, a fenced block or a `{{ }}` body, which read their lines as their own text }}
+    while {{ the line stands outside multi-line strings, fenced blocks and `{{ }}` bodies, which read their lines as their own text }}
     then {{ no line's meaning depends on the kind it's written in or on the lines after it }}
   }
 
@@ -66,8 +70,12 @@ lexical: section {
 
   words_in_structure: rule(reserved_words, by = system.parser) {
     must {{ read a reserved word as a keyword only where code or an expression is read, and as a name in structure }}
-    while {{ it's not the case that it's `do` followed by `{`, which opens code, or `let` followed by a space and a name, which binds a local }}
     example {{ `if {{ a refund is late }}`: a node named `if`; `do: rule`: a declaration named `do` }}
+  }
+
+  words_in_structure_otherwise: rule(reserved_words, by = system.parser) {
+    where {{ a reserved word is `do` followed by `{`, or `let` followed by a space and a name, in structure }}
+    must {{ read `do {` as opening code and `let name` as binding a local }}
   }
 
   word_boundaries: rule(reserved_words, by = system.parser) {

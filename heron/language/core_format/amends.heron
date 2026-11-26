@@ -13,7 +13,7 @@ amends: section {
   set_declared_fields: rule(language.core_format.amends, by = system.checker) {
     if {{ `=` or an entered body in a typed node names a field its type doesn't declare }}
     must {{ report no field with the closest field }}
-    while {{ it's not the case that the node is an [open node](#language.core_format.amends.open_node) }}
+    while {{ the node is closed }}
   }
 
   set_one_field: rule(language.core_format.amends, by = system.checker) {

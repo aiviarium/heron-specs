@@ -83,7 +83,7 @@ contract: section {
   }
 
   command_view: rule(command_kind, by = system.docs_generator) {
-    must {{ show a command under its name as the page title, with its arguments and its options each as a table of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table), and the errors it exits with as a table of exit status and title }}
+    must {{ show a command under its name as the page title, with its arguments and its options each as a [table](#heron.language.markup.components.table) of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table), and the errors it exits with as a [table](#heron.language.markup.components.table) of exit status and title }}
   }
 
   screen_view: rule(screen_kind, by = system.docs_generator) {

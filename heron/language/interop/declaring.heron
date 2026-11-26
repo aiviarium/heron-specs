@@ -73,6 +73,7 @@ declaring: section {
   }
 
   errors: section {
+    @realizes(language.interop.declaring.binding.no_host)
     @display("No host")
     no_host: error("fault", by = system.interpreter) {
       title = "{func} is bound to {module}.{export}, but no host for {kind} modules is registered"

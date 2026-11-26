@@ -15,7 +15,7 @@ base ones.
 
 <rule id="address" targets="tools.server.serving" by="system.server">
 <must>listen on `--addr`, `127.0.0.1:7340` unless given, where port 0 picks a free one, serve the tree of the [entry point](#language.core_format.files.entry_point) given as the argument, a file or a folder with an index.heron (`.` unless given), and print the address as `http://<addr>/`</must>
-<while>it's not the case that there's no [entry point](#language.core_format.files.entry_point), which exits 2, or the address can't be listened on, which exits 1</while>
+<while>the [entry point](#language.core_format.files.entry_point) exists and the address can be listened on</while>
 </rule>
 
 <rule id="spa_fallback" targets="tools.server.serving" by="system.server">
@@ -35,7 +35,12 @@ base ones.
 
 <rule id="lsp_socket" targets="tools.server.serving" by="system.server">
 <must>upgrade `/api/v1/lsp` to a websocket and run one [language server session](#tools.lsp.session.lsp_session) over it, one JSON-RPC message per frame, rooted at the workspace, until either side closes</must>
-<while>it's not the case that the shell has no language server, which answers 503 "no language server is installed"</while>
+<while>the shell has a language server</while>
+</rule>
+
+<rule id="lsp_socket_otherwise" targets="tools.server.serving" by="system.server">
+<if>the shell has no language server</if>
+<must>answer 503 "no language server is installed"</must>
 </rule>
 
 <rule id="one_session_per_socket" targets="tools.server.serving" by="system.server">
@@ -73,7 +78,12 @@ The base API's ops, beyond the four of [the base API](#tools.server.api.base_api
 
 <rule id="task_runs" targets="tools.server.ops" by="system.server">
 <must>stream a task's run from `run_task` as server-sent events, one JSON event per `data:` line, ending with its result</must>
-<while>it's not the case that the task is already running, which answers 409 "‹path› is already running"</while>
+<while>the task is idle</while>
+</rule>
+
+<rule id="task_runs_otherwise" targets="tools.server.ops" by="system.server">
+<if>the task is already running</if>
+<must>answer 409 "{path} is already running"</must>
 </rule>
 
 <rule id="run_results" targets="tools.server.ops" by="system.server">

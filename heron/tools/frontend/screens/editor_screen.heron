@@ -34,7 +34,12 @@ editor_screen: screen(route = "/") {
 
       outline_follows: rule(by = system.editor) {
         must {{ list the current file's nodes with their kinds, and move the cursor to a node's line when it's chosen }}
-        while {{ it's not the case that the file has no nodes, which shows the empty label }}
+        while {{ the file has nodes }}
+      }
+
+      outline_follows_otherwise: rule(by = system.editor) {
+        when {{ the file has no nodes }}
+        must {{ show the empty label }}
       }
     }
   }
@@ -78,10 +83,10 @@ editor_screen: screen(route = "/") {
   @realizes(tools.frontend.screens.editor_screen.status_bar.language_server_state, tools.frontend.screens.editor_screen.status_bar.status_counts)
   status_bar: region {
     | The branch, the problem counts, the language server's state and the cursor's line
-    | and column.
+    | and [column](#heron.language.grammar.lexical.column).
 
     status_counts: rule(by = system.editor) {
-      must {{ show the tree's error and warning counts, opening the problems panel when chosen, and the cursor's line and column as it moves }}
+      must {{ show the tree's error and warning counts, opening the problems panel when chosen, and the cursor's line and [column](#heron.language.grammar.lexical.column) as it moves }}
     }
 
     language_server_state: rule(by = system.editor) {

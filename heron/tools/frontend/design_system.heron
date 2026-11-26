@@ -9,7 +9,7 @@ design_system: section {
 
   surfaces: term {{
     The four neutral background colours, with no tint: `bg-page` for the page, `bg-raised`
-    for bars and cards, `bg-soft` for table heads, code titles and fields, and
+    for bars and cards, `bg-soft` for [table](#heron.language.markup.components.table) heads, code titles and fields, and
     `bg-highlight` for the selected item.
   }}
 
@@ -97,11 +97,11 @@ design_system: section {
 
     flows_without_hairlines: rule(surfaces, by = actors.implementer) {
       mustNot {{ draw a hairline between consecutive items of one flow, such as rules, terms, steps or diagnostics }}
-      instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of tables and code blocks }}
+      instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of [tables](#heron.language.markup.components.table) and code blocks }}
     }
 
     one_level_of_indent: rule(surfaces, by = actors.implementer) {
-      mustNot {{ nest a bordered box inside another, or indent content more than one level from its column }}
+      mustNot {{ nest a bordered box inside another, or indent content more than one level from its [column](#heron.language.grammar.lexical.column) }}
       instead {{ show hierarchy with headings, their levels and the navigation }}
     }
 
@@ -137,7 +137,7 @@ design_system: section {
 
     motion_explains: rule(tools.frontend.design_system.composing, by = actors.implementer) {
       may {{ animate a change that motion explains, such as a panel opening, a row expanding or a result arriving }}
-      while {{ it's not the case that the reader asks for reduced motion }}
+      while {{ the reader allows motion }}
     }
 
     keyboard_first: rule(tools.frontend.design_system.composing, by = actors.implementer) {

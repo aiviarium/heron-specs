@@ -11,17 +11,17 @@ from_markdown: section {
   | | `- [ ] task`, `- [x] task`        | `item(done = false)`, `item(done = true)`              |
   | | `> text`                          | `quote`                                                |
   | | Triple backticks with a language  | `code(lang)`, verbatim                                 |
-  | | Pipe table                        | `table` with `row`s and `cell`s; the first row is the header |
+  | | Pipe [table](#heron.language.markup.components.table)                        | `table` with `row`s and `cell`s; the first row is the header |
   | | `![alt](src)`                     | `image`                                                |
   | | `[text](#path)`, `[text](url)`    | `link`                                                 |
   | | `---` on its own line             | `divider`                                              |
 
   blocks_render: rule(language.markup.writing.prose_text, by = system.docs_generator) {
-    must {{ render lines starting `- ` or `* ` as a list, lines starting with a number and `.` or `)` as a numbered list, lines starting `>` as one quote, and a line of `|` cells followed by a line of dashes as a table whose first row is the header }}
+    must {{ render lines starting `- ` or `* ` as a list, lines starting with a number and `.` or `)` as a numbered list, lines starting `>` as one quote, and a line of `|` cells followed by a line of dashes as a [table](#heron.language.markup.components.table) whose first row is the header }}
   }
 
   forms_are_nodes: rule(language.markup.writing.prose_text, by = system.checker) {
-    must {{ build each Markdown form as the `std/doc` node the table names, so a query, a renderer or a lint sees `list`, `item` and `table` nodes }}
+    must {{ build each Markdown form as the `std/doc` node the [table](#heron.language.markup.components.table) names, so a query, a renderer or a lint sees `list`, `item` and `table` nodes }}
   }
 
   more_forms: rule(language.markup.writing.prose_text, by = system.docs_generator) {

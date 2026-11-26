@@ -32,7 +32,7 @@ yet.
 ## Wire {#wire}
 
 <rule id="cbor_libraries" targets="heron_tags" by="system.extension_host">
-<must>encode and decode frames on both sides, the host and the JS runtime, each with an encoder and a decoder registered for every tag the table gives a value</must>
+<must>encode and decode frames on both sides, the host and the JS runtime, each with an encoder and a decoder registered for every tag the [table](#heron.language.markup.components.table) gives a value</must>
 </rule>
 
 <rule id="standard_tags" targets="heron_tags" by="system.extension_host">
@@ -63,7 +63,7 @@ yet.
 
 ## Interpreter {#interpreter}
 
-What the interpreter hands the protocol today is narrower than the table: its own
+What the interpreter hands the protocol today is narrower than the [table](#heron.language.markup.components.table): its own
 values are Heron's [data values](#language.data.values) without the tagged types.
 
 <rule id="plain_values" targets="heron_tags" by="system.interpreter">

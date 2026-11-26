@@ -15,7 +15,12 @@ providers.
 
 <rule id="slots_registered" targets="tools.frontend.shell" by="system.editor">
 <must>show every registered panel in its slot, every gutter provider's marks beside the nodes they name, every command in the palette while its `when` holds, and a kind's preview through its registered renderer</must>
-<while>it's not the case that a kind has no renderer, and then the preview shows the server's HTML as it is</while>
+<while>every kind the preview shows has a renderer</while>
+</rule>
+
+<rule id="slots_registered_otherwise" targets="tools.frontend.shell" by="system.editor">
+<where>a kind has no renderer</where>
+<must>show the server's HTML for it in the preview as it is</must>
 </rule>
 
 <rule id="unique_ids" targets="tools.frontend.shell" by="system.editor">

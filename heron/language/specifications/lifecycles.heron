@@ -30,8 +30,8 @@ lifecycles: section {
   }
 
   lifecycle_view: rule(lifecycle, by = system.docs_generator) {
-    must {{ show a [lifecycle](#language.specifications.lifecycles.lifecycle) as a diagram of its states and transitions, with a table beside it of each transition's name, its from and to states and the ops that perform it }}
-    then {{ a transition no op performs shows "No op" in the table }}
+    must {{ show a [lifecycle](#language.specifications.lifecycles.lifecycle) as a diagram of its states and transitions, with a [table](#heron.language.markup.components.table) beside it of each transition's name, its from and to states and the ops that perform it }}
+    then {{ a transition no op performs shows "No op" in the [table](#heron.language.markup.components.table) }}
   }
 
   lifecycle_field_enum: rule(lifecycle, by = system.checker) {

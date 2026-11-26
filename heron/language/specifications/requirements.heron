@@ -43,7 +43,7 @@ requirements: section {
   }}
 
   rule_condition: term {{
-    A child of a rule from `std/spec`'s `condition` category: one of the six in the table, or
+    A child of a rule from `std/spec`'s `condition` category: one of the six in the [table](#heron.language.markup.components.table), or
     one another package adds to the category.
   }}
 
@@ -53,8 +53,9 @@ requirements: section {
   }}
 
   state_property: term {{
-    A rule with no condition, such as `single_sale: rule(Pet)`: it holds at every point the
-    product, or a value of the type it targets, can be observed.
+    A rule with no condition, such as `single_sale: rule { must {{ sell a pet at most once }} }`:
+    it holds at every point the product can be observed. The type that holds the state names
+    it with `@realizes`.
   }}
 
   constraint_kind: term {{
@@ -160,7 +161,7 @@ requirements: section {
   }
 
   conditions_used_for_their_sense: rule(rule_condition, by = actors.author) {
-    must {{ write a consequence as `then`, an exception as `while` with the state the rule applies in or as a rule of its own, and a clarification as an `example` or prose }}
+    must {{ write a consequence as `then`; an exception as a positive state the rule applies in, as `while {{ the file is unsaved }}`, or, where the exception is a behaviour of its own, as a rule of its own with its own `when` or `while`; and a clarification as an `example` or prose }}
   }
 
   one_behaviour: rule(rule_kind, by = actors.author) {
@@ -268,15 +269,6 @@ requirements: section {
     |   card_rules: constraint(reason = "The card networks' rules for refunds.") {
     |     must {{ refund to the card the payment was captured from }}
     |   }
-    | }
-    |
-    | refund_bounded: rule(Payment) {
-    |   must {{ keep the refunded total at or below the captured amount }}
-    | }
-    |
-    | Payment: type {
-    |   amount: Int
-    |   refunded: Int
     | }
     |
     | payments: api {

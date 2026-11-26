@@ -8,14 +8,14 @@ declaring a lens of the same name.
 
 <example id="standard_lens_declarations" @display="The standard lenses">
 ```heron
-import = ["std/doc@1", "std/spec@1", "std/docs@1"]
+import = ["std/doc@1", "std/spec@1", "std/grammar@1", "std/docs@1"]
 
 user: lens {
   title = "User"
   default = true
   nav = LensNav.TASK
   show = [docs.authored, docs.step, spec.example, doc.term, spec.command, spec.argument, spec.option, spec.error]
-  hide = [spec.rule, spec.condition, grammar.production]
+  hide = [spec.rule, spec.condition, production]
   depth = 2
   prefix = ""
 }
@@ -23,7 +23,7 @@ user: lens {
 developer: lens {
   title = "Developer"
   nav = LensNav.TOPIC
-  summarize = [spec.rule, spec.quality, spec.guidance]
+  summarize = [spec.rule, spec.constraint, spec.guidance]
   prefix = "dev"
 }
 

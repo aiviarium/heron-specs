@@ -54,7 +54,12 @@ includes the document, or the document itself when none does.
 <rule id="debounce" targets="tools.lsp.session" by="system.language_server">
 <when>an edit arrives</when>
 <must>wait for the debounce, 150 ms unless `--debounce` or `Options.Debounce` sets another, before rechecking, and restart the wait on each further edit</must>
-<while>it's not the case that a request arrives first, which rechecks at once</while>
+<while>only edits arrive during the wait</while>
+</rule>
+
+<rule id="debounce_otherwise" targets="tools.lsp.session" by="system.language_server">
+<when>a request arrives during the wait</when>
+<must>recheck at once</must>
 </rule>
 
 <rule id="watched_files" targets="tools.lsp.session" by="system.language_server">
@@ -93,7 +98,7 @@ editor's hover can say whether the checker, a lint or Vale found it.
 </rule>
 
 <rule id="diagnostic_source" targets="tools.lsp.diagnostics" by="system.language_server">
-<must>give each diagnostic the code and source the table gives, its severity as error, warning or hint (info and hint both send hint), and its related sites as related information</must>
+<must>give each diagnostic the code and source the [table](#heron.language.markup.components.table) gives, its severity as error, warning or hint (info and hint both send hint), and its related sites as related information</must>
 </rule>
 
 ## Completion {#completion}
@@ -117,7 +122,7 @@ never completes.
 | in prose, after `<` or `</`            | the kinds in scope, as tags                                     |
 
 <rule id="completion_items" targets="tools.lsp.completion" by="system.language_server">
-<must>offer the items the table gives for the cursor's place, each with its kind, its type or kind as detail and its `///` docs, replacing the word before the cursor</must>
+<must>offer the items the [table](#heron.language.markup.components.table) gives for the cursor's place, each with its kind, its type or kind as detail and its `///` docs, replacing the word before the cursor</must>
 </rule>
 
 <rule id="completion_list" targets="tools.lsp.completion" by="system.language_server">
@@ -194,7 +199,12 @@ never completes.
 
 <rule id="format_whole_file" targets="tools.lsp.formatting" by="system.language_server">
 <must>answer with one edit that replaces the whole text by `heron fmt`'s output, or no edit when the text is already formatted</must>
-<while>it's not the case that the file has a syntax error, and then it answers no edit</while>
+<while>the file parses</while>
+</rule>
+
+<rule id="format_whole_file_otherwise" targets="tools.lsp.formatting" by="system.language_server">
+<if>the file has a syntax error</if>
+<must>answer no edit</must>
 </rule>
 
 ## Semantic tokens {#semantic_tokens}
@@ -212,7 +222,7 @@ The legend's token types are `namespace`, `type`, `class`, `enum`, `interface`, 
 ## Symbols {#symbols}
 
 <rule id="document_symbols" targets="tools.lsp.symbols" by="system.language_server">
-<must>answer with the file's named nodes as a tree, each with its kind or type as detail and a symbol kind: class for a kind, enum, interface, struct for a type, function for a func, task or op, property for a value and namespace for a heading or section</must>
+<must>answer with the file's named nodes as a tree, each with its kind or type as detail and a symbol kind: `Class` for a kind, `Enum`, `Interface`, `Struct` for a type, function for a func, task or op, property for a value and namespace for a heading or section</must>
 </rule>
 
 ## Folding {#folding}
@@ -254,8 +264,13 @@ Beyond the protocol, a session answers one request and serves one URI scheme.
 <rule id="source_request" targets="tools.lsp.extensions" by="system.language_server">
 <when>a client sends `heron/source` with a `uri`</when>
 <must>answer `{ "text": … }` with the file's current text: the open document, the file as last loaded, or the disk</must>
-<while>it's not the case that there's no such file, which answers an invalid-parameters error "no file ‹uri›"</while>
+<while>the file exists</while>
 <example>an editor opens heron:/std/doc/package.heron read-only from the text `heron/source` returns</example>
+</rule>
+
+<rule id="source_request_otherwise" targets="tools.lsp.extensions" by="system.language_server">
+<if>there is no such file</if>
+<must>answer an invalid-parameters error "no file {uri}"</must>
 </rule>
 
 <rule id="std_scheme" targets="tools.lsp.extensions" by="system.language_server">

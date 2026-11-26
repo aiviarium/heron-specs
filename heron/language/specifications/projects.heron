@@ -60,7 +60,7 @@ projects: section {
 
   external_read_only: rule(external_project, by = actors.implementer) {
     mustNot {{ change the code of an [external project](#language.specifications.projects.external_project) }}
-    while {{ it's not the case that the scope of the work at hand names the change }}
+    while {{ the scope of the work at hand leaves the [external project](#heron.language.specifications.projects.external_project) out }}
   }
 
   spec_versioned_by_project: rule(project_kind, by = actors.author) {

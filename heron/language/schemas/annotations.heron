@@ -11,7 +11,7 @@ annotations: section {
   annotation_on: rule(language.core_format.nodes.annotations.annotation_term, by = system.linter) {
     where {{ an annotation is declared with `on`, a list of kinds and categories }}
     should {{ report annotation placement where it stands on a node whose kind fits none of them }}
-    while {{ it's not the case that `on` is left out or empty, when the annotation may stand on any node }}
+    while {{ the annotation's `on` lists kinds or categories }}
   }
 
   annotation_on_params: rule(language.core_format.nodes.annotations.annotation_term, by = system.linter) {
