@@ -12,6 +12,7 @@ renderers: section {
     must {{ render a markup tag through the renderer registered for its kind, with its attributes typed by the kind's parameters, or else through the built-in components of `std/doc` }}
   }
 
+  @display("TS renderer")
   ts_renderer: term {{
     A renderer written in TS: an export of a module the [docs block](#tools.docs.extending.docs_block) names in `renderers`,
     made with `defineRenderer(kind, render)` from `@heron/runtime`, run through the

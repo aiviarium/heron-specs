@@ -61,7 +61,7 @@ rendering: section {
   }
 
   diagnostics_compact: rule(language.specifications.tech_kinds.diagnostic_kind, by = product.system.docs_generator) {
-    must {{ list the diagnostics of the diagnostics page as compact entries, each its code and its message on one line with its fix, the first sentence of its prose, under it }}
+    must {{ list the diagnostics of the diagnostics page as compact entries grouped by code: a code with one diagnostic as its code and its message on one line with its fix, the first sentence of its prose, under it; a code with two or more as the code once, with each message and its fix under it }}
   }
 
   one_indent: rule(tools.docs.rendering, by = product.system.docs_generator) {

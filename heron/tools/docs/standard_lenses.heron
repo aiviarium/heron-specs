@@ -59,6 +59,11 @@ standard_lenses: section {
       must {{ show a diagnostic, in the `user` lens, as the error a person meets: its code and its message on one line, and the first sentence of its prose under it as the fix, without its severity, its related message or the part that reports it }}
     }
 
+    errors_gathered: rule(tools.docs.standard_lenses.user_lens, by = product.system.docs_generator) {
+      must {{ show each diagnostic, in the `user` lens, on its diagnostics page alone, at its anchor there, and leave it and a section holding only diagnostics off the page of the section that holds it }}
+      then {{ a page of the user's reference reads as its prose, terms and examples, with no Diagnostics heading under each section, and its errors are on one page }}
+    }
+
     user_first: rule(tools.docs.standard_lenses.user_lens, by = product.system.docs_generator) {
       where {{ a site's `lenses` lists `user` }}
       must {{ serve `user` at the site's root, as its `default` says }}

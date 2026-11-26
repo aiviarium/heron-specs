@@ -9,6 +9,7 @@ apis_and_ops: section {
   | The [payments api](#language.apis.apis_and_ops.apis_example) shows all of it: one api bound to HTTP,
   | gRPC and WebSockets, and one with no bindings.
 
+  @display("API kind")
   api_kind: term {{
     A group of operations, declared as `name: api { … }`. Its body holds `|` lines and
     [ops](#language.apis.apis_and_ops.op_kind); an annotation on it applies to all of its

@@ -150,6 +150,7 @@ design_system: section {
     }
   }
 
+  @display("UI SDK")
   ui_sdk: term {{
     The base of the frontend: behaviours and primitives with Solid bindings, such as popups,
     selection, typeahead, roving focus, reordering, resizing and virtualized lists, which

@@ -11,6 +11,7 @@ streams: section {
     two-way exchange.
   }}
 
+  @display("WebSocket")
   ws_socket: term {{
     A WebSocket opened at a path by `@ws(path)` of `std/ws`, on an api for all of its ops or
     on one op. Each op becomes a message type on the socket.

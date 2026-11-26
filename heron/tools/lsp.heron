@@ -10,6 +10,7 @@ lsp: section {
     | of its [owner entry](#tools.lsp.session.owner_entry), and rechecks everything open after an edit, with the check memo
     | making that cheap.
 
+    @display("LSP session")
     lsp_session: term {{
       One client's language server: its open documents, the analyses of their trees and the
       diagnostics last published. Sessions on one server share the registry and nothing
