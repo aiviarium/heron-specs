@@ -1,10 +1,18 @@
 links: section {
-  | A link names a node by path, `[text](#path)`, or a page by URL, `[text](url)`. A link to
-  | a node is checked, so it can't go stale silently, and it renders by what it points at.
+  | A link names a node by its name alone, `[name]`, by path with words of its own,
+  | `[text](#path)`, or a page by URL, `[text](url)`. A link to a node is checked, so it can't
+  | go stale silently, and it renders by what it points at. A bracket meant as text is
+  | written `\[optional]`, or inside inline code.
 
   node_link: term {{
     `[text](#path)`, a link to a node by its path, resolved in the scope of the text it's
     written in. `[](#path)` takes the node's [display name](#language.core_format.naming.display_name) as its text.
+  }}
+
+  short_link: term {{
+    `[name]` or ``[`name`]``, a link to a node by a name or the end of its path alone, as
+    `[refund_window]` or `[policies.refund_window]`, resolved as
+    [a link's path](#language.core_format.naming.link_lookup) is.
   }}
 
   @display("URL link")
@@ -14,8 +22,23 @@ links: section {
   }}
 
   node_links_resolve: rule(node_link, by = product.system.checker) {
-    must {{ resolve a node link's path from the scope of its text outward, as any path is resolved, and report [broken link](#language.core_format.prose_layer.diagnostics.broken_link) with the closest name where it names nothing }}
+    must {{ resolve a node link's path as [a link's path](#language.core_format.naming.link_lookup) is, and report [broken link](#language.core_format.prose_layer.diagnostics.broken_link) with the closest name where it names nothing }}
     example {{ in a section `guide` with a child `window`, `[the window](#window)` links to `guide.window` }}
+  }
+
+  short_links_resolve: rule(short_link, by = product.system.checker) {
+    if {{ a short link's path names no node }}
+    must {{ report [unresolved short link](#language.markup.links.diagnostics.unresolved_short_link) at the path, as an error, with the closest name }}
+    then {{ a [short_link] never falls back to text: a bracket meant as text is escaped, `\[optional]`, or inside inline code }}
+  }
+
+  short_link_text: rule(short_link, by = product.system.docs_generator) {
+    must {{ render `[name]` as a link whose text is the node as it reads inside a sentence, a term by its word and any other node by its [display name](#language.core_format.naming.display_name) with its first letter in lower case, keeping a type's name and a name written in capitals as written; and ``[`name`]`` as a link whose text is the path as inline code }}
+    example {{ `[refund_window]` reads "refund window" and ``[`refund_window`]`` reads `refund_window`, each linking to the term }}
+  }
+
+  links_kept_by_format: rule(node_link, short_link, by = product.system.formatter) {
+    mustNot {{ expand a [short link](#language.markup.links.short_link) into a [node link](#language.markup.links.node_link), shorten a [node_link], or change the path either is written with }}
   }
 
   node_links_render: rule(node_link, by = product.system.docs_generator) {
@@ -43,5 +66,13 @@ links: section {
   url_links_unchecked: rule(url_link, by = product.system.checker) {
     mustNot {{ fetch or check a [URL link](#language.markup.links.url_link) }}
     instead {{ check only the inserts its URL holds, as names in scope }}
+  }
+
+  diagnostics: section {
+    @display("Unresolved short link")
+    unresolved_short_link: diagnostic("unresolved", by = product.system.checker) {
+      message = "[‹path›] names no node"
+      | A [short_link] whose name matches no node; the message ends with the closest name when one is close.
+    }
   }
 }

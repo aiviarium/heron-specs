@@ -39,6 +39,11 @@ quality_checks: section {
     should {{ report it as not verifiable }}
   }
 
+  unlinked_node_fix: rule(language.specifications.quality_checks.diagnostics.unlinked_node, by = product.system.prose_linter) {
+    where {{ the name an [unlinked node](#language.specifications.quality_checks.diagnostics.unlinked_node) reports names one node of the tree }}
+    must {{ offer a fix that wraps the name in brackets as a [short link](#language.markup.links.short_link), which `heron lint -fix` applies }}
+  }
+
   consistent_check: rule(language.specifications.requirements.rule_kind, by = product.system.linter) {
     if {{ rules on one target overlap in their conditions and oppose in polarity }}
     should {{ report them as inconsistent, found structurally and confirmed by a decider }}

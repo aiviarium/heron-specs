@@ -8,7 +8,7 @@ lenses: concept {
   | switcher in the top bar moves between them and keeps your place.
   |
   | Every lens is built from the same tree in the same run, so no view can say something
-  | another contradicts. A tree chooses its lenses in its [docs block](#tools.docs.extending.docs_block), as
+  | another contradicts. A tree chooses its lenses in its [docs_block], as
   | `docs { lenses = [user, developer, explore] }`, can declare its own with `lens`, and
   | marks a node or a run of prose `@lens(user)` to keep it to the lenses it names.
 }

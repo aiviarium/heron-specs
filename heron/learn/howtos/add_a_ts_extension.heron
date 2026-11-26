@@ -49,7 +49,7 @@ add_a_ts_extension: howto {
 
   run_it: step {
     | Run the task as any other, `heron run export_pet_orders --pet-id 7`. Heron starts the
-    | [JS host](#language.interop.host.js_host), calls the export with the arguments by name, and a failure in the TS code
+    | [js_host], calls the export with the arguments by name, and a failure in the TS code
     | comes back as an error the task can handle.
   }
 }

@@ -41,6 +41,12 @@ prose: section {
       unless {{ no `](` follows the matching `]` on the line, or the target doesn't close with `)`, and then the `[` is text }}
     }
 
+    short_links: rule(tree.ShortLink, by = product.system.parser) {
+      must {{ read `[` followed by a name or a dotted path of names, alone or inside one pair of single backticks, then `]` not followed by `(`, as a [short link](#language.markup.links.short_link), on one line }}
+      unless {{ the text between the brackets is anything else, such as `[entry points…]` or `[ ]`, and then the brackets are text }}
+      example {{ `[refund_window]`, ``[`refund_window`]`` and `[refunds.refund_window]` are [short links](#short_link); `[ ]`, `[1]` and `[a b]` are text }}
+    }
+
     tags: rule(tree.Tag, by = product.system.parser) {
       must {{ read `<` directly followed by a path as a tag when attributes, each a name alone, `name="…"` or `name={expr}`, follow it up to `/>` or `>`; after `>`, read its content up to `</path>` }}
       unless {{ the head doesn't parse, and then the `<` is text, so `a < b` and `<-` stay text }}
@@ -86,8 +92,10 @@ prose: section {
     /// A `{{ }}` body or value.
     ProseBlock: production {{ LBrace2 Inline* RBrace2 }}
     /// A form within text; text, escapes and code spans are tokens between them.
-    Inline: production {{ Link | Insert | Tag | Fence }}
+    Inline: production {{ Link | ShortLink | Insert | Tag | Fence }}
     Link: production {{ LinkOpen Inline* LinkMid Hash? Path? Url? Insert* LinkClose }}
+    /// `[name]` or ``[`name`]``.
+    ShortLink: production {{ LinkOpen LinkTick* Path ShortLinkEnd }}
     /// A node of the path's kind, written in the text.
     Tag: production {{ TagOpen Path TagAttr* TagEnd? TagSelfEnd? Inline* TagClose? }}
     TagClose: production {{ TagCloseOpen Path TagEnd }}

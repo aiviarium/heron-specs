@@ -166,6 +166,10 @@ lexical: section {
     LinkOpen: token {{ "[" }}
     LinkMid: token {{ "](" }}
     LinkClose: token {{ ")" }}
+    /// A backtick around a [short link](#language.markup.links.short_link)'s path, as in ``[`refund_window`]``.
+    LinkTick: token {{ "`" }}
+    /// Closes a [short link](#language.markup.links.short_link).
+    ShortLinkEnd: token {{ "]" }}
     /// Starts a link's [node path](#language.core_format.naming.node_path).
     Hash: token {{ "#" }}
     /// One character of a link's URL.

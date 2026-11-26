@@ -15,6 +15,10 @@ tree_sitter: section {
       must {{ keep every query compiling against the grammar and capturing something on a fixture }}
     }
 
+    short_links_captured: rule(tools.tree_sitter.query_files, by = product.system.editor_grammar) {
+      must {{ parse a [short link](#language.markup.links.short_link) and a prose escape in prose, and capture a [short_link], its brackets included, as a link }}
+    }
+
     highlight_scope: rule(tools.tree_sitter.query_files, by = product.system.editor_grammar) {
       must {{ register the grammar for the file type `heron` under the scope `source.heron`, with its highlight and fold queries }}
     }

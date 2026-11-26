@@ -14,7 +14,8 @@ write_rules: howto {
     | what must act, and its body holds one strength, `must`, `should`, `may`, `mustNot`
     | or `shouldNot`, with the conditions it holds under: `when`, `while`, `where`, `if`
     | and `unless`. Add `then` for what follows, and `instead` for what to do in place of
-    | something a rule forbids.
+    | something a rule forbids. Link a term by its name in brackets, `[refund_window]`, which
+    | reads "refund window" on the page; a bracket meant as text is written `\[optional]`.
 
     @display("A section with rules")
     refunds_section: example {
@@ -29,13 +30,13 @@ write_rules: howto {
       |   refund_window: term {{ The 30 days after a payment is captured. }}
       |
       |   refund_in_window: rule(refunds, by = desk) {
-      |     when {{ a refund is requested inside the [refund window](#refunds.refund_window) }}
+      |     when {{ a refund is requested inside the [refund_window] }}
       |     must {{ refund the amount asked for, up to what's still refundable }}
       |     then {{ the customer sees the refund on their statement }}
       |   }
       |
       |   refund_after_window: rule(refunds, by = desk) {
-      |     when {{ a refund is requested after the [refund window](#refunds.refund_window) }}
+      |     when {{ a refund is requested after the [refund_window] }}
       |     mustNot {{ refund the payment }}
       |     instead {{ offer store credit for the amount }}
       |   }

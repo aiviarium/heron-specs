@@ -10,7 +10,7 @@ specs_and_projects: concept {
   | that realize the spec's parts, the tests that prove its rules, what's still planned,
   | and its releases.
   |
-  | The two can share a repository or live apart. Apart, the spec is a [sealed package](#language.specifications.implementations.sealed_package) that
+  | The two can share a repository or live apart. Apart, the spec is a [sealed_package] that
   | each implementation imports at a version: [keep a spec apart from its implementation](#learn.howtos.split_spec_and_implementation)
   | shows how.
 }

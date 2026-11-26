@@ -31,6 +31,27 @@ naming: section {
     should {{ end the message with "; did you mean ‹name›?", naming the closest candidate in scope by edit distance, when one is close }}
   }
 
+  link_path: term {{
+    The path a [node link](#language.markup.links.node_link) or a [short link](#language.markup.links.short_link) is written with: a name, or the last names of a
+    [node path](#language.core_format.naming.node_path).
+  }}
+
+  link_lookup: rule(link_path, by = product.system.checker) {
+    must {{ resolve a link's path first as [lexical lookup](#language.core_format.naming.lexical_lookup) resolves a path, and where that names nothing, by suffix: to the nodes whose path ends with the link's names, matched name by name }}
+    example {{ `[thing]` matches `a.b.thing` and never `a.my_thing`; `[b.thing]` matches `a.b.thing` and not `a.c.thing` }}
+  }
+
+  own_tree_first: rule(link_path, by = product.system.checker) {
+    where {{ a link's path matches by suffix nodes of the tree's own and nodes of a package it imports }}
+    must {{ resolve it to the tree's own matches, and to an imported package's only where the tree has none }}
+  }
+
+  ambiguous_links: rule(link_path, by = product.system.checker) {
+    if {{ a link's path matches by suffix two or more nodes of the same precedence }}
+    must {{ report [ambiguous link](#language.core_format.naming.diagnostics.ambiguous_link) at the path, as an error, naming each candidate by the shortest end of its path that matches it alone, with one fix per candidate that writes that end, each a suggestion `heron lint -fix` doesn't apply }}
+    then {{ choosing among the candidates is the author's, not a tool's }}
+  }
+
   display_names: rule(display_name, by = product.system.docs_generator) {
     must {{ show a node by its `@display` text when it has one, and otherwise by its name in sentence case, keeping a type's name and a name written in capitals as written }}
   }
@@ -42,6 +63,12 @@ naming: section {
 
     no_member: diagnostic("unresolved", by = product.system.checker) {
       message = "‹path› has no member ‹name›"
+    }
+
+    @display("Ambiguous link")
+    ambiguous_link: diagnostic("ambiguous", by = product.system.checker) {
+      message = "‹path› names ‹count› nodes: ‹candidates›; write a longer path"
+      | Two or more nodes whose paths end with the link's names, at the same precedence; each candidate is named by the shortest end of its path that picks it.
     }
   }
 }

@@ -113,6 +113,7 @@ lsp: section {
     | | at the start of a member               | the fields the enclosing kind declares, then the names in scope |
     | | in prose, after `$` or `${`            | the names in scope                                              |
     | | in prose, in a link's `(#…)`           | the paths, segment by segment                                   |
+    | | in prose, in a short link's `[…]`      | the paths, segment by segment                                   |
     | | in prose, after `<` or `</`            | the kinds in scope, as tags                                     |
 
     completion_items: rule(tools.lsp.completion, by = product.system.language_server) {
@@ -125,7 +126,7 @@ lsp: section {
     }
 
     prose_word_quiet: rule(tools.lsp.completion, by = product.system.language_server) {
-      where {{ the cursor is in prose, outside a link target, an insert and a tag }}
+      where {{ the cursor is in prose, outside a link target, a [short_link], an insert and a tag }}
       mustNot {{ offer any item }}
     }
   }
@@ -150,6 +151,11 @@ lsp: section {
   definition: section {
     definition_target: rule(tools.lsp.definition, by = product.system.language_server) {
       must {{ answer with where the target is declared: a node's declaring member, a local's declaration, or the start of the file an `import` or `include` string names }}
+    }
+
+    definition_short_link: rule(tools.lsp.definition, by = product.system.language_server) {
+      where {{ the cursor is on a [short link](#language.markup.links.short_link)'s path }}
+      must {{ answer definition and hover as on any path, for the node the link resolves to }}
     }
 
     definition_into_std: rule(tools.lsp.definition, by = product.system.language_server) {

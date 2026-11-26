@@ -48,6 +48,6 @@ getting_started: tutorial {
     | open `.heron/docs/index.html` in a browser. The pages are plain files, so they open
     | from disk and can be published on any static host.
     |
-    | To edit the tree with the pages updating as you type, [use the editor](#learn.howtos.use_the_editor).
+    | To edit the tree with the pages updating as you type, [use_the_editor].
   }
 }

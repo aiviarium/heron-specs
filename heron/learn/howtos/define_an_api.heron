@@ -12,7 +12,7 @@ define_an_api: howto {
 
   declare_the_op: step {
     | Declare the `api` with its binding, `@http(base_path = …)`, and each op with its
-    | method and path, its parameters and its [result type](#language.apis.responses.result_type), and `@throws` for its errors.
+    | method and path, its parameters and its [result_type], and `@throws` for its errors.
   }
 
   add_examples: step {

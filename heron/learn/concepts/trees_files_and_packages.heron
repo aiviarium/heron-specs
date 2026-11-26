@@ -5,8 +5,8 @@ trees_files_and_packages: concept {
   | `rule` or `command`, and its path, as `checkout.total`, is how prose links to it and
   | how commands name it.
   |
-  | The tree starts from one file, its [entry point](#language.core_format.files.entry_point): `index.heron` in the folder you run a
-  | command in, unless you name another. The [entry point](#language.core_format.files.entry_point) lists the tree's other files in
+  | The tree starts from one file, its [entry_point]: `index.heron` in the folder you run a
+  | command in, unless you name another. The [entry_point] lists the tree's other files in
   | `include`, and a folder included as `./name/` becomes the scope `name`, so a node's
   | path says where its file is. The packages it uses are listed in `import`: the standard
   | ones, such as `std/doc@1`, are built into `heron`, and others come from git or npm,
