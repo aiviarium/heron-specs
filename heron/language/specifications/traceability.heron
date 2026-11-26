@@ -116,7 +116,7 @@ traceability: section {
     }
 
     gap_report_shown: rule(gap_report, by = system.docs_generator) {
-      must {{ render the [gap report](#language.specifications.traceability.gap_report) on the project's conformance page and in `heron generate conformance`, one list per gap with each entry linked, and leave out a gap with nothing in it }}
+      must {{ render the [gap report](#language.specifications.traceability.gap_report) on the project's conformance page and in `heron generate conformance`, one list per gap, grouped by the area each entry is in, the first two names of its path, with the count of each group and the groups folded, and each entry linked, and leave out a gap with nothing in it }}
     }
   }
 
