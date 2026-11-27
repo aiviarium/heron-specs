@@ -15,7 +15,7 @@ for. It's denser than the other lenses and follows the same
 </rule>
 
 <rule id="kinds_shown" targets="tools.docs.explore" by="system.docs_generator">
-<must>show, in the `explore` lens, every node's kind beside its name, rules and diagnostics included</must>
+<must>show, in the `explore` lens, every node's kind by its icon before its name, rules and diagnostics included, as every lens does</must>
 </rule>
 
 <rule id="every_anchor" targets="tools.docs.explore" by="system.docs_generator">

@@ -14,9 +14,7 @@ lenses: section {
     it leaves out; `nav`, how its navigation is ordered; `entry`, the [authored pages](#language.markup.authored_pages.authored_page) it puts
     first; `depth`, how many levels of sections get pages of their own in it, in place of
     the [docs block](#tools.docs.extending.docs_block)'s; `prefix`, the folder of the site its pages are written in;
-    `format`, what it's written as; `marks`, whether it reads [lens marks](#tools.docs.lenses.lens_mark); `budget`, the
-    [size budget](#tools.docs.agents.size_budget) of a file it writes in Markdown; and `kinds`, a `KindLabels`, whether it
-    names a node's kind by the kind's icon, `ICON`, the default, or in words, `TEXT`.
+    `format`, what it's written as; `marks`, whether it reads [lens marks](#tools.docs.lenses.lens_mark); and `budget`, the [size budget](#tools.docs.agents.size_budget) of a file it writes in Markdown.
   }}
 
   lens_format: term {{
@@ -41,7 +39,7 @@ lenses: section {
     | in scope shadows an imported one.
 
     lens_fields: rule(tools.docs.lenses.lens_kind, by = system.checker) {
-      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int`, `prefix` a `String`, `format` an optional `LensFormat`, `marks` an optional `Bool`, `budget` an optional `Int` and `kinds` an optional `KindLabels` }}
+      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int`, `prefix` a `String`, `format` an optional `LensFormat`, `marks` an optional `Bool` and `budget` an optional `Int` }}
       example {{ `nav = LensNav.PAGES` reports "LensNav has no member PAGES" }}
     }
 
@@ -216,8 +214,8 @@ lenses: section {
 
     links_across_lenses: rule(tools.docs.lenses.what_a_lens_shows, by = system.docs_generator) {
       where {{ a link on a page of one lens leads to a node that lens leaves out }}
-      must {{ link the node's anchor on its page in the first lens of the site's `lenses` that shows it, and show that lens's `title` after the text of a link written in prose }}
-      then {{ a user's page can link a rule, which opens in `explore`, and the links the generator builds, such as a rule's subject or the part that reports a diagnostic, read without a lens's title after each }}
+      must {{ link the node's anchor on its page in the first lens of the site's `lenses` that shows it, with that lens named only in the link's tooltip, as "Opens in the Developer docs" }}
+      then {{ a user's page can link a rule, which opens in `explore`, and every link reads as its words alone }}
     }
   }
 

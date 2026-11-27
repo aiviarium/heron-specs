@@ -32,7 +32,7 @@ and a right [column](#heron.language.grammar.lexical.column).
 
 <rule id="lens_switcher" targets="tools.docs.page_layout" by="system.docs_generator">
 <where>the site builds more than one [lens](#tools.docs.lenses.lens_kind)</where>
-<must>show in the top bar a switcher with the `title` of each lens, in the order of the docs block's `lenses`, the current one selected, each a plain link that works without a script</must>
+<must>show in the top bar, right beside the version switch, a dropdown captioned as the view, its options the `title` of each lens in the order of the docs block's `lenses`, the current one selected, each a plain link that works without a script, drawn as the version switch's select once a script runs</must>
 </rule>
 
 <rule id="no_switcher_alone" targets="tools.docs.page_layout" by="system.docs_generator">
@@ -72,11 +72,11 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="quiet_scrollers" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>keep the scroll areas inside a page, the navigation, the right [column](#heron.language.grammar.lexical.column), code blocks and wide [tables](#heron.language.markup.components.table), quiet: a thin scrollbar that shows only while the pointer or focus is on its area, never a scrollbar at rest; and show a long example in a panel by its start with a button for the rest, rather than as a scroll area inside the scrolling [column](#heron.language.grammar.lexical.column)</must>
+<must>keep the scroll areas inside a page, the navigation, the right [column](#heron.language.grammar.lexical.column), code blocks and wide [tables](#heron.language.markup.components.table), quiet: a thin scrollbar that shows only while the pointer or focus is on its area, never a scrollbar at rest, the navigation's at its [column](#heron.language.grammar.lexical.column)'s outer edge, the whole height under the top bar, clear of its entries and their chevrons; and show a long example in a panel by its start with a button for the rest, rather than as a scroll area inside the scrolling [column](#heron.language.grammar.lexical.column)</must>
 </rule>
 
 <rule id="controls_look_like_controls" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>make every control of the top bar read as one at rest, not only on hover: the [site areas](#tools.docs.site.site_area) as tabs with a mark in the [project colour](#tools.frontend.design_system.project_colour) under the current one, the lens switcher as a segmented control in a visible frame with the current lens raised, search as a field with a frame, a prompt and its shortcut in a key cap, the version switch as a select drawn in the theme that the keyboard opens and moves through, and the theme switch as a button with a visible edge; and give each a focus ring on keyboard focus</must>
+<must>make every control of the top bar read as one at rest, not only on hover: the [site areas](#tools.docs.site.site_area) as tabs with a mark in the [project colour](#tools.frontend.design_system.project_colour) under the current one, the lens switcher and the version switch as selects drawn in the theme, with a visible edge, that the keyboard opens and moves through, search as a field with a frame, a prompt and its shortcut in a key cap, and the theme switch as a button with a visible edge; and give each a focus ring on keyboard focus</must>
 </rule>
 
 <rule id="steps_joined" targets="tools.docs.page_layout" by="system.docs_generator">
