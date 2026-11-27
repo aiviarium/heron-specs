@@ -30,42 +30,58 @@ declaring: section {
     | binds it to a module's default export, and `@extern(ext)` above a declaration with no
     | body hands it to an [extension process](#language.schemas.extensions.extension_process).
 
-    export_binding: rule(foreign_func, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(foreign_func)
+    export_binding: rule {
       where {{ a func's value is a path of two names, the first a module and the second no child of it }}
       must {{ bind the func to that export through the host registered for the module's kind, once per run, and call it with its arguments by parameter name }}
     }
 
-    module_relative_paths: rule(module_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(module_kind)
+    module_relative_paths: rule {
       must {{ give the host a module's text as written, with the folder of the file that declares the module to resolve a relative one from }}
     }
 
-    no_host: rule(foreign_func, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(foreign_func)
+    no_host: rule {
       if {{ no host is registered for the module's kind }}
       must {{ fail, saying no host for the module's kind is registered }}
     }
 
-    every_point_binds: rule(extension_point, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_point)
+    every_point_binds: rule {
       must {{ find every declaration bound to a module, by `= module.export` or `= js(…)`, and every `@extern(…)` declaration, in the tree and the packages it imports, and group them by the process that serves them: the [JS host](#language.interop.host.js_host) for modules, the named extension for `@extern` }}
     }
 
-    point_from_kind: rule(extension_point, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_point)
+    point_from_kind: rule {
       must {{ send each declaration with its path, its point, its module and export, its parameters, [result type](#language.apis.responses.result_type), `@throws` types and whether it's `<pure>`, so the other side knows what it implements }}
     }
 
-    registered_by_path: rule(extension_point, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_point)
+    registered_by_path: rule {
       must {{ register what a process implements in the registry under the path of its declaration, the same way built-in parts are }}
       then {{ code calls a [foreign func](#language.interop.declaring.foreign_func), an op through a foreign transport or a foreign lint exactly as a built-in one }}
     }
   }
 
   foreign_errors: section {
-    declared_throws: rule(foreign_func, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(foreign_func)
+    declared_throws: rule {
       where {{ foreign code throws an error of a type its declaration names in `@throws` }}
       must {{ raise it in Heron as a [thrown error](#language.scripting.code.thrown_error) of that type, with its fields }}
       then {{ `attempt(…)` keeps it, and `is` tests its type }}
     }
 
-    foreign_error: rule(foreign_func, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(foreign_func)
+    foreign_error: rule {
       where {{ foreign code fails in any other way, or its process exits, can't start or breaks the protocol }}
       must {{ raise a [thrown error](#language.scripting.code.thrown_error) of the prelude's type `ForeignError`, with the message and the protocol's error code as `code` }}
       then {{ a failure of foreign code is a value `attempt(…)` can keep, never a [code fault](#language.scripting.code.code_fault), and `result.error is ForeignError` checks in any tree }}
@@ -75,7 +91,8 @@ declaring: section {
   errors: section {
     @realizes(language.interop.declaring.binding.no_host)
     @display("No host")
-    no_host: error("fault", by = system.interpreter) {
+    @by(system.interpreter)
+    no_host: error("fault") {
       title = "{func} is bound to {module}.{export}, but no host for {kind} modules is registered"
       func: field(String)
       module: field(String)

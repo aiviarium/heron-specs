@@ -29,10 +29,11 @@ requirements: section {
   | which the rule applies, or a rule of its own for the exceptional case.
 
   rule_kind: term {{
-    `rule(targets, by = subject, serves = [goals]) { … }`, one behaviour in one strength node
-    and the conditions that say when it applies. Its targets are the nodes it binds, and a change
-    to one of them finds the rule. `derives` names the rules it's derived from, `relies` the
-    assumptions it depends on, `rationale` says in one line why it holds, and `rev` is its
+    `@by(subject) @targets(nodes…) @serves(goals…) name: rule { … }`, one behaviour in one
+    strength node and the conditions that say when it applies. Its links are annotations above
+    it: `@targets` names the nodes it binds, and a change to one of them finds the rule;
+    `@derives` names the rules it's derived from, `@relies` the assumptions it depends on,
+    `@rationale` says in one line why it holds, and `@rev` is its
     [revision](#heron.language.specifications.layers.revisions.revision).
   }}
 
@@ -48,8 +49,8 @@ requirements: section {
   }}
 
   rule_subject: term {{
-    What a rule's `by` names: an actor or a part whose behaviour the rule states. A rule
-    without `by` binds the system as a whole, or the instances of a type it targets.
+    What a rule's `@by` names: an actor or a part whose behaviour the rule states. A rule
+    without `@by` binds the system as a whole, or the instances of a type it targets.
   }}
 
   state_property: term {{
@@ -72,120 +73,165 @@ requirements: section {
   }}
 
   scenario_kind: term {{
-    `name: scenario(illustrates = rule) { given {{ … }} when {{ … }} then {{ … }} }`, an
+    `@illustrates(rule) name: scenario { given {{ … }} when {{ … }} then {{ … }} }`, an
     outcome scenario: one case of one rule or one path of a use case, declarative and short; or,
-    with `stimulus`, `environment`, `response` and `measure` and `serves` a quality, a quality
-    scenario: the measurable form of that quality.
+    with `stimulus`, `environment`, `response` and `measure` and `@serves` naming a quality, a
+    quality scenario: the measurable form of that quality.
   }}
 
-  spec_layer: rule(requirements, by = system.checker) {
+  @by(system.checker)
+  @targets(requirements)
+  spec_layer: rule {
     must {{ give `rule`, `constraint`, `part`, `term`, `scenario`, `usecase`, `states` and `transition` the `SPECIFICATION` [layer](#language.specifications.layers.layer) }}
   }
 
-  one_strength: rule(rule_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(rule_kind)
+  one_strength: rule {
     if {{ a rule holds a second strength node }}
     must {{ report that it accepts at most one, at the second }}
     example {{ a rule with `must` and `should` reports "rule accepts at most 1 strength node" }}
   }
 
-  conditions_once: rule(rule_condition, by = system.checker) {
+  @by(system.checker)
+  @targets(rule_condition)
+  conditions_once: rule {
     if {{ a rule holds a second `where`, `then` or `instead`, or a second trigger, `when` or `if` }}
     must {{ report that it accepts at most one, at the second }}
     then {{ `while` and the conditions of another package repeat freely, and a rule with no condition always holds }}
   }
 
-  instead_only_negative: rule(rule_condition, by = system.checker) {
+  @by(system.checker)
+  @targets(rule_condition)
+  instead_only_negative: rule {
     if {{ `instead` stands in a rule whose strength is positive, or that has no strength }}
     must {{ report it as an error at the `instead` }}
   }
 
-  subject_actor_or_part: rule(rule_subject, by = system.checker) {
-    if {{ a rule's `by` names a node that is neither an actor nor a part, nor of a kind that extends one }}
+  @by(system.checker)
+  @targets(rule_subject)
+  subject_actor_or_part: rule {
+    if {{ a rule's `@by` names a node that is neither an actor nor a part, nor of a kind that extends one }}
     must {{ report it as an error at the reference }}
   }
 
-  prose_only_rules: rule(rule_kind, by = system.checker) {
-    may {{ hold only prose, as `rule(targets) {{ The system must … }}` }}
+  @by(system.checker)
+  @targets(rule_kind)
+  prose_only_rules: rule {
+    may {{ hold only prose, as `@targets(refunds) late: rule {{ The system must … }}` }}
     then {{ it checks clean and renders as its text, with no sentence built from nodes }}
   }
 
-  constraint_reason: rule(constraint_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(constraint_kind)
+  constraint_reason: rule {
     if {{ a constraint has no `reason`, or an empty one }}
     must {{ report it as an error at the constraint }}
   }
 
-  scenario_one_form: rule(scenario_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(scenario_kind)
+  scenario_one_form: rule {
     if {{ a scenario has both outcome clauses (`given`, `when`, `then`) and quality fields (`stimulus`, `environment`, `response`, `measure`), or neither }}
     must {{ report it as an error at the scenario }}
   }
 
-  outcome_illustrates_one: rule(scenario_kind, by = system.checker) {
-    if {{ an outcome scenario's `illustrates` is missing, or names something other than one rule or one path of a use case }}
+  @by(system.checker)
+  @targets(scenario_kind)
+  outcome_illustrates_one: rule {
+    if {{ an outcome scenario's `@illustrates` is missing, or names something other than one rule or one path of a use case }}
     must {{ report it as an error at the scenario }}
   }
 
-  quality_scenario_measured: rule(scenario_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(scenario_kind)
+  quality_scenario_measured: rule {
     if {{ a quality scenario has no `measure`, or serves no quality }}
     must {{ report it as an error at the scenario }}
   }
 
-  ears_sentence: rule(rule_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(rule_kind)
+  ears_sentence: rule {
     must {{ render a rule's strength, conditions and consequences as one sentence: `where`, each `while`, then `when` or `if`, in that order, then the subject and the strength's words with the behaviour, then each `then` after ", so", then `instead` after ", and must instead", the clauses of one condition joined with "and" }}
     example {{ "When a refund is requested, if the capture date is past, `desk` must reject the request, so the customer is told at once." }}
   }
 
-  no_repeated_connective: rule(rule_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(rule_kind)
+  no_repeated_connective: rule {
     where {{ the text of a rule's `then` or `instead` already holds the connective the [rule's sentence](#language.specifications.requirements.ears_sentence) would join it with, as a `then` that reads "the nearest declaration wins, so a section named `grammar` hides a kind of that name" }}
     must {{ end the sentence before that clause and render the clause as the next sentence of the paragraph, starting with a capital }}
     then {{ no sentence reads ", so … so" or "instead … instead" }}
   }
 
-  subject_words: rule(rule_subject, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(rule_subject)
+  subject_words: rule {
     must {{ name a part, an actor or a term as "the" and its name in words, a targeted type as "a" or "an" and its name in words, and anything else as "the system" }}
   }
 
-  rationale_shown: rule(rule_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(rule_kind)
+  rationale_shown: rule {
     must {{ show a rule's or a constraint's rationale or reason after its sentence, and the goals it serves, the rules it derives from and the assumptions it relies on as links in its facts }}
   }
 
-  examples_after_sentence: rule(rule_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(rule_kind)
+  examples_after_sentence: rule {
     must {{ follow a rule's sentence, in the same paragraph, with each of its examples as a sentence of its own after the word the [string catalogue](#tools.frontend.writing.string_catalogue) holds for an example, and each condition another package adds as a sentence after its kind's [display name](#language.core_format.naming.display_name) }}
   }
 
-  scenario_view: rule(scenario_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(scenario_kind)
+  scenario_view: rule {
     must {{ render an outcome scenario as its given, when and then clauses under its name, with the rule or path it illustrates, and a quality scenario as its stimulus, environment, response and measure with the quality it serves }}
   }
 
-  part_view: rule(part_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(part_kind)
+  part_view: rule {
     must {{ show a part with its prose and the [derived list](#heron.language.specifications.layers.derived_list) of the rules that bind it }}
   }
 
-  conditions_used_for_their_sense: rule(rule_condition, by = actors.author) {
+  @by(actors.author)
+  @targets(rule_condition)
+  conditions_used_for_their_sense: rule {
     must {{ write a consequence as `then`; an exception as a positive state the rule applies in, as `while {{ the file is unsaved }}`, or, where the exception is a behaviour of its own, as a rule of its own with its own `when` or `while`; and a clarification as an `example` or prose }}
   }
 
-  one_behaviour: rule(rule_kind, by = actors.author) {
+  @by(actors.author)
+  @targets(rule_kind)
+  one_behaviour: rule {
     should {{ state one behaviour in a rule, and two obligations as two rules }}
   }
 
-  rationale_in_place: rule(rule_kind, by = actors.author) {
-    should {{ give a rule whose reason isn't plain from the goal it serves a `rationale` of one line, and edit it in place when the reason changes }}
+  @by(actors.author)
+  @targets(rule_kind)
+  rationale_in_place: rule {
+    should {{ give a rule whose reason isn't plain from the goal it serves a `@rationale` of one line, and edit it in place when the reason changes }}
     then {{ the spec keeps why a rule holds next to the rule, and no separate log of decisions is needed }}
   }
 
-  part_not_architecture: rule(part_kind, by = actors.author) {
+  @by(actors.author)
+  @targets(part_kind)
+  part_not_architecture: rule {
     must {{ name a part only where it's observable from outside or meaningful to an actor, such as something an operator configures, and bind every other rule to the system }}
     then {{ a part says whose behaviour a rule states and never how the product is divided into code }}
   }
 
-  structural_strength: rule(rule_strength, by = system.generator) {
+  @by(system.generator)
+  @targets(rule_strength)
+  structural_strength: rule {
     must {{ list positive rules as what an implementer builds, ask negative rules of deciders as questions with `instead` as the expected answer, and turn examples into cases when verification is generated }}
   }
 
   errors: section {
     @realizes(instead_only_negative)
     @display("Instead under a positive strength")
-    instead_positive: error("instead", by = system.checker) {
+    @by(system.checker)
+    instead_positive: error("instead") {
       title = "instead stands only under a negative strength, and {strength} is positive"
       strength: field(String)
       | An `instead` in a rule whose strength is `must`, `should` or `may`; with no strength, the title ends "`mustNot` or `shouldNot`".
@@ -193,22 +239,25 @@ requirements: section {
 
     @realizes(subject_actor_or_part)
     @display("Subject not an actor or a part")
-    not_a_subject: error("type", by = system.checker) {
-      title = "{name} is a {kind}; a rule's by names an actor or a part"
+    @by(system.checker)
+    not_a_subject: error("type") {
+      title = "{name} is a {kind}; a rule's @by names an actor or a part"
       name: field(String)
       kind: field(String)
     }
 
     @realizes(constraint_reason)
     @display("Constraint without a reason")
-    constraint_without_reason: error("missing-argument", by = system.checker) {
+    @by(system.checker)
+    constraint_without_reason: error("missing-argument") {
       title = "constraint {name} needs a reason from outside the solution"
       name: field(String)
     }
 
     @realizes(scenario_one_form, outcome_illustrates_one, quality_scenario_measured)
     @display("Scenario of no form")
-    scenario_form: error("scenario", by = system.checker) {
+    @by(system.checker)
+    scenario_form: error("scenario") {
       title = "scenario {name} {problem}"
       name: field(String)
       problem: field(String)
@@ -238,7 +287,10 @@ requirements: section {
     |   no_currency_change: nongoal {{ Refunds into a different currency than the capture. }}
     |
     |   @display("Reject late refunds")
-    |   late_rejected: rule(by = desk, serves = [self_service], rationale = "Card networks dispute older refunds.") {
+    |   @by(desk)
+    |   @serves(self_service)
+    |   @rationale("Card networks dispute older refunds.")
+    |   late_rejected: rule {
     |     while {{ the payment is under no chargeback or fraud review }}
     |     if {{ a refund arrives more than 30 days after the [capture date](#capture_date) }}
     |     must {{ reject the request }}
@@ -247,19 +299,23 @@ requirements: section {
     |     example {{ requested on day 31: rejected }}
     |   }
     |
-    |   disputes_to_support: rule(by = desk, serves = [self_service]) {
+    |   @by(desk)
+    |   @serves(self_service)
+    |   disputes_to_support: rule {
     |     when {{ a refund is requested for a payment under a chargeback or fraud review }}
     |     must {{ hand the request to support }}
     |     then {{ the customer gets a ticket number }}
     |   }
     |
-    |   late_on_day_31: scenario(illustrates = late_rejected) {
+    |   @illustrates(late_rejected)
+    |   late_on_day_31: scenario {
     |     given {{ a payment captured 31 days ago }}
     |     when {{ the customer asks for a refund }}
     |     then {{ the request is rejected and the payment is unchanged }}
     |   }
     |
-    |   refund_speed: scenario(serves = [responsive]) {
+    |   @serves(responsive)
+    |   refund_speed: scenario {
     |     stimulus =| a customer asks for a refund
     |     environment =| normal load
     |     response =| the refund is answered

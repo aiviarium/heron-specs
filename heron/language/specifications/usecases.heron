@@ -28,9 +28,11 @@ usecases: section {
   | In a [Heron file](#heron.language.core_format.files.heron_file) the same text is the use case's `{{ }}` body, read the same way.
 
   usecase_kind: term {{
-    `usecase(actor, serves, level, success, minimal)`, one goal of one actor reached with the
-    product: `level` is `SUMMARY`, `USER`, the default, or `SUBFUNCTION`; `success` is what holds
-    when it succeeds and `minimal` what holds whatever happens.
+    `usecase(actor, level, success, minimal)`, one goal of one actor reached with the
+    product, its required primary actor first, as `usecase(customer, level = USER)`: `level` is
+    `SUMMARY`, `USER`, the default, or `SUBFUNCTION`; `success` is what holds when it succeeds
+    and `minimal` what holds whatever happens. `@serves` names the goals it's for and `@relies`
+    the assumptions it depends on.
   }}
 
   main_path: term {{
@@ -51,72 +53,104 @@ usecases: section {
     `request_refund.2a` the extension at step 2.
   }}
 
-  steps_numbered: rule(main_path, by = system.checker) {
+  @by(system.checker)
+  @targets(main_path)
+  steps_numbered: rule {
     must {{ read the numbered list of a use case's body as its [main path](#language.specifications.usecases.main_path), numbering the steps by their position from 1, whatever numbers the list is written with }}
   }
 
-  step_actor: rule(main_path, by = system.checker) {
-    must {{ read a [short link](#heron.language.markup.links.short_link) that opens a step as the step's `by`, and report an error at it when it names neither an actor nor a part }}
+  @by(system.checker)
+  @targets(main_path)
+  step_actor: rule {
+    must {{ read a [short link](#heron.language.markup.links.short_link) that opens a step as the actor or part that takes the step, and report an error at it when it names neither an actor nor a part }}
   }
 
-  step_include: rule(main_path, by = system.checker) {
+  @by(system.checker)
+  @targets(main_path)
+  step_include: rule {
     must {{ read a step that is only a link to another use case as an include of it, and report an error when that use case's level isn't below this one's, or when includes come back to a use case }}
   }
 
-  step_uses: rule(main_path, by = system.checker) {
+  @by(system.checker)
+  @targets(main_path)
+  step_uses: rule {
     must {{ read a step's other links to rules as the rules it uses, and links to terms as plain links }}
   }
 
-  extension_at_step: rule(usecase_extension, by = system.checker) {
+  @by(system.checker)
+  @targets(usecase_extension)
+  extension_at_step: rule {
     must {{ read an item numbered `Na.` as an [extension](#language.specifications.usecases.usecase_extension) at step N, read its sentences as steps by the rules of the [main path](#language.specifications.usecases.main_path), and report an error when step N doesn't exist }}
   }
 
-  one_outcome: rule(usecase_outcome, by = system.checker) {
+  @by(system.checker)
+  @targets(usecase_outcome)
+  one_outcome: rule {
     if {{ an extension's last sentence isn't exactly one of `Fails.`, `Back to N.` or `Succeeds.`, or `Back to N.` names a step that doesn't exist }}
     must {{ report it as an error at the extension }}
   }
 
-  step_references_resolve: rule(step_reference, by = system.checker) {
+  @by(system.checker)
+  @targets(step_reference)
+  step_references_resolve: rule {
     must {{ resolve a [step reference](#language.specifications.usecases.step_reference) in a link or an argument to that step or extension, and report an error when the use case has no such step }}
   }
 
-  usecase_actor_checked: rule(usecase_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(usecase_kind)
+  usecase_actor_checked: rule {
     if {{ a use case's `actor` names no actor }}
     must {{ report it as an error at the reference }}
   }
 
-  same_notation_in_heron: rule(usecase_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(usecase_kind)
+  same_notation_in_heron: rule {
     must {{ read a use case's `{{ }}` body in a [Heron file](#heron.language.core_format.files.heron_file) by the same rules as its body in a [prose file](#language.core_format.prose_layer.prose_file) }}
   }
 
-  cockburn_text: rule(usecase_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(usecase_kind)
+  cockburn_text: rule {
     must {{ render a use case in the user and developer lenses as its actor, level, goals served, success and minimal guarantees, then its [main path](#heron.language.specifications.usecases.main_path) as a numbered list, then its extensions as 2a, 3a and so on with their condition, their steps indented below and their outcome as "Fails", "Succeeds" or "Back to N", and then the [derived list](#heron.language.specifications.layers.derived_list) of what realizes it }}
   }
 
-  step_subject: rule(usecase_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(usecase_kind)
+  step_subject: rule {
     where {{ a step opens with the link to its actor or part and the link's text starts with a lowercase letter }}
     must {{ render the link as the subject of the sentence, with "The" before it, as "The editor underlines the problem", keeping the link, in the step list and in the flow diagram }}
     then {{ a step reads as a sentence while its source names the party by its path }}
   }
 
-  usecase_outline: rule(usecase_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(usecase_kind)
+  usecase_outline: rule {
     must {{ give a use case's page an outline of its [main path](#heron.language.specifications.usecases.main_path) and its extensions, each extension by its number and condition, never a list of bare step numbers }}
   }
 
-  flow_diagram: rule(usecase_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(usecase_kind)
+  flow_diagram: rule {
     where {{ a use case has two extensions or more }}
     may {{ offer, in the developer and explore lenses, a flow diagram of its [main path](#heron.language.specifications.usecases.main_path) and extensions, drawn from the same steps }}
   }
 
-  no_diagram_exported: rule(usecase_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(usecase_kind)
+  no_diagram_exported: rule {
     mustNot {{ put a use case's flow diagram in the [agent export](#tools.docs.agents.agent_export) }}
   }
 
-  usecase_export: rule(usecase_kind, by = system.docs_generator) {
-    must {{ write a use case into the [agent export](#tools.docs.agents.agent_export) as one typed line per step and extension: its number, its `by`, the rules it uses, the use case it includes and, for an extension, its condition and outcome }}
+  @by(system.docs_generator)
+  @targets(usecase_kind)
+  usecase_export: rule {
+    must {{ write a use case into the [agent export](#tools.docs.agents.agent_export) as one typed line per step and extension: its number, the actor or part that takes it, the rules it uses, the use case it includes and, for an extension, its condition and outcome }}
   }
 
-  usecase_carries_sequence: rule(usecase_kind, by = actors.author) {
+  @by(actors.author)
+  @targets(usecase_kind)
+  usecase_carries_sequence: rule {
     must {{ keep in a use case its sequence, actors and conditions, put what must hold at a step in a rule the step links to, and illustrate a path with a scenario rather than retell it }}
   }
 
@@ -138,7 +172,8 @@ usecases: section {
     |   2. [desk] checks the code.
     | }}
     |
-    | request_refund: usecase(actor = customer, serves = [self_service], success = "The refund is issued.", minimal = "No money moves.") {{
+    | @serves(self_service)
+    | request_refund: usecase(actor = customer, success = "The refund is issued.", minimal = "No money moves.") {{
     |   A customer asks for a refund of a captured payment.
     |
     |   1. [customer] picks the payment and the amount to refund.
@@ -150,7 +185,8 @@ usecases: section {
     |     [desk] offers store credit for the amount. Fails.
     | }}
     |
-    | late_refund: scenario(illustrates = request_refund.2a) {
+    | @illustrates(request_refund.2a)
+    | late_refund: scenario {
     |   given {{ a payment captured 40 days ago }}
     |   when {{ the customer asks for a refund }}
     |   then {{ they're offered store credit }}
@@ -161,7 +197,8 @@ usecases: section {
   errors: section {
     @realizes(step_actor, usecase_actor_checked)
     @display("Step without an actor or a part")
-    step_by: error("usecase", by = system.checker) {
+    @by(system.checker)
+    step_by: error("usecase") {
       title = "step {step} opens with {name}, a {kind}; a step's first link names an actor or a part"
       step: field(String)
       name: field(String)
@@ -170,7 +207,8 @@ usecases: section {
 
     @realizes(extension_at_step, step_references_resolve)
     @display("No such step")
-    no_such_step: error("usecase", by = system.checker) {
+    @by(system.checker)
+    no_such_step: error("usecase") {
       title = "use case {usecase} has no step {step}"
       usecase: field(String)
       step: field(String)
@@ -178,7 +216,8 @@ usecases: section {
 
     @realizes(one_outcome)
     @display("Extension without one outcome")
-    extension_outcome: error("usecase", by = system.checker) {
+    @by(system.checker)
+    extension_outcome: error("usecase") {
       title = "extension {step} ends with {text}; it ends with exactly one of \"Fails.\", \"Back to N.\" or \"Succeeds.\""
       step: field(String)
       text: field(String)
@@ -186,7 +225,8 @@ usecases: section {
 
     @realizes(step_include)
     @display("Include not at a lower level")
-    include_level: error("usecase", by = system.checker) {
+    @by(system.checker)
+    include_level: error("usecase") {
       title = "step {step} includes {usecase}, which is at level {level}; an include is at a lower level, with no cycle"
       step: field(String)
       usecase: field(String)

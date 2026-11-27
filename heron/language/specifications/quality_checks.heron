@@ -15,84 +15,115 @@ quality_checks: section {
   | | Separated    | the layout's rule on planning, design words and delivery words                |
   | | Well formed  | compound rules, negations without a condition, long or scripted scenarios, missing measures |
 
-  unambiguous_wording: rule(language.specifications.requirements.rule_strength, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.rule_strength)
+  unambiguous_wording: rule {
     should {{ report weak modal where the text under `must` or `mustNot` says "should", "may", "might", "could" or "ideally", and vague word where a rule that serves no quality and stands beside no quality scenario uses a word such as "fast", "robust" or "several" }}
     while {{ the word is used rather than mentioned: unquoted, outside code and unmasked }}
   }
 
-  nodes_linked: rule(language.specifications.context.term_kind, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.context.term_kind)
+  nodes_linked: rule {
     should {{ report unlinked node where prose names a node of the tree by its identifier without linking it, and dead link where a link to a file has no target }}
     then {{ a fix offered with it links the name when one node has it }}
   }
 
-  double_negative: rule(language.specifications.requirements.rule_strength, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.rule_strength)
+  double_negative: rule {
     if {{ the text under `mustNot` or `shouldNot` is itself negative }}
     should {{ report a double negative }}
   }
 
-  singular_check: rule(language.specifications.requirements.rule_kind, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.rule_kind)
+  singular_check: rule {
     if {{ a rule's text joins two behaviours with "and" or "or" }}
     should {{ report it as not singular }}
   }
 
-  verifiable_check: rule(language.specifications.requirements.rule_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(language.specifications.requirements.rule_kind)
+  verifiable_check: rule {
     if {{ nothing covers a `must` rule, or a bounded condition lacks an example on each side of the bound }}
     should {{ report it as not verifiable }}
   }
 
-  unlinked_node_fix: rule(by = system.prose_linter) {
+  @by(system.prose_linter)
+  unlinked_node_fix: rule {
     where {{ the name an unlinked node reports names one node of the tree }}
     must {{ offer a fix that wraps the name in brackets as a [short link](#language.markup.links.short_link), which `heron lint -fix` applies }}
   }
 
-  consistent_check: rule(language.specifications.requirements.rule_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(language.specifications.requirements.rule_kind)
+  consistent_check: rule {
     if {{ rules on one target overlap in their conditions and oppose in polarity }}
     should {{ report them as inconsistent, found structurally and confirmed by a decider }}
   }
 
-  separated_check: rule(language.specifications.planning.planning_tree, by = system.linter) {
+  @by(system.linter)
+  @targets(language.specifications.planning.planning_tree)
+  separated_check: rule {
     if {{ an `open` is reachable from the [entry point](#language.core_format.files.entry_point) of an implementer }}
     should {{ report it as not separated }}
   }
 
-  compound_rule: rule(language.specifications.requirements.rule_kind, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.rule_kind)
+  compound_rule: rule {
     if {{ a rule's strength text joins two responses with "and" or "or", or a condition joins two triggers }}
     should {{ report compound rule at the joining word }}
   }
 
-  bare_negation: rule(language.specifications.requirements.rule_kind, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.rule_kind)
+  bare_negation: rule {
     if {{ a rule says "not", "never" or "no" under a negative strength with no condition and no `instead` }}
     should {{ report negation without a condition at the word }}
   }
 
-  negated_condition: rule(language.specifications.requirements.rule_condition, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.rule_condition)
+  negated_condition: rule {
     if {{ a condition says "not the case that", or negates twice in one clause, as `isn't … no` or `not … never` }}
     should {{ report a negated condition at the words }}
     then {{ a rule says the state it applies in, as the people who use the product would }}
   }
 
-  design_words: rule(language.specifications.layers.layer, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.layers.layer)
+  design_words: rule {
     if {{ the text of an intent or specification node says a design word, `database`, `table`, `class`, `microservice`, `endpoint`, `column` or `schema migration`, and the tree declares no term of that name }}
     should {{ report a design word at the word, outside code spans, links and quotes }}
     then {{ a product whose domain has such things, as a document tool has its [tables](#heron.language.markup.components.table), declares them as terms }}
   }
 
-  measure_missing: rule(language.specifications.intent.quality_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(language.specifications.intent.quality_kind)
+  measure_missing: rule {
     if {{ a quality has no `measure` and no quality scenario serves it }}
     should {{ report measure missing at the quality }}
   }
 
-  long_scenario: rule(language.specifications.requirements.scenario_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(language.specifications.requirements.scenario_kind)
+  long_scenario: rule {
     if {{ an outcome scenario has more than five clauses }}
     should {{ report long scenario at the scenario }}
   }
 
-  scripted_scenario: rule(language.specifications.requirements.scenario_kind, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.requirements.scenario_kind)
+  scripted_scenario: rule {
     if {{ an outcome scenario's text says how a screen is driven: "click", "press", "type", "tap", "field" or "button" }}
     should {{ report scripted scenario at the word }}
   }
 
-  delivery_words: rule(language.specifications.layers.layer, by = system.prose_linter) {
+  @by(system.prose_linter)
+  @targets(language.specifications.layers.layer)
+  delivery_words: rule {
     if {{ the text of a node in any [layer](#heron.language.specifications.layers.layer) says a delivery word: "sprint", "milestone", "increment", "story points", "backlog" or "deadline" }}
     should {{ report delivery word at the word }}
   }
@@ -100,7 +131,9 @@ quality_checks: section {
   errors: section {
     @realizes(language.specifications.quality_checks.nodes_linked)
     @display("Unlinked term")
-    unlinked_term: error("Spec.UnlinkedTerm", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    unlinked_term: error("Spec.UnlinkedTerm") {
       title = "\"{phrase}\" is the term {path}; link it"
       phrase: field(String)
       path: field(String)
@@ -109,7 +142,9 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.unambiguous_wording)
     @display("Ruled-out synonym")
-    ruled_out_synonym: error("Spec.Synonym", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    ruled_out_synonym: error("Spec.Synonym") {
       title = "\"{alias}\" is a synonym the term {path} rules out; use the term"
       alias: field(String)
       path: field(String)
@@ -118,7 +153,9 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.unambiguous_wording)
     @display("Two senses")
-    two_senses: error("Spec.TwoSenses", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    two_senses: error("Spec.TwoSenses") {
       title = "\"{phrase}\" is defined by two terms, here and {path}, so it's used in two senses"
       phrase: field(String)
       path: field(String)
@@ -127,7 +164,9 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.nodes_linked, language.specifications.quality_checks.unlinked_node_fix)
     @display("Unlinked node")
-    unlinked_node: error("Spec.UnlinkedNode", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    unlinked_node: error("Spec.UnlinkedNode") {
       title = "{name} names a node without linking it"
       name: field(String)
       | An identifier of the tree, with an underscore or an inner capital, written as plain text.
@@ -135,7 +174,9 @@ quality_checks: section {
 
     @realizes(language.markup.authored_pages.links.file_links_checked, language.specifications.quality_checks.nodes_linked)
     @display("Dead link")
-    dead_link: error("Spec.DeadLink", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    dead_link: error("Spec.DeadLink") {
       title = "the link's target {target} doesn't exist"
       target: field(String)
       | A link to a file that isn't there.
@@ -143,7 +184,9 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.unambiguous_wording)
     @display("Weak modal")
-    weak_modal: error("Spec.MustSaysShould", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    weak_modal: error("Spec.MustSaysShould") {
       title = "a {strength} requirement says \"{word}\"; state it as {strength}"
       strength: field(String)
       word: field(String)
@@ -152,7 +195,9 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.unambiguous_wording)
     @display("Vague word")
-    vague_word: error("Spec.VagueWord", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    vague_word: error("Spec.VagueWord") {
       title = "\"{word}\" is vague in a rule without a metric; measure it or say exactly"
       word: field(String)
       | A word that can't be checked, in a rule no quality bounds.
@@ -160,21 +205,27 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.compound_rule)
     @display("Compound rule")
-    compound_rule: error("Spec.CompoundRule", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    compound_rule: error("Spec.CompoundRule") {
       title = "this rule joins two behaviours with \"{word}\"; split it into two rules"
       word: field(String)
     }
 
     @realizes(language.specifications.quality_checks.bare_negation)
     @display("Negation without a condition")
-    bare_negation: error("Spec.BareNegation", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    bare_negation: error("Spec.BareNegation") {
       title = "\"{word}\" forbids without saying when; give a condition or what to do instead"
       word: field(String)
     }
 
     @realizes(language.specifications.quality_checks.design_words)
     @display("Design word")
-    design_word: error("Spec.DesignWord", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    design_word: error("Spec.DesignWord") {
       title = "\"{word}\" is a design word in the {layer} layer; say what's observable, or write a constraint with its reason"
       word: field(String)
       layer: field(String)
@@ -182,14 +233,18 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.measure_missing)
     @display("Measure missing")
-    measure_missing: error("Spec.MeasureMissing", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    measure_missing: error("Spec.MeasureMissing") {
       title = "quality {name} has no measure and no quality scenario"
       name: field(String)
     }
 
     @realizes(language.specifications.quality_checks.long_scenario)
     @display("Long scenario")
-    long_scenario: error("Spec.LongScenario", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    long_scenario: error("Spec.LongScenario") {
       title = "scenario {name} has {count} clauses; keep it to about five, or split the rule"
       name: field(String)
       count: field(String)
@@ -197,21 +252,27 @@ quality_checks: section {
 
     @realizes(language.specifications.quality_checks.scripted_scenario)
     @display("Scripted scenario")
-    scripted_scenario: error("Spec.ScriptedScenario", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    scripted_scenario: error("Spec.ScriptedScenario") {
       title = "\"{word}\" scripts a screen; say what happens, not how it's driven"
       word: field(String)
     }
 
     @realizes(language.specifications.quality_checks.delivery_words)
     @display("Delivery word")
-    delivery_word: error("Spec.DeliveryWord", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    delivery_word: error("Spec.DeliveryWord") {
       title = "\"{word}\" is delivery vocabulary; plan work in the project, not the spec"
       word: field(String)
     }
 
     @realizes(negated_condition)
     @display("Negated condition")
-    negated_condition_found: error("Spec.NegatedCondition", severity = Severity.warning, by = system.prose_linter) {
+    @by(system.prose_linter)
+    @severity(warning)
+    negated_condition_found: error("Spec.NegatedCondition") {
       title = "\"{words}\" negates the condition; say the state the rule applies in, or write the exception as a rule of its own"
       words: field(String)
     }

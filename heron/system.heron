@@ -1,7 +1,7 @@
 @icon("blocks")
 system: section {
   | The parts of the system this spec talks about, each named by the role it plays as seen from
-  | outside: what it reads, what it answers and what it reports. A rule's `by` names the part
+  | outside: what it reads, what it answers and what it reports. A rule's `@by` names the part
   | whose behaviour it states; a part is no architecture: how it's built is the implementation's
   | business, not the spec's.
   |

@@ -7,11 +7,13 @@ type_page: screen(route = "/<type>.html") {
   signature: region {
     | The definition as a Heron signature in a code block titled with its file.
 
-    definition_first: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    definition_first: rule {
       must {{ open the page with the type's declaration as written, moved to the left margin, without its docs and body, with every type in it linked to its page }}
     }
 
-    proto_definition: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    proto_definition: rule {
       where {{ a type is a message or an enum of a [gRPC service](#language.apis.grpc.proto_service) }}
       must {{ show beside its declaration, as tabs, its `.proto` definition with every [field number](#language.apis.grpc.field_number), as `heron generate proto` writes it, and its JSON form, each field by its [JSON name](#language.apis.grpc.json_name) with a value of its type }}
     }
@@ -21,37 +23,43 @@ type_page: screen(route = "/<type>.html") {
   fields: region {
     | A bordered [table](#heron.language.markup.components.table) of the fields.
 
-    field_table: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    field_table: rule {
       must {{ list each field with its type, whether it's required, its default, its constraints and its docs }}
     }
 
-    variants_listed: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    variants_listed: rule {
       must {{ list each variant of a union or value of an enum with its own docs, and the parameters of a [generic type](#language.data.types.generic_type) }}
     }
   }
 
   @realizes(tools.frontend.screens.type_page.rules.rules_as_properties)
   rules: region {
-    rules_as_properties: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    rules_as_properties: rule {
       must {{ show the rules that target the type as its state properties, each with its strength, its conditions and its metrics }}
     }
   }
 
   @realizes(tools.frontend.screens.type_page.lifecycles.lifecycle_switch)
   lifecycles: region {
-    lifecycle_switch: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    lifecycle_switch: rule {
       must {{ show each [lifecycle](#language.specifications.lifecycles.lifecycle) a field of the type moves through as a state diagram, with a switch to its [table](#heron.language.markup.components.table) }}
     }
   }
 
   @realizes(tools.frontend.screens.type_page.used_by.backlinks)
   used_by: region {
-    backlinks: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    backlinks: rule {
       must {{ link back to the ops, fields and types that refer to the type }}
     }
   }
 
-  type_cards: rule(by = system.docs_generator) {
+  @by(system.docs_generator)
+  type_cards: rule {
     must {{ show a type's signature in a hover card wherever the type is mentioned, in prose or in a signature }}
   }
 }

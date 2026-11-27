@@ -21,31 +21,31 @@ its inputs and its first argument is its [result type](#language.apis.responses.
 `op(returns = Refund)`. An op stands in an api, or alone at any level of a file.
 </term>
 
-<rule id="api_body" targets="api_kind" by="system.checker">
+<rule id="api_body" @targets="api_kind" @by="system.checker">
 <must>accept `|` lines and ops in an api's body, and report [doesn't accept](#language.schemas.accept.errors.doesnt_accept) at any other child</must>
 <example>a type declared inside an api reports "api doesn't accept type; it accepts op"</example>
 </rule>
 
-<rule id="op_body" targets="op_kind" by="system.checker">
+<rule id="op_body" @targets="op_kind" @by="system.checker">
 <must>accept `|` lines and named [op examples](#language.apis.examples.op_example) in an op's body</must>
 </rule>
 
-<rule id="op_prose_value" targets="op_kind" by="system.checker">
+<rule id="op_prose_value" @targets="op_kind" @by="system.checker">
 <where>an op has only documentation</where>
 <may>take it as a prose value</may>
 <example>`get_refund(@path id: String): op(Refund) =| Returns one refund.`</example>
 </rule>
 
-<rule id="op_without_result" targets="op_kind" by="system.checker">
+<rule id="op_without_result" @targets="op_kind" @by="system.checker">
 <must>accept an op written `op`, with no [result type](#language.apis.responses.result_type), as an op that returns nothing</must>
 </rule>
 
-<rule id="ops_called_by_parameters" targets="op_kind" by="system.interpreter">
+<rule id="ops_called_by_parameters" @targets="op_kind" @by="system.interpreter">
 <must>call an op by its parameters, as a func is called, never by its transport</must>
 <then>`payments.create_refund(request = RefundRequest(…))` runs against whatever binding carries the op</then>
 </rule>
 
-<rule id="ops_as_methods" targets="api_kind" by="system.generator">
+<rule id="ops_as_methods" @targets="api_kind" @by="system.generator">
 <where>an api has no [transport binding](#language.apis.transports.transport_binding)</where>
 <must>generate it as an interface whose methods are its ops, with their parameters and [result types](#language.apis.responses.result_type)</must>
 </rule>

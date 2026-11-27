@@ -24,16 +24,21 @@ fmt: command("heron fmt") {
   }
 
   | Exits 0 when: every file is formatted, or was rewritten.
-  exit_1: error("heron fmt exit 1", exit = 1, by = system.command_line) {
+  @by(system.command_line)
+  @exit(1)
+  exit_1: error("heron fmt exit 1") {
     title = "with --check, a file isn't formatted; or a path doesn't exist, or a file can't be read or written"
   }
-  exit_2: error("heron fmt exit 2", exit = 2, by = system.command_line) {
+  @by(system.command_line)
+  @exit(2)
+  exit_2: error("heron fmt exit 2") {
     title = "an unknown option"
   }
 
   example {{ `heron fmt --check fixtures spec std` lists the files a commit would leave unformatted, as CI runs it. }}
 
-  check_changes_nothing: rule(by = system.command_line) {
+  @by(system.command_line)
+  check_changes_nothing: rule {
     mustNot {{ write any file }}
   }
 

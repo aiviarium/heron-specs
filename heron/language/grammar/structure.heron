@@ -24,22 +24,26 @@ structure: section {
       string text or raw text. Each construct's opener sets the mode of its inside.
     }}
 
-    body_by_opener: rule(by = system.parser) {
+    @by(system.parser)
+    body_by_opener: rule {
       must {{ read a body after a member's head by what opens it: `{` as structure, `{{` as prose and `do {` as code }}
       then {{ a body can't change its mode inside, so a `{{ }}` body is all prose and a `do` body all code }}
     }
 
-    prose_after_eq: rule(by = system.parser) {
+    @by(system.parser)
+    prose_after_eq: rule {
       must {{ read `=|` and a `=` followed by `|` lines or `{{` as a prose value, and anything else after `=` as an expression }}
       example {{ `message =| No pet exists with this id.`: a prose value with no quotes }}
     }
 
-    code_only_in_do: rule(by = system.parser) {
+    @by(system.parser)
+    code_only_in_do: rule {
       must {{ read statements only inside `do { … }`, and expressions only after `=`, `:`, in arguments, in annotations, in `${ }` and in [tag attributes](#language.markup.tags.tag_attribute) }}
       then {{ structure never holds a statement, and code never holds a member }}
     }
 
-    inserts_switch_back: rule(by = system.parser) {
+    @by(system.parser)
+    inserts_switch_back: rule {
       must {{ read the inside of `${ … }` as an expression wherever prose or string text is read, up to its matching `}`, so brackets, strings and nested inserts inside it don't close what holds it }}
     }
   }
@@ -64,50 +68,60 @@ structure: section {
     | | `path { … }` or `path do { … }`         | `Enter`      |
     | | `path`                                  | `Invoke`     |
 
-    declaration_shape: rule(by = system.parser) {
+    @by(system.parser)
+    declaration_shape: rule {
       must {{ read a member as a declaration when its path, with optional flags, an optional list and an optional `?`, is followed by `:`; as a `Value` when `=` follows the type, and as a `Declare` otherwise }}
     }
 
-    params_or_args: rule(by = system.parser) {
+    @by(system.parser)
+    params_or_args: rule {
       must {{ read a list after a name as `Params` when an entry is `name: Type`, starts with `///` or `@`, or the list is followed by `:`, and as `Args` otherwise }}
       example {{ `f(x: Int): func` declares a parameter, while `case(days_ago = 31)` and `code("sh")` pass arguments }}
     }
 
-    named_or_positional: rule(by = system.parser) {
+    @by(system.parser)
+    named_or_positional: rule {
       must {{ read an argument as named when it's a name followed by `=` and not `==`, and as positional otherwise }}
     }
 
-    invoke_shape: rule(by = system.parser) {
+    @by(system.parser)
+    invoke_shape: rule {
       must {{ read a path with flags or arguments and no `:` as an `Invoke`, with an optional body or `=` and a value, and a bare path alone on its line as an `Invoke` with nothing after it }}
       example {{ `verification<generate>`, `requires.add(checks.e2e)` and `marker(color = Color.RED)`: invokes }}
     }
 
-    enter_shape: rule(by = system.parser) {
+    @by(system.parser)
+    enter_shape: rule {
       must {{ read a bare path by what follows it: `.{` as a `Scope`, `=` as a `Set`, `{{` as a `TextNode`, and `{` or `do {` as an `Enter` }}
     }
 
-    let_shape: rule(by = system.parser) {
+    @by(system.parser)
+    let_shape: rule {
       must {{ read `let` as a local's binding only when a space and a name follow it, with an optional `: Type`, then `=` and a value }}
       example {{ `let: Int = 1` declares a field named `let` }}
     }
 
-    paths: rule(by = system.parser) {
+    @by(system.parser)
+    paths: rule {
       must {{ read a path as names joined by `.`, where in structure a segment can also be a string, and end it at a `.` that no name or string follows }}
       example {{ `packages."std/ci" = { … }` sets a key that isn't a name; `a.{` ends the path `a` before the scope }}
     }
 
-    step_segments: rule(by = system.parser) {
+    @by(system.parser)
+    step_segments: rule {
       must {{ read a segment after a dot that is a number with at most one lower-case letter after it, as the `3` of `request_refund.3` and the `2a` of `request_refund.2a`, as a segment of the path, in code, in arguments and in [short links](#heron.language.markup.links.short_link) }}
       then {{ a [step reference](#language.specifications.usecases.step_reference) is a path like any other }}
     }
 
-    flag_lists: rule(by = system.parser) {
+    @by(system.parser)
+    flag_lists: rule {
       must {{ read `<` directly after a name or a kind as a flag list only when names separated by commas, then `>`, follow it }}
       then {{ a `<` followed by anything else is the comparison operator }}
       example {{ `a<b` and `a < b` compare, while `task<confirm>` flags }}
     }
 
-    optional_marker: rule(by = system.parser) {
+    @by(system.parser)
+    optional_marker: rule {
       must {{ read a `?` between a name and its `:` as marking the declaration or parameter optional }}
       example {{ `note?: String`: an optional field; `lang?: String` in a list: an optional parameter }}
     }
@@ -116,35 +130,41 @@ structure: section {
   lines: section {
     | Members are separated by line ends, never by punctuation.
 
-    newlines_end_members: rule(by = system.parser) {
+    @by(system.parser)
+    newlines_end_members: rule {
       must {{ end a member at the end of its line, so that nothing but a trailing comment or a closing `}` follows it on that line }}
       while {{ the line closes every bracket it opens and ends on a complete value }}
       example {{ `x =` with `1` on the next line, and an argument list wrapped one entry per line with a trailing comma: one member each }}
     }
 
-    newlines_end_members_otherwise: rule(by = system.parser) {
+    @by(system.parser)
+    newlines_end_members_otherwise: rule {
       when {{ a line ends inside an open bracket, after a trailing operator, or before the value after `=` }}
       must {{ continue the member onto the next line }}
     }
 
-    doc_lines_attach: rule(by = system.parser) {
+    @by(system.parser)
+    doc_lines_attach: rule {
       must {{ join consecutive [doc lines](#language.core_format.prose_layer.doc_lines) into one `Doc` and attach it to the member on the next line }}
       while {{ a member follows the [doc lines](#heron.language.core_format.prose_layer.doc_lines) on the next line }}
     }
 
-    doc_lines_attach_otherwise: rule(by = system.parser) {
+    @by(system.parser)
+    doc_lines_attach_otherwise: rule {
       when {{ a blank line, a comment or a `}` follows [doc lines](#heron.language.core_format.prose_layer.doc_lines) }}
       must {{ read them as a `Doc` member of their own }}
     }
 
-    annotation_lines: rule(by = system.parser) {
+    @by(system.parser)
+    annotation_lines: rule {
       must {{ attach `@name(args)` annotations to the member they stand in front of, on the same line or on lines of their own directly above it, with comments allowed between }}
     }
   }
 
   /// The productions of members, their heads and their bodies.
   @display("Structure productions")
-  tree: grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
+  @source("grammar/heron.ungram")
+  tree: grammar(notation = "ungrammar") {
     start = language.grammar.structure.tree.File
 
     /// A file of structure: its implicit root's members.

@@ -17,17 +17,23 @@ streams: section {
     on one op. Each op becomes a message type on the socket.
   }}
 
-  stream_directions: rule(stream_type, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(stream_type)
+  stream_directions: rule {
     where {{ an op streams its result, a parameter or both }}
     must {{ show its messages by direction, client to server for a streamed parameter and server to client for a streamed result, framed as server-sent events over HTTP, as WebSocket messages on a socket, and as stream messages of the method over gRPC and Connect }}
   }
 
-  op_socket_overrides: rule(ws_socket, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(ws_socket)
+  op_socket_overrides: rule {
     where {{ both an op and its api carry `@ws` }}
     must {{ open the op's socket at the op's path }}
   }
 
-  no_streamed_http_params: rule(stream_type, by = system.checker) {
+  @by(system.checker)
+  @targets(stream_type)
+  no_streamed_http_params: rule {
     if {{ an op bound only to `std/http` takes a streamed parameter }}
     must {{ report streamed parameter over HTTP at the parameter }}
     then {{ server-sent events carry only results, and a client stream needs a socket or gRPC }}
@@ -36,7 +42,8 @@ streams: section {
   errors: section {
     @realizes(language.apis.streams.no_streamed_http_params)
     @display("Streamed parameter over HTTP")
-    streamed_http_param: error("stream", by = system.checker) {
+    @by(system.checker)
+    streamed_http_param: error("stream") {
       title = "{op} is bound only to HTTP, which can't stream {param} from the client"
       op: field(String)
       param: field(String)

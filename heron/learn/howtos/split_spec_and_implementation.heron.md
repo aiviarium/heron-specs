@@ -16,7 +16,9 @@ shop: package(version = "0.2.0", sealed = true) {
   shopper: actor {{ Someone who buys from the shop. }}
 
   checkout: section {
-    totals: rule(checkout, by = shopper) {
+    @by(shopper)
+    @targets(checkout)
+    totals: rule {
       must {{ see the order's total before paying }}
     }
   }

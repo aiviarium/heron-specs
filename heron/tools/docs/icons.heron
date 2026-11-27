@@ -19,29 +19,41 @@ icons: section {
   }}
 
   declaring: section {
-    bundled_icons: rule(tools.docs.icons.icon_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(tools.docs.icons.icon_kind)
+    bundled_icons: rule {
       must {{ offer, in `std/docs`, a set of [icons](#tools.docs.icons.icon_kind) from Lucide, under its ISC license kept beside them, as `svg_icon` nodes like any a package declares, so the renderer names no icon of its own beyond the [theme's](#tools.docs.icons.showing.theme_icons) }}
     }
 
-    package_icons: rule(tools.docs.icons.icon_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(tools.docs.icons.icon_kind)
+    package_icons: rule {
       must {{ let any package declare [icons](#tools.docs.icons.icon_kind) of its own, and let an icon a tree declares shadow an imported one of the same name }}
       example {{ a tree's `book_open: svg_icon { file = "./art/book.svg" }` is the `book-open` its `@icon("book-open")` shows, in place of Lucide's }}
     }
 
-    icon_svg_read: rule(tools.docs.icons.icon_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(tools.docs.icons.icon_kind)
+    icon_svg_read: rule {
       must {{ read an [icon](#tools.docs.icons.icon_kind)'s `file` as one SVG element with a `viewBox`, and report a file that's missing or isn't one }}
     }
 
-    names_resolve: rule(tools.docs.icons.icon_mark, by = system.checker) {
+    @by(system.checker)
+    @targets(tools.docs.icons.icon_mark)
+    names_resolve: rule {
       must {{ resolve the name an [icon mark](#tools.docs.icons.icon_mark) gives to an [icon](#tools.docs.icons.icon_kind) of the tree or of a package it imports, and report a name none has, with the names closest to it }}
       example {{ `@icon("book-opn")` reports "no icon book-opn; did you mean book-open?" }}
     }
 
-    kind_default: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons.icon_mark)
+    kind_default: rule {
       must {{ show for a node the icon its own [icon mark](#tools.docs.icons.icon_mark) names, or else the one its kind's declaration names }}
     }
 
-    no_emoji: rule(tools.docs.icons, by = system.checker) {
+    @by(system.checker)
+    @targets(tools.docs.icons)
+    no_emoji: rule {
       mustNot {{ read a shortcode such as `:rocket:` in prose as an icon or an emoji }}
       instead {{ keep icons to [icon marks](#tools.docs.icons.icon_mark) on nodes }}
     }
@@ -51,40 +63,56 @@ icons: section {
     | Icons help a reader scan; they never carry what the words don't. They're shown where a
     | reader looks for a node among others, small and in the text's colour.
 
-    where_shown: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons.icon_mark)
+    where_shown: rule {
       must {{ show the icon a node shows, its own or its kind's, before its name in the navigation's entries, in its page's title and on the cards of a home or landing page, and the icon its own [icon mark](#tools.docs.icons.icon_mark) names in the navigation's group headings }}
     }
 
-    kinds_as_icons: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons.icon_mark)
+    kinds_as_icons: rule {
       where {{ the lens's `kinds` is `ICON`, as it is unless set }}
       must {{ name a node's kind, on the pages of every lens written in HTML, only by its icon before its name, in titles, headings, list entries, cards, search results, lists of what names a node and the outline, the icon labelled with the kind's name for assistive technology and as a tooltip, and never in words beside the name }}
       then {{ a reader tells a goal from a rule by its mark, and no page spells out "section" or "rule" beside a name }}
     }
 
-    kind_icons_muted: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons.icon_mark)
+    kind_icons_muted: rule {
       must {{ show beside each result of the search and each entry of a page's outline the icon of its node, at the size of the result's or the entry's text and in a faint level of text }}
     }
 
-    theme_icons: rule(tools.docs.icons, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons)
+    theme_icons: rule {
       must {{ give each callout, a note, a tip, a warning or a danger, and each conformance status, proven, planned, untested or missing, an icon of its own from the theme, the same on every site }}
     }
 
-    inline_svg: rule(tools.docs.icons, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons)
+    inline_svg: rule {
       must {{ write an icon as inline SVG in `currentColor`, sized to the text beside it and hidden from assistive technology, with a label of its own only where it stands without text }}
     }
 
-    used_icons_only: rule(tools.docs.icons, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons)
+    used_icons_only: rule {
       must {{ ship with a site the icons its pages and its search show, and no other }}
     }
 
-    no_icons_for_agents: rule(tools.docs.icons, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(tools.docs.icons)
+    no_icons_for_agents: rule {
       mustNot {{ write an icon into the agent lens, a Markdown export or any plain-text output }}
       instead {{ say what the icon would mark in words, as the node's name and kind already do }}
     }
   }
 
   editing: section {
-    icon_completion: rule(tools.docs.icons.icon_mark, by = system.language_server) {
+    @by(system.language_server)
+    @targets(tools.docs.icons.icon_mark)
+    icon_completion: rule {
       must {{ complete the names of the tree's [icons](#tools.docs.icons.icon_kind) inside an [icon mark](#tools.docs.icons.icon_mark)'s string, and show the icon's SVG in the hover of the mark and of the icon's declaration }}
     }
   }
@@ -92,7 +120,8 @@ icons: section {
   errors: section {
     @realizes(tools.docs.icons.declaring.names_resolve)
     @display("Unknown icon")
-    unknown_icon: error("icon", by = system.checker) {
+    @by(system.checker)
+    unknown_icon: error("icon") {
       title = "no icon {name}{hint}"
       name: field(String)
       hint: field(String)
@@ -101,7 +130,8 @@ icons: section {
 
     @realizes(tools.docs.icons.declaring.icon_svg_read)
     @display("Unreadable icon")
-    bad_icon_svg: error("icon", by = system.checker) {
+    @by(system.checker)
+    bad_icon_svg: error("icon") {
       title = "{name}: {reason}"
       name: field(String)
       reason: field(String)

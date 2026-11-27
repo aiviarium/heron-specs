@@ -11,39 +11,53 @@ modes: section {
     where nothing is declared.
   }}
 
-  lookup_by_mode: rule(parse_mode, by = system.checker) {
+  @by(system.checker)
+  @targets(parse_mode)
+  lookup_by_mode: rule {
     must {{ look a name up only among the declarations of the mode it stands in }}
     example {{ `if` is a rule's condition in structure and a statement in code, and `example` is a kind in a rule's body and a func in a `do` block }}
   }
 
-  accepted_kind_wins: rule(parse_mode, by = system.checker) {
+  @by(system.checker)
+  @targets(parse_mode)
+  accepted_kind_wins: rule {
     when {{ a member's name could mean two or more kinds visible where it stands }}
     must {{ take the kind the enclosing node's kind accepts, and otherwise the innermost declaration }}
     example {{ a spec imports `std/doc`'s `if` tag and `std/spec`'s `if` condition, and the `if` in a rule's body is the condition, because rules accept it }}
   }
 
-  wrong_mode: rule(parse_mode, by = system.linter) {
+  @by(system.linter)
+  @targets(parse_mode)
+  wrong_mode: rule {
     if {{ a name is used in a mode where nothing declares it, and something in another mode does }}
     should {{ report wrong mode, naming the mode where it's declared }}
   }
 
-  prose_tags: rule(parse_mode, by = system.checker) {
+  @by(system.checker)
+  @targets(parse_mode)
+  prose_tags: rule {
     must {{ read a tag in a node's prose as an instance of the kind it names, valid where the node's kind accepts that kind or its category, as a child would be }}
     example {{ `<note kind="tip">Text</note>` in a section's prose is a `note`, since sections accept `block` }}
   }
 
-  structure_only: rule(parse_mode, by = system.linter) {
+  @by(system.linter)
+  @targets(parse_mode)
+  structure_only: rule {
     where {{ a kind is declared with `modes = [structure]` }}
     should {{ report a tag that names it as structure-only tag }}
     example {{ `std/types` declares `example: kind(fields_from = op, modes = [structure])`, so `<example>` in prose is reported }}
   }
 
-  tag_names_kind: rule(parse_mode, by = system.linter) {
+  @by(system.linter)
+  @targets(parse_mode)
+  tag_names_kind: rule {
     if {{ a tag names something in scope that isn't a kind }}
     should {{ report tag not a kind }}
   }
 
-  inline_only_as_tags: rule(parse_mode, by = system.checker) {
+  @by(system.checker)
+  @targets(parse_mode)
+  inline_only_as_tags: rule {
     where {{ a kind is only in the `inline` category of `std/doc` }}
     must {{ admit it only as a tag in prose, since no body accepts `inline` children }}
     example {{ `<link>` and `<code>` stand in a sentence, never on a line of their own in structure }}
@@ -51,7 +65,9 @@ modes: section {
 
   errors: section {
     @realizes(language.schemas.modes.wrong_mode)
-    wrong_mode_name: error("wrong-mode", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    wrong_mode_name: error("wrong-mode") {
       title = "{name} isn't declared in {here}; it's declared in {mode}"
       name: field(String)
       here: field(String)
@@ -60,13 +76,17 @@ modes: section {
     }
 
     @realizes(language.markup.tags.tag_names_a_kind, language.schemas.modes.structure_only)
-    structure_only_tag: error("tag-kind", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    structure_only_tag: error("tag-kind") {
       title = "<{kind}> is a kind that stands only in structure, not as a tag"
       kind: field(String)
     }
 
     @realizes(language.markup.tags.tag_names_a_kind, language.schemas.modes.tag_names_kind)
-    tag_not_a_kind: error("tag-kind", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    tag_not_a_kind: error("tag-kind") {
       title = "<{path}> names {name}, which isn't a kind; a tag must name a kind in scope"
       path: field(String)
       name: field(String)

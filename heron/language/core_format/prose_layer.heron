@@ -31,61 +31,79 @@ prose_layer: section {
     rules as `|` lines, and a blank line ends them.
   }}
 
-  docs_are_doc: rule(doc_lines, by = system.checker) {
+  @by(system.checker)
+  @targets(doc_lines)
+  docs_are_doc: rule {
     must {{ attach [doc lines](#language.core_format.prose_layer.doc_lines) to the member after them as its `@doc` }}
   }
 
-  prose_needs_a_kind: rule(prose_lines, by = system.checker) {
+  @by(system.checker)
+  @targets(prose_lines)
+  prose_needs_a_kind: rule {
     if {{ a node whose kind accepts no prose holds `|` lines or a `{{ }}` body }}
     must {{ report takes no prose }}
   }
 
-  links_resolve: rule(prose_lines, by = system.checker) {
+  @by(system.checker)
+  @targets(prose_lines)
+  links_resolve: rule {
     if {{ a link's `#path` names no node }}
     must {{ report broken link with the closest name }}
   }
 
-  tags_name_kinds: rule(prose_lines, by = system.checker) {
+  @by(system.checker)
+  @targets(prose_lines)
+  tags_name_kinds: rule {
     if {{ a tag names no kind in scope, or an attribute names no parameter of its kind }}
     must {{ report unknown tag, or unknown attribute with the closest parameter }}
   }
 
-  inserts_resolve: rule(prose_lines, by = system.checker) {
+  @by(system.checker)
+  @targets(prose_lines)
+  inserts_resolve: rule {
     must {{ resolve an insert's path in the scope of the text it's written in, and report one that doesn't resolve as unknown name }}
   }
 
-  headings_need_a_kind: rule(prose_file, by = system.checker) {
+  @by(system.checker)
+  @targets(prose_file)
+  headings_need_a_kind: rule {
     if {{ a [prose file](#language.core_format.prose_layer.prose_file) has a heading and no kind with `heading = true` is in scope }}
     must {{ report heading needs a kind }}
   }
 
-  all_prose_input: rule(prose_lines, by = system.server) {
+  @by(system.server)
+  @targets(prose_lines)
+  all_prose_input: rule {
     when {{ input is all prose, such as a chat message to the prompt workbench }}
     must {{ read it as if every line started with `|` }}
   }
 
   errors: section {
     @realizes(language.core_format.prose_layer.links_resolve, language.markup.authored_pages.links.links_checked, language.markup.links.node_links_resolve)
-    broken_link: error("unresolved", by = system.checker) {
+    @by(system.checker)
+    broken_link: error("unresolved") {
       title = "the link to #{path} doesn't resolve"
       path: field(String)
     }
 
     @realizes(language.core_format.prose_layer.tags_name_kinds, language.markup.tags.tags_are_kinds)
-    unknown_tag: error("unresolved", by = system.checker) {
+    @by(system.checker)
+    unknown_tag: error("unresolved") {
       title = "unknown tag <{name}>: a tag names a kind in scope"
       name: field(String)
     }
 
     @realizes(language.core_format.prose_layer.tags_name_kinds, language.markup.tags.attributes_are_arguments)
-    unknown_attribute: error("unknown-argument", by = system.checker) {
+    @by(system.checker)
+    unknown_attribute: error("unknown-argument") {
       title = "<{kind}> takes no attribute {name}"
       kind: field(String)
       name: field(String)
     }
 
     @realizes(language.core_format.prose_layer.headings_need_a_kind)
-    heading_needs_kind: error("unresolved", by = system.checker) {
+    @by(system.checker)
+    heading_needs_kind: error("unresolved") {
       title = "a heading needs a kind with heading = true in scope, such as section from std/doc"
     }
   }

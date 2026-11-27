@@ -19,34 +19,48 @@ imports: section {
   }}
 
   includes: section {
-    include_order: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    include_order: rule {
       must {{ use include order as the document order when rendering and as the layering order for amends }}
     }
 
-    include_paths: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    include_paths: rule {
       must {{ resolve an include entry relative to the file that writes it }}
     }
 
-    missing_include: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    missing_include: rule {
       if {{ no file or folder is at an include entry's path }}
       must {{ report no such include and include nothing for the entry }}
     }
 
-    includes_are_guarded: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    includes_are_guarded: rule {
       when {{ a file is included a second time, by any spelling }}
       mustNot {{ copy it or declare anything twice }}
       instead {{ only let the file see that scope too }}
     }
 
-    include_cycles: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    include_cycles: rule {
       must {{ accept includes that reach each other in a cycle, reading each file once }}
     }
 
-    globs_are_deterministic: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    globs_are_deterministic: rule {
       must {{ use the matches of a glob in path order, include a file matched twice once, keep the place of a file listed explicitly, and drop the files a `!` entry matches }}
     }
 
-    rounds: rule(include_term, by = system.checker) {
+    @by(system.checker)
+    @targets(include_term)
+    rounds: rule {
       must {{ resolve names declared further down or in a later include }}
       then {{ ordering matters only where two amends set the same path, and then the later one wins }}
     }
@@ -57,38 +71,54 @@ imports: section {
     | [standard packages](#language.std) are built into the binary; the registry, npm and git
     | are sources `heron run setup` installs from.
 
-    imports_are_scoped: rule(import_term, by = system.checker) {
+    @by(system.checker)
+    @targets(import_term)
+    imports_are_scoped: rule {
       must {{ make a package imported in a file visible there and in everything that file includes, and nowhere else }}
     }
 
-    package_versions: rule(import_term, by = system.checker) {
+    @by(system.checker)
+    @targets(import_term)
+    package_versions: rule {
       must {{ resolve a package by its name and major version, and report an entry it can't resolve with one of the import [diagnostics](#language.core_format.imports.errors) }}
       example {{ `std/ci@1`: the newest `1.x` }}
     }
 
-    lock_pins: rule(import_term, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(import_term)
+    lock_pins: rule {
       must {{ write `heron.lock` with the exact version and checksum of every package and extension `heron run setup` installs }}
     }
 
-    branch_pins: rule(import_term, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(import_term)
+    branch_pins: rule {
       where {{ `heron.lock` pins a package from git at a branch with its commit, as a package is pinned before its first release }}
       must {{ install it from that commit and keep the pin, asking the remote for no tag }}
     }
 
-    file_imports: rule(import_term, by = system.checker) {
+    @by(system.checker)
+    @targets(import_term)
+    file_imports: rule {
       must {{ resolve an entry that starts with `./` or `../` as a file or folder relative to the importing file, and a folder import as its `index.heron`, visible both directly and under the folder's name }}
     }
 
-    prelude: rule(import_term, by = system.checker) {
+    @by(system.checker)
+    @targets(import_term)
+    prelude: rule {
       must {{ make `std/core` visible in every tree without an import, and the primitive types `String`, `Bool`, `Int`, `Float`, `Decimal`, `Bytes`, `Any`, `Object`, `Null`, `Prose`, `List`, `Set`, `Map` and `Self` as the outermost scope }}
     }
 
-    import_cycle: rule(import_term, by = system.checker) {
+    @by(system.checker)
+    @targets(import_term)
+    import_cycle: rule {
       if {{ imports form a cycle that isn't among standard packages only }}
       must {{ report import cycle, naming each file of the cycle }}
     }
 
-    repeated_import: rule(import_term, by = system.linter) {
+    @by(system.linter)
+    @targets(import_term)
+    repeated_import: rule {
       if {{ a file imports a package that the scope it's included in already imports }}
       should {{ report repeated import }}
     }
@@ -96,34 +126,40 @@ imports: section {
 
   errors: section {
     @realizes(language.core_format.imports.packages.repeated_import)
-    repeated_import: error("repeated-import", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    repeated_import: error("repeated-import") {
       title = "{package} is already imported where this file is included, so it needs no import here"
       package: field(String)
     }
 
     @realizes(language.core_format.imports.packages.package_versions)
-    unknown_package: error("import", by = system.checker) {
+    @by(system.checker)
+    unknown_package: error("import") {
       title = "unknown package {name}"
       name: field(String)
       | `std/nosuch@1`: no package of that name is built in or installed.
     }
 
     @realizes(language.core_format.imports.packages.package_versions)
-    no_major: error("import", by = system.checker) {
+    @by(system.checker)
+    no_major: error("import") {
       title = "{entry}: a package import names a major version, as in {entry}@1"
       entry: field(String)
       | `std/doc`: the entry has no `@`.
     }
 
     @realizes(language.core_format.imports.packages.package_versions)
-    bad_major: error("import", by = system.checker) {
+    @by(system.checker)
+    bad_major: error("import") {
       title = "{entry}: the version after @ is a major version number"
       entry: field(String)
       | `std/doc@x`: what follows `@` isn't a whole number.
     }
 
     @realizes(language.core_format.imports.packages.package_versions)
-    wrong_major: error("import", by = system.checker) {
+    @by(system.checker)
+    wrong_major: error("import") {
       title = "{name}@{major}: the package is version {version}"
       name: field(String)
       major: field(String)
@@ -132,7 +168,8 @@ imports: section {
     }
 
     @realizes(language.core_format.imports.packages.lock_pins)
-    not_installed: error("import", by = system.checker) {
+    @by(system.checker)
+    not_installed: error("import") {
       title = "{entry}: packages from {source} are installed by `heron run setup`, and this one isn't installed yet"
       entry: field(String)
       source: field(String)
@@ -140,21 +177,24 @@ imports: section {
     }
 
     @realizes(language.core_format.imports.packages.file_imports)
-    no_such_import: error("import", by = system.checker) {
+    @by(system.checker)
+    no_such_import: error("import") {
       title = "cannot import {path}: no such file"
       path: field(String)
       | `./nofile.heron`: a file import whose file doesn't exist.
     }
 
     @realizes(language.core_format.imports.includes.missing_include)
-    no_such_include: error("include", by = system.checker) {
+    @by(system.checker)
+    no_such_include: error("include") {
       title = "cannot include {path}: no such file"
       path: field(String)
       | An include entry whose file or folder doesn't exist.
     }
 
     @realizes(language.core_format.imports.packages.import_cycle)
-    import_cycle: error("import-cycle", by = system.checker) {
+    @by(system.checker)
+    import_cycle: error("import-cycle") {
       title = "import cycle: {a} → {b} → {a}"
       a: field(String)
       b: field(String)
