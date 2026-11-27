@@ -228,8 +228,8 @@ op_page: screen(route = "/<api>.<op>.html") {
     @by(system.docs_generator)
     @targets(language.apis.examples.op_example)
     rpc_example_forms: rule {
-      where {{ the binding picked is gRPC, Connect or JSON-RPC }}
-      must {{ show each [op example](#language.apis.examples.op_example) as its request and its response in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, and the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC }}
+      where {{ the binding picked is gRPC, Connect, JSON-RPC or Sparrow }}
+      must {{ show each [op example](#language.apis.examples.op_example) as its request and its response in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC, and for Sparrow a call of Sparrow's TS `Session` over its WebSocket binding, by the facet's name and the method as `Service.method`, answered with its result, its items or a `SparrowError` with its status, message and details }}
     }
 
     @by(system.docs_generator)
@@ -244,6 +244,13 @@ op_page: screen(route = "/<api>.<op>.html") {
       where {{ the binding picked is gRPC, or Connect for a client-streaming or bidirectional method }}
       mustNot {{ offer Try it }}
       instead {{ show the `grpcurl` call to copy, since a browser can't speak gRPC or stream from the client }}
+    }
+
+    @by(system.docs_generator)
+    sparrow_no_try_it: rule {
+      where {{ the binding picked is Sparrow }}
+      mustNot {{ offer Try it }}
+      instead {{ show the session's call to copy, since Try it sends JSON over HTTP and Sparrow speaks CBOR in a session of its own }}
     }
 
     @by(system.docs_generator)
