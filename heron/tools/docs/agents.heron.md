@@ -18,7 +18,7 @@ the [context packs](#tools.docs.agents.context_pack) asked for.
 </term>
 
 <term id="area_file" aliases={["area file"]}>
-One Markdown file of the [agent export](#tools.docs.agents.agent_export): the nodes of one section or [folder scope](#guide.layout.folder_scope), or one part
+One Markdown file of the [agent export](#tools.docs.agents.agent_export): the nodes of one section, [folder scope](#guide.layout.folder_scope), command or api, or one part
 of them, ordered by [layer](#language.specifications.layers.layer).
 </term>
 
@@ -56,7 +56,7 @@ in full and the surface of what it links, for a task that needs that part alone.
 </rule>
 
 <rule id="export_files" targets="tools.docs.agents.agent_export" by="system.docs_generator">
-<must>write the [agent index](#tools.docs.agents.agent_index), an `llms.txt` and an [area file](#tools.docs.agents.area_file) for each section and [folder scope](#guide.layout.folder_scope) less than the lens's `depth` levels down, the docs block's `depth` where the lens sets none, that the lens keeps something of, named by its [stable id](#tools.docs.agents.stable_id) and `.md`, as `language.apis.grpc.md`, all in one folder; and write the nodes at the top of the tree, outside every such section, in `_root.md`</must>
+<must>write the [agent index](#tools.docs.agents.agent_index), an `llms.txt` and an [area file](#tools.docs.agents.area_file) for each section and [folder scope](#guide.layout.folder_scope) less than the lens's `depth` levels down, the docs block's `depth` where the lens sets none, and for each command and api at any depth, that the lens keeps something of, named by its [stable id](#tools.docs.agents.stable_id) and `.md`, as `language.apis.grpc.md`, all in one folder; and write the nodes at the top of the tree, outside every such section, in `_root.md`</must>
 <then>a file's path is its node's id, so an agent and a link can rely on it from one version to the next</then>
 </rule>
 
