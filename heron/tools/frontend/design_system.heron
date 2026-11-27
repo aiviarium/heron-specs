@@ -97,7 +97,7 @@ design_system: section {
 
     flows_without_hairlines: rule(surfaces, by = actors.implementer) {
       mustNot {{ draw a hairline between consecutive items of one flow, such as rules, terms, steps or diagnostics }}
-      instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of [tables](#heron.language.markup.components.table) and code blocks }}
+      instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of [tables](#heron.language.markup.components.table) and code blocks; the line that joins the numbers of a stepper's steps is part of its marks, not a separator }}
     }
 
     one_level_of_indent: rule(surfaces, by = actors.implementer) {
