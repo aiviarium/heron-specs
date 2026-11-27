@@ -20,44 +20,60 @@ protocol: section {
   }}
 
   framing: section {
-    frames: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    frames: rule {
       must {{ run the session on Sparrow's pipe binding: each message one CBOR item behind its length as a QUIC variable-length integer, with no stream header, and every call on the shared lane }}
     }
 
-    facets: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    facets: rule {
       must {{ publish each side's facet with facet ID 16 under its name, `heron.extension` in the process's `Hello` and `heron.host` in heron's `Welcome`, with the protocol's major version as the facet's, every type, field and method numbered in the order the messages declare them, and the [Value](#language.interop.data_mapping.value_union) union for every `Any` }}
       then {{ a peer looks methods up by name in the other's facet, so either side can add methods in a minor version }}
     }
 
-    frame_limit: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    frame_limit: rule {
       if {{ a message is longer than the session's `max_message` }}
       must {{ refuse it as Sparrow's `maxMessageSize` says: a call that would send one fails with the limit-exceeded code, and a message that arrives ends the session with `GoAway(message_too_large)` }}
     }
 
-    unreadable_message: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    unreadable_message: rule {
       if {{ a message isn't a Sparrow message, or its payload doesn't match its method's types }}
       must {{ end a call it belongs to with the invalid-params code, and otherwise close the session with `GoAway(protocol_error)` }}
     }
 
-    ids_per_side: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    ids_per_side: rule {
       must {{ number calls as Sparrow does: the process's even, heron's odd, each side's strictly increasing }}
     }
   }
 
   handshake: section {
-    initialize_first: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    initialize_first: rule {
       when {{ a process starts }}
       must {{ answer its `Hello` with a `Welcome` within 30 seconds, then call `initialize` with the protocol version, heron's name and version, the project's root, the declarations the process serves, the limits and the folder for run-scoped files, and wait up to 30 seconds for the answer }}
       then {{ a process whose `Hello` doesn't publish `heron.extension` is refused with `GoAway(schema_mismatch)` }}
     }
 
-    version_match: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    version_match: rule {
       if {{ the protocol version the process answers with has another major number than heron's }}
       must {{ stop the process and fail with `‹process›: speaks protocol ‹version›, and heron speaks ‹version›` }}
       then {{ a minor version apart is accepted }}
     }
 
-    implements_answered: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    implements_answered: rule {
       must {{ read the answer's `implements` as what the process serves, by path and point, and report every declaration it leaves out as doesn't implement }}
     }
   }
@@ -69,17 +85,23 @@ protocol: section {
     | | `max_in_flight` | 64         | `maxConcurrentCalls`   | the calls a side serves at once               |
     | | `timeout_ms`    | 30 000     | the `deadline` key     | how long a call waits for its answer          |
 
-    offered_limits: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    offered_limits: rule {
       must {{ offer the limits of the [table](#heron.language.markup.components.table) in `initialize`, with an extension's `files`, `network` and `commands` beside them, and apply them on both sides as the session's params }}
     }
 
-    in_flight_limit: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    in_flight_limit: rule {
       if {{ a call arrives while `max_in_flight` calls are being served }}
       must {{ answer it at once with `Error(resource_exhausted)` and the limit-exceeded code }}
       then {{ a call stops counting once its answer is sent, so the caller's next call is never refused for it }}
     }
 
-    timeouts: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    timeouts: rule {
       where {{ a call is made without a time limit of its own }}
       must {{ give it `timeout_ms` as its `deadline`, and when that passes, send `Cancel(deadline_exceeded)` and fail it with the timeout code }}
     }
@@ -91,34 +113,48 @@ protocol: section {
     | | `heron.extension` | `initialize`, `call`, `call_stream`, `lint`, `generate`, `render`, `resource_setup`, `resource_reset`, `resource_snapshot`, `resource_restore`, `resource_fork`, `resource_teardown`, `shutdown` |
     | | `heron.host`      | `node`, `call`, `resource`, `secret`, `temp`, and the notification `log`                        |
 
-    calls_by_target: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    calls_by_target: rule {
       must {{ send a call of a [foreign func](#language.interop.declaring.foreign_func), macro or member of an implemented interface as `call` with the declaration's path as `target`, the member, as `send` of a transport, and the arguments by parameter name }}
     }
 
-    unknown_method: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    unknown_method: rule {
       if {{ a call names a method the side doesn't serve }}
       must {{ answer it with `Error(unimplemented)` and the method-not-found code, `-32601` }}
     }
 
-    cancel: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    cancel: rule {
       when {{ the caller cancels a call }}
       must {{ send Sparrow's `Cancel`, fail it on the caller's side with the cancelled code, and abort its handler on the other side, which answers with `Error(cancelled)` if it finishes anyway }}
     }
 
-    stream: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    stream: rule {
       where {{ a handler streams its result }}
       must {{ serve it through `call_stream`, each item a Sparrow `Item` and the stream ended with `End`, and answer a plain `call` of it with its items as a list }}
     }
 
-    log_and_progress: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    log_and_progress: rule {
       must {{ accept the notification `log` with a level and a message, and Sparrow's `Progress` on a call with counts done and total and a note, at any time }}
     }
 
-    run_ids: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    run_ids: rule {
       must {{ carry the [run](#language.interop.timing.run_scope)'s id under the metadata key `heron.run` on each call of a run, and hand it to the handler }}
     }
 
-    closed_connection: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    closed_connection: rule {
       when {{ the session ends }}
       must {{ fail every call in flight on both sides and cancel the handlers still running }}
     }
@@ -138,13 +174,17 @@ protocol: section {
     | | `-32002`  | `resource_exhausted`  | a limit was exceeded                                             |
     | | `-32003`  | `deadline_exceeded`   | the call timed out                                               |
 
-    handler_failures: rule(sparrow_session, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(sparrow_session)
+    handler_failures: rule {
       must {{ end a failed call with Sparrow's `Error`: the status the [table](#heron.language.markup.components.table) gives its code, its message, and `ErrorDetails` with the code as details, `-32603` for a handler that fails with anything but a protocol error }}
       then {{ a status without details, as from a peer that isn't heron's, reads as the code the [table](#heron.language.markup.components.table) gives the status first }}
     }
   }
 
-  generated_sides: rule(sparrow_session, by = system.extension_host) {
+  @by(system.extension_host)
+  @targets(sparrow_session)
+  generated_sides: rule {
     must {{ generate the host's and the JS runtime's bindings and both facets from the messages, each api's ops as its methods, named as written, an op without a result as a [Sparrow notification](#language.apis.sparrow.sparrow_notification) and an op whose result is a `Stream` as a server stream, and fail CI when either is stale }}
   }
 

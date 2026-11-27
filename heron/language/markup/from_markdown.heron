@@ -16,31 +16,43 @@ from_markdown: section {
   | | `[text](#path)`, `[text](url)`    | `link`                                                 |
   | | `---` on its own line             | `divider`                                              |
 
-  blocks_render: rule(language.markup.writing.prose_text, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(language.markup.writing.prose_text)
+  blocks_render: rule {
     must {{ render lines starting `- ` or `* ` as a list, lines starting with a number and `.` or `)` as a numbered list, lines starting `>` as one quote, and a line of `|` cells followed by a line of dashes as a [table](#heron.language.markup.components.table) whose first row is the header }}
   }
 
-  forms_are_nodes: rule(language.markup.writing.prose_text, by = system.checker) {
+  @by(system.checker)
+  @targets(language.markup.writing.prose_text)
+  forms_are_nodes: rule {
     must {{ build each Markdown form as the `std/doc` node the [table](#heron.language.markup.components.table) names, so a query, a renderer or a lint sees `list`, `item` and `table` nodes }}
   }
 
-  more_forms: rule(language.markup.writing.prose_text, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(language.markup.writing.prose_text)
+  more_forms: rule {
     must {{ render task items, images and `---` dividers as the table's nodes }}
   }
 
-  markdown_not_carried: rule(language.markup.writing.prose_text, by = actors.author) {
+  @by(actors.author)
+  @targets(language.markup.writing.prose_text)
+  markdown_not_carried: rule {
     mustNot {{ write `# Heading` in `|` lines or a `{{ }}` body, `[^1]` footnotes, `$…$` math or raw HTML }}
     instead {{ use a section, `<footnote>`, `<math>` or a component }}
   }
 
-  markdown_forms_reported: rule(language.markup.writing.prose_text, by = system.linter) {
+  @by(system.linter)
+  @targets(language.markup.writing.prose_text)
+  markdown_forms_reported: rule {
     if {{ prose outside a [prose file](#language.core_format.prose_layer.prose_file) holds a heading, a footnote reference or `$…$` math }}
     should {{ report Markdown form, naming what to use instead }}
   }
 
   errors: section {
     @realizes(language.markup.from_markdown.markdown_forms_reported)
-    markdown_form: error("markdown-form", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    markdown_form: error("markdown-form") {
       title = "{form} isn't markup here; use {instead}"
       form: field(String)
       instead: field(String)

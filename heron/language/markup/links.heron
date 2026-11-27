@@ -21,53 +21,75 @@ links: section {
     `[issue](https://example.com/issues/$id)`.
   }}
 
-  node_links_resolve: rule(node_link, by = system.checker) {
+  @by(system.checker)
+  @targets(node_link)
+  node_links_resolve: rule {
     must {{ resolve a node link's path as [a link's path](#language.core_format.naming.link_lookup) is, and report broken link with the closest name where it names nothing }}
     example {{ in a section `guide` with a child `window`, `[the window](#window)` links to `guide.window` }}
   }
 
-  short_links_resolve: rule(short_link, by = system.checker) {
+  @by(system.checker)
+  @targets(short_link)
+  short_links_resolve: rule {
     if {{ a short link's path names no node }}
     must {{ report unresolved [short link](#heron.language.markup.links.short_link) at the path, as an error, with the closest name }}
     then {{ a [short_link] never falls back to text: a bracket meant as text is escaped, `\[optional]`, or inside inline code }}
   }
 
-  ref_element: rule(short_link, by = system.checker) {
+  @by(system.checker)
+  @targets(short_link)
+  ref_element: rule {
     must {{ read `<ref to="name"/>` as the element form of `[name]`, and `<ref to="name" code/>` as that of ``[`name`]``, resolved and reported alike }}
   }
 
-  short_link_text: rule(short_link, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(short_link)
+  short_link_text: rule {
     must {{ render `[name]` as a link whose text is the node as it reads inside a sentence, a term by its word and any other node by its [display name](#language.core_format.naming.display_name) with its first letter in lower case, keeping a type's name and a name written in capitals as written; and ``[`name`]`` as a link whose text is the path as inline code }}
     example {{ `[refund_window]` reads "refund window" and ``[`refund_window`]`` reads `refund_window`, each linking to the term }}
   }
 
-  links_kept_by_format: rule(short_link, by = system.formatter) {
+  @by(system.formatter)
+  @targets(short_link)
+  links_kept_by_format: rule {
     mustNot {{ expand a [short link](#language.markup.links.short_link) into a [node link](#language.markup.links.node_link), shorten a [node_link], or change the path either is written with }}
   }
 
-  node_links_render: rule(node_link, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(node_link)
+  node_links_render: rule {
     must {{ render a [node link](#language.markup.links.node_link) as a link to the page or anchor of the node it resolves to }}
   }
 
-  imported_declarations: rule(node_link, by = system.checker) {
+  @by(system.checker)
+  @targets(node_link)
+  imported_declarations: rule {
     must {{ resolve a [node link](#language.markup.links.node_link) to a declaration of a package the file imports, by the path the package's names are visible under }}
     example {{ `[rule](#spec.rule)` in a file that imports `std/spec@1` links to `std/spec`'s `rule` kind }}
   }
 
-  imported_links_render: rule(imported_declarations, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(imported_declarations)
+  imported_links_render: rule {
     must {{ render a link to a declaration outside the tree as a reference with no page }}
   }
 
-  link_shows_kind: rule(node_link, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(node_link)
+  link_shows_kind: rule {
     must {{ render a link to a term as a defined term, and a link to a rule with the rule's strength }}
   }
 
-  empty_link_text: rule(node_link, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(node_link)
+  empty_link_text: rule {
     where {{ a node link's text is empty, `[](#path)` }}
     must {{ render the node's [display name](#language.core_format.naming.display_name) as its text }}
   }
 
-  url_links_unchecked: rule(url_link, by = system.checker) {
+  @by(system.checker)
+  @targets(url_link)
+  url_links_unchecked: rule {
     mustNot {{ fetch or check a [URL link](#language.markup.links.url_link) }}
     instead {{ check only the inserts its URL holds, as names in scope }}
   }
@@ -75,7 +97,8 @@ links: section {
   errors: section {
     @realizes(language.markup.links.short_links_resolve)
     @display("Unresolved short link")
-    unresolved_short_link: error("unresolved", by = system.checker) {
+    @by(system.checker)
+    unresolved_short_link: error("unresolved") {
       title = "[{path}] names no node"
       path: field(String)
       | A [short_link] whose name matches no node; the message ends with the closest name when one is close.

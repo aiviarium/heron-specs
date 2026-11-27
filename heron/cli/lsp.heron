@@ -16,16 +16,21 @@ lsp: command("heron lsp") {
   }
 
   | Exits 0 when: the editor shut the server down.
-  exit_1: error("heron lsp exit 1", exit = 1, by = system.command_line) {
+  @by(system.command_line)
+  @exit(1)
+  exit_1: error("heron lsp exit 1") {
     title = "the connection failed"
   }
-  exit_2: error("heron lsp exit 2", exit = 2, by = system.command_line) {
+  @by(system.command_line)
+  @exit(2)
+  exit_2: error("heron lsp exit 2") {
     title = "an unknown option"
   }
 
   example {{ An editor's client starts `heron lsp --stdio` in the project's folder and speaks LSP over the pipe. }}
 
-  answers_lsp: rule(by = system.language_server) {
+  @by(system.language_server)
+  answers_lsp: rule {
     must {{ answer the Language Server Protocol over standard input and output until the client exits }}
   }
 }

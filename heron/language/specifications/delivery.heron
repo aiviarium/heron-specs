@@ -8,7 +8,7 @@ delivery: section {
   | | Kind                          | Holds                                                                   |
   | | ----------------------------- | ----------------------------------------------------------------------- |
   | | `component(path, lang)`       | `uses`, responsibilities and `exports`, with `@realizes` naming the parts it builds |
-  | | `story(adds, changes, serves)` | the spec items it adds and changes, the goal it advances and its `done` |
+  | | `story(adds, changes)`        | the spec items it adds and changes, the goal its `@serves` names and its `done` |
   | | `increment(delivers)`         | the stories a shippable slice delivers, and its `done`                  |
   | | `milestone(reached_by)`       | what a point in time is measured against, and its `done`                |
   | | `done`                        | the delivery-only items the work is accepted by, as prose               |
@@ -21,39 +21,53 @@ delivery: section {
   }}
 
   story_kind: term {{
-    `name: story(adds = [items], changes = [items], serves = goal) { … }`, one change to the
+    `@serves(goal) name: story(adds = [items], changes = [items]) { … }`, one change to the
     spec, small enough to build in one `increment`: the requirements it adds and changes, the goal
-    it advances, and a `done` for what delivery alone needs. It's accepted when the items it
+    `@serves` names, and a `done` for what delivery alone needs. It's accepted when the items it
     lists are proven at their current [revisions](#heron.language.specifications.layers.revisions.revision).
   }}
 
-  delivery_kinds_in_project: rule(delivery, by = system.checker) {
+  @by(system.checker)
+  @targets(delivery)
+  delivery_kinds_in_project: rule {
     must {{ declare `component`, `story`, `increment`, `milestone`, `done` and the delivery flags in `std/project`, with no [layer](#heron.language.specifications.layers.layer) }}
   }
 
-  story_lists_items: rule(story_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(story_kind)
+  story_lists_items: rule {
     if {{ a story holds a `given`, a `when`, a `then` or a strength node }}
     must {{ report it as an error at the node: a story lists spec items and states no behaviour }}
   }
 
-  story_accepted: rule(story_kind, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(story_kind)
+  story_accepted: rule {
     must {{ count a story as accepted when every item it adds or changes is proven at its current [revision](#heron.language.specifications.layers.revisions.revision), and list the rest under it in the conformance report }}
   }
 
-  story_view: rule(story_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(story_kind)
+  story_view: rule {
     must {{ show a story with the goal it advances and the items it adds and changes, each linked and with its proof status, then its `done` }}
   }
 
-  one_status_each: rule(language.specifications.traceability.status_flag, by = system.linter) {
+  @by(system.linter)
+  @targets(language.specifications.traceability.status_flag)
+  one_status_each: rule {
     if {{ a node carries two flags of the group `"status"` }}
     must {{ report the second as an error of the flag's group }}
   }
 
-  component_view: rule(component_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(component_kind)
+  component_view: rule {
     must {{ show a component with its path, the parts it realizes, the components it uses and those that use it under "Used by", and its exports }}
   }
 
-  uses_enforced: rule(component_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(component_kind)
+  uses_enforced: rule {
     if {{ a component's code imports a component its `uses` doesn't list }}
     should {{ report it as a warning at the component }}
   }
@@ -61,7 +75,8 @@ delivery: section {
   errors: section {
     @realizes(story_lists_items)
     @display("Behaviour in a story")
-    behaviour_in_story: error("story", by = system.checker) {
+    @by(system.checker)
+    behaviour_in_story: error("story") {
       title = "story {story} holds a {kind}; a story lists the spec items it adds or changes, which state the behaviour"
       story: field(String)
       kind: field(String)
@@ -69,7 +84,9 @@ delivery: section {
 
     @realizes(uses_enforced)
     @display("Import outside uses")
-    import_outside_uses: error("component-uses", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    import_outside_uses: error("component-uses") {
       title = "{component} imports {other}, which its uses doesn't list"
       component: field(String)
       other: field(String)
@@ -88,7 +105,8 @@ delivery: section {
     |   must {{ reject a refund after the window }}
     | }
     |
-    | refund_window: story(adds = [late_rejected], serves = self_service) {
+    | @serves(self_service)
+    | refund_window: story(adds = [late_rejected]) {
     |   done {{ The support team has seen the new message. }}
     | }
     |

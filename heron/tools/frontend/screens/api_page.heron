@@ -8,7 +8,8 @@ api_page: screen(route = "/<api>.html") {
   lead: region {
     | The api's prose, its base path and its wire format.
 
-    api_facts: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    api_facts: rule {
       must {{ show the api's prose, its base path, and its wire format: JSON bodies over HTTP, streams as server-sent events and sockets as websocket frames }}
     }
   }
@@ -18,26 +19,31 @@ api_page: screen(route = "/<api>.html") {
     | An api bound to a gRPC service, to JSON-RPC or to a [Sparrow facet](#language.apis.sparrow.sparrow_facet) reads as a service: its
     | name, its protocols, and its methods by their signatures.
 
-    service_lead: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    service_lead: rule {
       where {{ an api is bound by `std/proto`, `std/jsonrpc` or `std/sparrow` }}
       must {{ show the service's fully qualified name with a copy button, the [protocols](#language.apis.grpc.proto_protocol) it's served over, its JSON-RPC [framing](#language.apis.jsonrpc.jsonrpc_framing) and encoding, whether it takes batches, its Sparrow [facet](#language.apis.sparrow.sparrow_facet) with its id, version, facet hash and retired ids and its service with its id, and its [server URLs](#language.apis.rpc.server_url) }}
     }
 
-    facts_by_binding: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    facts_by_binding: rule {
       must {{ show each fact as its label and its value, and under the [binding switch](#tools.frontend.screens.op_page.bindings.binding_switch) only the facts of the binding picked: the base path and the wire format for HTTP, the service and its protocols for gRPC and Connect, the framing, the encoding and batches for JSON-RPC, the facet, its version and hash and the service for Sparrow, and the servers and the cross-cutting annotations for every binding }}
     }
 
-    methods_grouped: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    methods_grouped: rule {
       where {{ an api is bound by `std/proto`, `std/jsonrpc` or `std/sparrow` }}
       must {{ group a gRPC service's methods by [streaming kind](#language.apis.rpc.streaming_kind), unary first, a Sparrow service's likewise with its [notifications](#language.apis.sparrow.sparrow_notification) last, and a JSON-RPC api's by the part of the method's name before its first `/` or `.`, [notifications](#language.apis.jsonrpc.jsonrpc_notification) last }}
     }
 
-    signature_each: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    signature_each: rule {
       must {{ show each method on one line under its group's heading: its signature as `Method(Request) returns (stream Response)`, its JSON-RPC name, or its [Sparrow method](#language.apis.sparrow.sparrow_method)'s id and signature, its [display name](#language.core_format.naming.display_name) linked to its page, and the first sentence of its prose }}
       then {{ the group's heading names the [streaming kind](#language.apis.rpc.streaming_kind) once, rather than a badge on each method }}
     }
 
-    both_indexes: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    both_indexes: rule {
       where {{ an api has more than one binding }}
       must {{ show each binding's index under the [binding switch](#tools.frontend.screens.op_page.bindings.binding_switch) }}
     }
@@ -47,11 +53,13 @@ api_page: screen(route = "/<api>.html") {
   ops: region {
     | The ops, grouped.
 
-    ops_grouped: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    ops_grouped: rule {
       must {{ group the api's ops by the first segment of their path after the base path, each group in the order its first op is written }}
     }
 
-    one_line_each: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    one_line_each: rule {
       must {{ show each op on one row: its method, its path, its [display name](#language.core_format.naming.display_name) linked to its page, the first sentence of its prose, and a mark when it's deprecated }}
     }
   }
@@ -60,7 +68,8 @@ api_page: screen(route = "/<api>.html") {
   types: region {
     | The types and errors the api's ops name.
 
-    types_listed: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    types_listed: rule {
       must {{ list the types and the errors the api's ops name, directly or through the fields of other types, each linked to its page with the first sentence of its docs }}
     }
   }

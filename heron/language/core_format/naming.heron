@@ -16,17 +16,23 @@ naming: section {
     files keep the name.
   }}
 
-  lexical_lookup: rule(node_path, by = system.checker) {
+  @by(system.checker)
+  @targets(node_path)
+  lexical_lookup: rule {
     must {{ resolve a path's first name in the scope it's written in, then in each enclosing scope out to the root, the prelude and the primitive types, and each further name as a child of the one before }}
     then {{ the nearest declaration wins, so a section named `grammar` hides a kind of that name from the nodes inside it }}
   }
 
-  unknown_names: rule(node_path, by = system.checker) {
+  @by(system.checker)
+  @targets(node_path)
+  unknown_names: rule {
     if {{ a path's first name resolves nowhere, or a later name isn't a child of the node before it }}
     must {{ report unknown name with the closest name in scope, or no member }}
   }
 
-  closest_names: rule(node_path, by = system.checker) {
+  @by(system.checker)
+  @targets(node_path)
+  closest_names: rule {
     when {{ a name, field, parameter, member or annotation doesn't resolve }}
     should {{ end the message with "; did you mean ‹name›?", naming the closest candidate in scope by edit distance, when one is close }}
   }
@@ -36,35 +42,45 @@ naming: section {
     [node path](#language.core_format.naming.node_path).
   }}
 
-  link_lookup: rule(link_path, by = system.checker) {
+  @by(system.checker)
+  @targets(link_path)
+  link_lookup: rule {
     must {{ resolve a link's path first as [lexical lookup](#language.core_format.naming.lexical_lookup) resolves a path, and where that names nothing, by suffix: to the nodes whose path ends with the link's names, matched name by name }}
     example {{ `[thing]` matches `a.b.thing` and never `a.my_thing`; `[b.thing]` matches `a.b.thing` and not `a.c.thing` }}
   }
 
-  own_tree_first: rule(link_path, by = system.checker) {
+  @by(system.checker)
+  @targets(link_path)
+  own_tree_first: rule {
     where {{ a link's path matches by suffix nodes of the tree's own and nodes of a package it imports }}
     must {{ resolve it to the tree's own matches, and to an imported package's only where the tree has none }}
   }
 
-  ambiguous_links: rule(link_path, by = system.checker) {
+  @by(system.checker)
+  @targets(link_path)
+  ambiguous_links: rule {
     if {{ a link's path matches by suffix two or more nodes of the same precedence }}
     must {{ report ambiguous link at the path, as an error, naming each candidate by the shortest end of its path that matches it alone, with one fix per candidate that writes that end, each a suggestion `heron lint -fix` doesn't apply }}
     then {{ choosing among the candidates is the author's, not a tool's }}
   }
 
-  display_names: rule(display_name, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(display_name)
+  display_names: rule {
     must {{ show a node by its `@display` text when it has one, and otherwise by its name in sentence case, keeping a type's name and a name written in capitals as written }}
   }
 
   errors: section {
     @realizes(language.core_format.naming.unknown_names, language.core_format.prose_layer.inserts_resolve, language.markup.authored_pages.facts.inserted_facts_required)
-    unknown_name: error("unresolved", by = system.checker) {
+    @by(system.checker)
+    unknown_name: error("unresolved") {
       title = "unknown name {name}"
       name: field(String)
     }
 
     @realizes(language.core_format.naming.unknown_names, language.data.types.closed_records)
-    no_member: error("unresolved", by = system.checker) {
+    @by(system.checker)
+    no_member: error("unresolved") {
       title = "{path} has no member {name}"
       path: field(String)
       name: field(String)
@@ -72,7 +88,8 @@ naming: section {
 
     @realizes(language.core_format.naming.ambiguous_links)
     @display("Ambiguous link")
-    ambiguous_link: error("ambiguous", by = system.checker) {
+    @by(system.checker)
+    ambiguous_link: error("ambiguous") {
       title = "{path} names {count} nodes: {candidates}; write a longer path"
       path: field(String)
       count: field(String)

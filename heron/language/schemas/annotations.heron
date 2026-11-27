@@ -3,35 +3,47 @@ annotations: section {
   | annotation takes, and its body may `accept` children, as a kind's does. Like a flag, it
   | names the kinds it attaches to from its own side.
 
-  declaring_annotations: rule(language.core_format.nodes.annotations.annotation_term, by = system.checker) {
+  @by(system.checker)
+  @targets(language.core_format.nodes.annotations.annotation_term)
+  declaring_annotations: rule {
     must {{ check an annotation's arguments against its declaration's parameters, as a call's are }}
-    example {{ `std/http` declares `status(code: Int): annotation(on = [types.type])`, which takes `@status(404)` }}
+    example {{ `std/http` declares `status(code: Int): annotation(on = [types.type, spec.error])`, which takes `@status(404)` }}
   }
 
-  annotation_on: rule(language.core_format.nodes.annotations.annotation_term, by = system.linter) {
+  @by(system.linter)
+  @targets(language.core_format.nodes.annotations.annotation_term)
+  annotation_on: rule {
     where {{ an annotation is declared with `on`, a list of kinds and categories }}
     should {{ report annotation placement where it stands on a node whose kind fits none of them }}
     while {{ the annotation's `on` lists kinds or categories }}
   }
 
-  annotation_on_params: rule(language.core_format.nodes.annotations.annotation_term, by = system.linter) {
+  @by(system.linter)
+  @targets(language.core_format.nodes.annotations.annotation_term)
+  annotation_on_params: rule {
     where {{ an annotation stands on a parameter, as `get_one(@path id: String): op` }}
     should {{ report annotation on a parameter unless its `on` names a kind of typed members that parameters are, such as `types.param` }}
   }
 
-  repeatable: rule(language.core_format.nodes.annotations.annotation_term, by = system.linter) {
+  @by(system.linter)
+  @targets(language.core_format.nodes.annotations.annotation_term)
+  repeatable: rule {
     if {{ an annotation stands twice on one node and its declaration isn't flagged `annotation<repeatable>` }}
     should {{ report annotation repeated at the second }}
   }
 
-  extern: rule(language.core_format.nodes.annotations.annotation_term, by = system.extension_host) {
+  @by(system.extension_host)
+  @targets(language.core_format.nodes.annotations.annotation_term)
+  extern: rule {
     must {{ bind a declaration annotated `@extern(e)` to the [extension](#language.schemas.extensions.extension_process) `e`, which implements it }}
     example {{ `@extern(compliance) redact(text: String): func(String)` }}
   }
 
   errors: section {
     @realizes(language.apis.params.location_placement, language.core_format.nodes.annotations.annotation_placement, language.schemas.annotations.annotation_on)
-    annotation_misplaced: error("annotation-placement", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    annotation_misplaced: error("annotation-placement") {
       title = "@{annotation} doesn't attach to {kind}; it attaches to {kinds}"
       annotation: field(String)
       kind: field(String)
@@ -40,14 +52,18 @@ annotations: section {
     }
 
     @realizes(language.schemas.annotations.annotation_on_params)
-    annotation_on_param: error("annotation-placement", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    annotation_on_param: error("annotation-placement") {
       title = "@{annotation} doesn't attach to a parameter; it attaches to {kinds}"
       annotation: field(String)
       kinds: field(String)
     }
 
     @realizes(language.schemas.annotations.repeatable)
-    annotation_repeated: error("annotation-placement", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    annotation_repeated: error("annotation-placement") {
       title = "@{annotation} stands twice on one node, and it isn't <repeatable>"
       annotation: field(String)
     }

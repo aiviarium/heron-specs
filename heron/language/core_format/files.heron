@@ -19,36 +19,50 @@ files: section {
     included file's root joins the root or the scope that includes it.
   }}
 
-  no_core_kinds: rule(language.core_format, by = system.checker) {
+  @by(system.checker)
+  @targets(language.core_format)
+  no_core_kinds: rule {
     mustNot {{ define a kind of its own in the core format }}
     instead {{ leave every kind to the packages in `import`, with the core's own names declared in the prelude package `std/core` that every tree sees without importing it }}
   }
 
-  file_kinds: rule(heron_file, by = system.checker) {
+  @by(system.checker)
+  @targets(heron_file)
+  file_kinds: rule {
     must {{ read a file ending in `.heron.md` as a [prose file](#language.core_format.prose_layer.prose_file) and any other file as structure }}
   }
 
-  entry_from_folder: rule(entry_point, by = system.checker) {
+  @by(system.checker)
+  @targets(entry_point)
+  entry_from_folder: rule {
     must {{ read a folder given as the [entry point](#language.core_format.files.entry_point) as its `index.heron` }}
     then {{ `heron check spec` and `heron check spec/index.heron` check the same tree }}
   }
 
-  one_identity: rule(heron_file, by = system.checker) {
+  @by(system.checker)
+  @targets(heron_file)
+  one_identity: rule {
     must {{ identify a file on disk by its cleaned absolute path with symbolic links resolved, and a file of a standard package by `std:` and its path, so every spelling of one file is one file }}
     then {{ a path that doesn't exist yet is identified through its nearest existing parent, so an editor's unsaved file has its identity before it's written }}
   }
 
-  one_tree: rule(entry_point, by = system.checker) {
+  @by(system.checker)
+  @targets(entry_point)
+  one_tree: rule {
     must {{ resolve references within the entry point's tree and combine amends across its files }}
     then {{ [entry points](#language.core_format.files.entry_point) can share files, so one repository holds more than one tree, and a file checks differently in each tree that reaches it }}
   }
 
-  unreachable_file: rule(entry_point, by = system.linter) {
+  @by(system.linter)
+  @targets(entry_point)
+  unreachable_file: rule {
     if {{ a `.heron` file in the project is reached by no [entry point](#language.core_format.files.entry_point) }}
     should {{ report unreachable file, since nothing checks it }}
   }
 
-  directives: rule(entry_point, by = system.checker) {
+  @by(system.checker)
+  @targets(entry_point)
+  directives: rule {
     if {{ `include` or `import` is set to anything but a list of plain strings }}
     must {{ report not a list, or not a plain string at an entry that's interpolated or not a string, and skip the entry }}
   }
@@ -77,20 +91,24 @@ files: section {
 
   errors: section {
     @realizes(language.core_format.files.directives)
-    not_a_list: error("directive", by = system.checker) {
+    @by(system.checker)
+    not_a_list: error("directive") {
       title = "{directive} takes a list of strings"
       directive: field(String)
       | ‹directive› is `include` or `import`.
     }
 
     @realizes(language.core_format.files.directives)
-    not_plain: error("directive", by = system.checker) {
+    @by(system.checker)
+    not_plain: error("directive") {
       title = "{directive} entries are plain strings"
       directive: field(String)
     }
 
     @realizes(language.core_format.files.unreachable_file)
-    unreachable_file: error("unreachable-file", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    unreachable_file: error("unreachable-file") {
       title = "no entry point reaches {file}, so nothing checks it"
       file: field(String)
     }

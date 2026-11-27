@@ -15,7 +15,9 @@ types: part {
   | | `Timestamp`, `Duration`, `Money`    | [Typed strings](#language.data.typed_strings), [encodings](#language.data.encodings)                                        |
   | | `u8` … `i64`, `f32`, `f64`          | [Scalars](#language.data.values.scalar)                                                                                     |
 
-  unit_members_dropped: rule(language.std.types, by = language.std.types) {
+  @by(language.std.types)
+  @targets(language.std.types)
+  unit_members_dropped: rule {
     must {{ declare `Duration` and `Money` without members, so a `Duration` or `Money` value is only its parsed string and the wire's milliseconds or decimal }}
     example {{ the members `days` … `millis` of `Duration` and `amount` and `currency` of `Money` are read by nothing and go }}
   }

@@ -8,26 +8,31 @@ code: section {
     | A code block holds a fixed set of statements; anything else on a line of code is an
     | expression.
 
-    statement_shapes: rule(by = system.parser) {
+    @by(system.parser)
+    statement_shapes: rule {
       must {{ read a line of code as `let` and a binding, `return` with an optional value on the same line, an assignment when an expression is followed by `=` and not `==`, a comment, or else an expression statement }}
     }
 
-    trailing_blocks: rule(by = system.parser) {
+    @by(system.parser)
+    trailing_blocks: rule {
       must {{ attach a `{ … }` that follows an expression statement on the same line to it as a code block, and never read `{{` there as one }}
       example {{ `check("x") { expect(a) }`: a call with a trailing block }}
     }
 
-    assignment_targets: rule(by = system.parser) {
+    @by(system.parser)
+    assignment_targets: rule {
       must {{ keep the target of an assignment as a `Path`, not as an expression }}
       example {{ `node.field = 1`: the path `node.field` set to `1` }}
     }
 
-    else_placement: rule(by = system.parser) {
+    @by(system.parser)
+    else_placement: rule {
       must {{ read `else` after an `if` block on the same line as its `}` or at the start of the next line, and `else if` as a nested `IfExpr` }}
       then {{ both layouts give the same tree, and the formatter keeps the one written }}
     }
 
-    for_loops: rule(by = system.parser) {
+    @by(system.parser)
+    for_loops: rule {
       must {{ read `for name in expr` followed by a code block as a loop over the value of `expr` }}
     }
   }
@@ -44,36 +49,43 @@ code: section {
     | | 4     | `+` `-`                                |
     | | 5     | `*` `/` `%`                            |
 
-    operator_precedence: rule(by = system.parser) {
+    @by(system.parser)
+    operator_precedence: rule {
       must {{ group binary operators by the levels of the [table](#heron.language.markup.components.table), a higher level first, and operators of one level from the left }}
       example {{ `a or b and c` is `a or (b and c)`; `1 + 2 * 3` is `1 + (2 * 3)`; `a - b - c` is `(a - b) - c` }}
     }
 
-    unary_operators: rule(by = system.parser) {
+    @by(system.parser)
+    unary_operators: rule {
       must {{ apply `not` to an operand read at level 3 and above, and `-` to the operand directly after it }}
       example {{ `not a == b` is `not (a == b)`; `-a.b` negates `a.b` }}
     }
 
-    postfix_binds_tightest: rule(by = system.parser) {
+    @by(system.parser)
+    postfix_binds_tightest: rule {
       must {{ attach a call's flags and arguments and a field access to the value directly before them, with no space between, before any operator applies }}
       example {{ `f (x)` isn't a call, and `list.contains(x)` calls `contains` on `list` }}
     }
 
-    operator_continues_line: rule(by = system.parser) {
+    @by(system.parser)
+    operator_continues_line: rule {
       must {{ continue an expression onto the next line after an operator that ends a line }}
     }
 
-    unspaced_operators: rule(by = system.parser) {
+    @by(system.parser)
+    unspaced_operators: rule {
       must {{ read an operator with or without spaces around it, except that `<` directly after a name and followed by a flag list is a flag list }}
       example {{ `a<b` and `a < b`: comparisons; `f<pure>(1)`: a call with a flag }}
     }
 
-    word_logic: rule(by = system.parser) {
+    @by(system.parser)
+    word_logic: rule {
       must {{ write logic with the words `and`, `or` and `not`, and membership and type tests with `in` and `is` }}
       then {{ `|` and `&` keep their type meaning, a union and an intersection, and never combine values }}
     }
 
-    union_not_prose: rule(by = system.parser) {
+    @by(system.parser)
+    union_not_prose: rule {
       mustNot {{ read a `|` after a value as an operator or as the start of prose }}
       instead {{ report the rest of the line, since a prose value starts only right after `=` }}
       example {{ `x = a | b`: `x = a` and an error at `|` }}
@@ -85,18 +97,22 @@ code: section {
       [embedded string](#language.grammar.strings.embedded.embedded_string).
     }}
 
-    cast_lookahead: rule(cast, by = system.parser) {
+    @by(system.parser)
+    @targets(cast)
+    cast_lookahead: rule {
       must {{ read `(` as a [cast](#language.grammar.code.expressions.cast) when its bracket closes before any string, line end, brace, `|` or `=`, and a string, a raw string, `[`, `{`, `(`, a digit or a name follows the `)` with no space }}
       then {{ any other `(` opens a parenthesised expression }}
       example {{ `(a) + 1` adds, while `(u8)12` converts }}
     }
 
-    collection_literals: rule(by = system.parser) {
+    @by(system.parser)
+    collection_literals: rule {
       must {{ separate an array's items with `,`, and a map's entries with `,` or a line end, allowing line ends anywhere between items and one trailing comma }}
       example {{ `{ a = 1, b = [2]` and `c = "d" }` on the next line: a map of three entries }}
     }
 
-    map_after_eq: rule(by = system.parser) {
+    @by(system.parser)
+    map_after_eq: rule {
       must {{ read `{` where a value is expected as a map whose entries are paths set with `=`, and `{{` there as a prose value }}
       then {{ a map can never start with `{{`, because its entries start with a name }}
     }
@@ -105,12 +121,14 @@ code: section {
   types: section {
     | A type is a path with optional flags and arguments, combined with `?`, `|` and `&`.
 
-    type_operators: rule(by = system.parser) {
+    @by(system.parser)
+    type_operators: rule {
       must {{ read `?` directly after a type as optional, `|` followed by a space as a union and `&` as an intersection, the two combined from the left }}
       example {{ `String?`; `A | B`; `Comparable & Listable` }}
     }
 
-    type_arguments: rule(by = system.parser) {
+    @by(system.parser)
+    type_arguments: rule {
       must {{ read type arguments as an ordinary argument list after the type's name, never in `< >` }}
       then {{ `< >` after a type holds flags only }}
       example {{ `List(Payment)` and `task<confirm>` }}
@@ -119,7 +137,8 @@ code: section {
 
   /// The productions of code, expressions and types.
   @display("Code productions")
-  tree: grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
+  @source("grammar/heron.ungram")
+  tree: grammar(notation = "ungrammar") {
     /// A block of statements.
     Code: production {{ LBrace Stmt* RBrace }}
     @realizes(language.grammar.code.statements.statement_shapes)

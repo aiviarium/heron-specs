@@ -45,23 +45,31 @@ values: section {
     `u8` to `u64`, `i8` to `i64`, `f32` and `f64`.
   }}
 
-  required_members: rule(absence, by = system.checker) {
+  @by(system.checker)
+  @targets(absence)
+  required_members: rule {
     if {{ a [record value](#language.data.values.record_value) leaves out a member that has no `?` and no default }}
     must {{ report missing member }}
   }
 
-  absent_read: rule(absence, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(absence)
+  absent_read: rule {
     if {{ code reads a member that is absent }}
     must {{ throw, naming the member }}
     example {{ code checks presence first with `payment.has(note)` }}
   }
 
-  defaults_present: rule(absence, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(absence)
+  defaults_present: rule {
     where {{ a member has a default, as in `currency: String = "EUR"` }}
     must {{ treat it as optional on input and present, with its default, on every value read }}
   }
 
-  sized_numbers: rule(scalar, by = system.checker) {
+  @by(system.checker)
+  @targets(scalar)
+  sized_numbers: rule {
     if {{ an integer literal doesn't fit the `bits` and `signed` of the `Int` expected }}
     must {{ report out of range }}
     example {{ `-1` where a `u8` is expected, and `256` where one is }}
@@ -69,14 +77,16 @@ values: section {
 
   errors: section {
     @realizes(language.data.values.required_members)
-    missing_member: error("missing-argument", by = system.checker) {
+    @by(system.checker)
+    missing_member: error("missing-argument") {
       title = "{type} needs the member {name}"
       type: field(String)
       name: field(String)
     }
 
     @realizes(language.data.values.sized_numbers)
-    out_of_range: error("type", by = system.checker) {
+    @by(system.checker)
+    out_of_range: error("type") {
       title = "{value} doesn't fit {type}, which holds {min} to {max}"
       value: field(String)
       type: field(String)

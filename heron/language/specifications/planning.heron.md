@@ -12,31 +12,31 @@ targets.
 </term>
 
 <term id="open_kind">
-`name: open(targets, owner = …) {{ … }}`, a question still to answer about its
-targets, asked in its text, with `owner` naming who answers it.
+`@targets(nodes…) @owner("…") open {{ … }}`, a question still to answer about its
+targets, asked in its text, with `@owner` naming who answers it.
 </term>
 
-<rule id="open_view" targets="open_kind" by="system.docs_generator">
+<rule id="open_view" @targets="open_kind" @by="system.docs_generator">
 <must>show an open question as a callout labelled "Open question", with its owner and its targets</must>
 </rule>
 
-<rule id="open_beside_flag" targets="open_kind" by="actors.author">
+<rule id="open_beside_flag" @targets="open_kind" @by="actors.author">
 <where>a file imports `std/types` beside `std/spec`</where>
-<must>write an open question as `spec.open(…)`</must>
+<must>write an open question as `spec.open {{ … }}`</must>
 <then>the name `open` can't resolve to the `<open>` flag `std/types` gives records, which "open is not a kind or a type" reports</then>
 </rule>
 
-<rule id="spec_never_imports_planning" targets="planning_tree" by="actors.author">
+<rule id="spec_never_imports_planning" @targets="planning_tree" @by="actors.author">
 <mustNot>import the [planning tree](#language.specifications.planning.planning_tree) from the spec tree</mustNot>
 <instead>let the [planning tree](#language.specifications.planning.planning_tree) import the spec, so the spec never loads its questions</instead>
 </rule>
 
-<rule id="resolving_translates" targets="open_kind" by="actors.author">
+<rule id="resolving_translates" @targets="open_kind" @by="actors.author">
 <when>an open question is answered</when>
 <must>write the requirement or the `nongoal` it was about, and delete the question</must>
 </rule>
 
-<rule id="planning_checks" targets="planning_tree" by="system.linter">
+<rule id="planning_checks" @targets="planning_tree" @by="system.linter">
 <should>report open questions on targets about to ship</should>
 </rule>
 
@@ -45,7 +45,9 @@ targets, asked in its text, with `owner` naming who answers it.
 // planning/refunds.heron
 import = ["std/spec@1", "../refunds/"]
 
-open(refunds.refund_window, owner = "cf") {{
+@targets(refunds.refund_window)
+@owner("cf")
+open {{
   Do partial refunds reset the window?
 }}
 ```

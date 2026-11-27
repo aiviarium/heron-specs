@@ -18,66 +18,86 @@ typed_strings: section {
     A string with inserts isn't parsed, since its text is only known when it runs.
   }}
 
-  parsed_where_expected: rule(typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(typed_string)
+  parsed_where_expected: rule {
     where {{ a string literal with no inserts, or a [cast](#language.grammar.code.expressions.cast) `(Duration)"30d"`, is written where `Duration`, `Money` or `Timestamp` is expected }}
     must {{ parse it by the expected type's form, and report the type's diagnostic, coded `typed-string`, at the string where it doesn't parse }}
   }
 
-  parsers_by_path: rule(typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(typed_string)
+  parsers_by_path: rule {
     must {{ hold one parser per [typed string](#language.data.typed_strings.typed_string) type, keyed by its type's path in `std/types`: `types.Duration`, `types.Money` and `types.Timestamp` }}
     then {{ a type declared outside `std/` never parses from a string }}
   }
 
-  other_literals: rule(typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(typed_string)
+  other_literals: rule {
     if {{ a literal other than a string, such as `30`, is written where a typed-string type is expected }}
     must {{ report wrong type }}
     while {{ the literal is no [record value](#language.data.values.record_value) of the type, as `Duration(days = 30)` is, which is checked as any record }}
   }
 
-  duration_form: rule(language.data.typed_strings.typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(language.data.typed_strings.typed_string)
+  duration_form: rule {
     must {{ accept as a `Duration` one or more parts written together, each digits with an optional `.` and digits, followed by one suffix: `ms` milliseconds, `s` seconds, `m` minutes, `h` hours, `d` days or `w` weeks }}
     example {{ `1h30m` is ninety minutes, and `1.5h` is the same; a suffix is lower case and nothing separates the parts }}
   }
 
-  money_form: rule(language.data.typed_strings.typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(language.data.typed_strings.typed_string)
+  money_form: rule {
     must {{ accept as `Money` an optional `-`, digits, an optional `.` and digits, one space, and three upper-case letters naming the currency }}
   }
 
-  currency_codes: rule(language.data.typed_strings.typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(language.data.typed_strings.typed_string)
+  currency_codes: rule {
     must {{ accept only a currency code ISO 4217 assigns, and report not money for any other three letters, such as `XYZ` }}
   }
 
-  timestamp_form: rule(language.data.typed_strings.typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(language.data.typed_strings.typed_string)
+  timestamp_form: rule {
     must {{ accept as a `Timestamp` a date `YYYY-MM-DD`, a local date and time `YYYY-MM-DDThh:mm:ss`, or an RFC 3339 time with fractional seconds and a `Z` or `±hh:mm` offset, each a real date on the calendar }}
     then {{ `2026-02-30` and `2026-03-01T09:30`, which has no seconds, are rejected }}
   }
 
-  version_form: rule(language.data.typed_strings.typed_string, by = system.checker) {
+  @by(system.checker)
+  @targets(language.data.typed_strings.typed_string)
+  version_form: rule {
     must {{ accept as a `Version` two or three dot-separated runs of digits, optionally followed by `-` and a pre-release name of letters, digits and dots, and order versions by their numbers, with a pre-release before its release }}
     example {{ `1.0` sorts before `1.0.1`, and `1.0.0-rc1` before `1.0.0` }}
   }
 
   errors: section {
     @realizes(language.core_format.values.strings_parsed_by_type)
-    not_a_duration: error("typed-string", by = system.checker) {
+    @by(system.checker)
+    not_a_duration: error("typed-string") {
       title = "\"{text}\" is not a duration; write a number and a unit, as in \"30d\", \"20m\" or \"200ms\""
       text: field(String)
     }
 
     @realizes(language.data.typed_strings.currency_codes)
-    not_money: error("typed-string", by = system.checker) {
+    @by(system.checker)
+    not_money: error("typed-string") {
       title = "\"{text}\" is not an amount of money; write the amount and an ISO 4217 currency, as in \"40.00 EUR\""
       text: field(String)
     }
 
     @realizes(language.data.typed_strings.timestamp_form)
-    not_a_timestamp: error("typed-string", by = system.checker) {
+    @by(system.checker)
+    not_a_timestamp: error("typed-string") {
       title = "\"{text}\" is not a timestamp; write an RFC 3339 time or a date, as in \"2026-03-01\""
       text: field(String)
     }
 
     @realizes(language.data.typed_strings.version_form)
-    not_a_version: error("typed-string", by = system.checker) {
+    @by(system.checker)
+    not_a_version: error("typed-string") {
       title = "\"{text}\" is not a version; write two or three numbers, as in \"1.0\" or \"2.1.4\""
       text: field(String)
     }

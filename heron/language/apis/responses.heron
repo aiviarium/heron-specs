@@ -20,32 +20,44 @@ responses: section {
     `@status(422)` above a type that implements `Error`.
   }}
 
-  api_errors_add: rule(throws_annotation, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(throws_annotation)
+  api_errors_add: rule {
     must {{ add the errors of an api's `@throws` to each of its ops' own, the op's first }}
   }
 
-  interface_errors: rule(throws_annotation, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(throws_annotation)
+  interface_errors: rule {
     where {{ `@throws` names an interface }}
     must {{ read it as every type that implements the interface }}
     example {{ `@throws(StoreError)` lists `NotFound` with 404 and `Conflict` with 409 when both implement `StoreError` }}
   }
 
-  responses_shown: rule(result_type, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(result_type)
+  responses_shown: rule {
     must {{ show an op's responses as its success, with status 200 when it's bound to HTTP, and then each error it declares, with its `@status` }}
     then {{ an op with no [result type](#language.apis.responses.result_type) shows no success body }}
   }
 
-  thrown_types_are_errors: rule(throws_annotation, by = system.checker) {
+  @by(system.checker)
+  @targets(throws_annotation)
+  thrown_types_are_errors: rule {
     if {{ `@throws` names a type that doesn't implement `Error` }}
     must {{ report not an error at the name }}
   }
 
-  status_on_errors: rule(status_annotation, by = system.linter) {
+  @by(system.linter)
+  @targets(status_annotation)
+  status_on_errors: rule {
     if {{ `@status` stands on a type that doesn't implement `Error`, or gives a code outside 400 to 599 }}
     should {{ report status outside an error at the annotation }}
   }
 
-  transport_errors: rule(throws_annotation, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(throws_annotation)
+  transport_errors: rule {
     when {{ a transport answers a call with a declared error }}
     must {{ throw it in the caller as a Heron error of that type, with its fields }}
     then {{ `attempt(…)` catches it like any [thrown error](#language.scripting.code.thrown_error) }}
@@ -54,7 +66,9 @@ responses: section {
   errors: section {
     @realizes(language.apis.responses.status_on_errors)
     @display("Status outside an error")
-    status_misplaced: error("status", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    status_misplaced: error("status") {
       title = "@status({code}) stands on {type}, which isn't an error with a 4xx or 5xx code"
       code: field(String)
       type: field(String)
