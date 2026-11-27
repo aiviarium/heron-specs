@@ -12,7 +12,7 @@ against the facet hash the docs show. Every name, id and tag in them is the one
 </rule>
 
 <rule id="sparrow_contents" targets="tools.sparrow" by="system.generator">
-<must>write each `.sparrow` file in Sparrow's Core Deterministic Encoding of the canonical facet, or of the canonical `schema` document, without the self-described CBOR tag, so its bytes decode to the facet and hash to the facet hash the docs show</must>
+<must>write each `.sparrow` file in Sparrow's Core Deterministic encoding of the canonical facet, or of the canonical `schema` document, without the self-described CBOR tag, so its bytes decode to the facet and hash to the facet hash the docs show</must>
 </rule>
 
 <rule id="sparrow_json" targets="tools.sparrow" by="system.generator">
