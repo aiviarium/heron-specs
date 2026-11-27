@@ -39,7 +39,7 @@ its header.
 
 <rule id="gutter_marks" targets="tools.docs.rendering" by="system.docs_generator">
 <where>the lens's `kinds` is `ICON`, as it is unless set</where>
-<must>show beside each node a page renders inline as a block of its own, a rule, a goal, a term, a scenario, a use case or a diagnostic, the icon it shows in the left gutter, level with its first line: muted, in the [project colour](#tools.frontend.design_system.project_colour) on hover, with the node's kind and name as its tooltip and label, and as the link to the node's anchor; and on a narrow screen, before its text</must>
+<must>show beside each node a page renders inline as a block of its own, a rule, a goal, a term, a scenario, a use case, a transition or a diagnostic, the icon it shows in the left gutter, level with its first line: muted, in the [project colour](#tools.frontend.design_system.project_colour) on hover, with the node's kind and name as its tooltip and label, and as the link to the node's anchor; and on a narrow screen, before its text; and, before the name of a defined node that has a heading of its own, such as a [lifecycle](#language.specifications.lifecycles.lifecycle), its kind's icon</must>
 <then>a reader tells the nodes a page defines from its descriptive prose at a glance, and the text never moves for the mark</then>
 </rule>
 
