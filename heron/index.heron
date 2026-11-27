@@ -23,14 +23,22 @@ heron: package(version = "0.6.0", sealed = true) {
   ]
 
   // A folder's scope is named after the folder, so a name that's an acronym
-  // gets its display name here, where the folder is included.
+  // gets its display name here, where the folder is included, and its icon.
   @display("CLI")
+  @icon("terminal")
   cli {}
 
   // The lenses a folder is for are said where the folder is included, as
   // the guide says: the tools are for people who write trees of their own.
   @lens(developer)
+  @icon("wrench")
   tools {}
+
+  @icon("braces")
+  language {}
+
+  @icon("graduation-cap")
+  learn {}
 
   one_source: goal(measure = "Spec, tests and docs of a tree never disagree in CI.") {{
     A team writes down what its system does once, as plain text it reviews like code, and

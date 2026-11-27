@@ -3,6 +3,7 @@
 include = [
   "./site.heron.md",
   "./lenses.heron",
+  "./icons.heron",
   "./standard_lenses.heron.md",
   "./explore.heron.md",
   "./page_layout.heron.md",

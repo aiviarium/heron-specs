@@ -34,3 +34,4 @@ typeahead
 gRPC
 [Uu]ncoded
 [Bb]uf
+Lucide
