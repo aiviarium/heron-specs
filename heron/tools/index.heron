@@ -12,6 +12,7 @@ include = [
   "./asyncapi.heron.md",
   "./proto.heron.md",
   "./openrpc.heron.md",
+  "./sparrow.heron.md",
   "./frontend/",
 ]
 

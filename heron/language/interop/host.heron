@@ -63,7 +63,7 @@ host: section {
     }
 
     stderr_prefixed: rule(js_host, by = system.extension_host) {
-      must {{ pass each line a process writes on standard error, and each `$/log` it sends as `‹level›: ‹message›`, to heron's standard error after the process's name }}
+      must {{ pass each line a process writes on standard error, and each `log` notification it sends as `‹level›: ‹message›`, to heron's standard error after the process's name }}
     }
 
     shutdown: rule(js_host, by = system.extension_host) {
@@ -72,7 +72,7 @@ host: section {
     }
 
     progress_shown: rule(ctx_term, by = system.extension_host) {
-      when {{ foreign code reports `$/progress` for a call }}
+      when {{ foreign code reports Sparrow `Progress` on a call }}
       must {{ show it beside the call in the run's output and the editor }}
     }
   }

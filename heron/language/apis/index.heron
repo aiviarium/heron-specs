@@ -10,11 +10,12 @@ include = [
   "./rpc.heron.md",
   "./grpc.heron",
   "./jsonrpc.heron",
+  "./sparrow.heron",
   "./examples.heron",
 ]
 
 @lens(user, developer)
-| APIs and their ops, where their parameters travel, what they answer, how they stream, the annotations that cut across them, the transports that carry them, their gRPC, Connect and JSON-RPC bindings, and their examples.
+| APIs and their ops, where their parameters travel, what they answer, how they stream, the annotations that cut across them, the transports that carry them, their gRPC, Connect, JSON-RPC and Sparrow bindings, and their examples.
 
 apis_described: goal(measure = "An API is described once, for every transport.") {{
   Teams describe their APIs once and get types, docs and examples for every transport from that description.
