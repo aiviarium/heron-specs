@@ -12,6 +12,7 @@ base ones.
 | `/api/v1/lsp`     | the language server, over a websocket                                    |
 | `/docs/…`         | the spec browser: the docs site of the tree, rendered live               |
 | `/docs/_assets/…` | the docs' stylesheet and script, which style a preview in any client     |
+| `/agents/…`       | the [agent export](#tools.docs.agents.agent_export) of the tree, rendered live                  |
 | anything else     | the frontend, with `index.html` for every path it has no file for        |
 
 The API is JSON over HTTP: each request and response body is one JSON object, a stream is
@@ -25,7 +26,7 @@ alone; no op of the server reads or writes it.
 </rule>
 
 <rule id="spa_fallback" targets="tools.server.serving" by="system.server">
-<must>serve the files of the frontend, and `index.html` for any other path outside `/api/` and `/docs/`</must>
+<must>serve the files of the frontend, and `index.html` for any other path outside `/api/`, `/docs/` and `/agents/`</must>
 <then>the app's own routes load from a deep link</then>
 </rule>
 
@@ -69,6 +70,11 @@ alone; no op of the server reads or writes it.
 <rule id="spec_browser" targets="tools.server.serving" by="system.server">
 <must>serve the docs site of the served tree under `/docs/`, rendered from the session's latest check by the same renderer as `heron generate docs`, with its assets under `/docs/_assets/`</must>
 <then>what people read and what they edit never look different</then>
+</rule>
+
+<rule id="agent_export_served" targets="tools.server.serving" by="system.server">
+<must>serve the [agent export](#tools.docs.agents.agent_export) of the served tree under `/agents/`, rendered from the session's latest check as `heron generate agents` writes it, each file as `text/markdown` or `text/plain` for `llms.txt`, with `/agents/` itself serving its [agent index](#tools.docs.agents.agent_index)</must>
+<then>an agent next to a running server reads the spec being edited, as it stands</then>
 </rule>
 
 <rule id="docs_caching" targets="tools.server.serving" by="system.server">
@@ -174,6 +180,10 @@ What the ops of [the server API](#tools.server_api.spec_server) do beyond what t
 <rule id="task_runs_otherwise" targets="tools.server.ops" by="system.server">
 <if>the task is already running</if>
 <must>answer 409 "{path} is already running"</must>
+</rule>
+
+<rule id="agent_export_op" targets="tools.server.ops" by="system.server">
+<must>answer `agent_export` with every file of the tree's [agent export](#tools.docs.agents.agent_export), its path and its text, in the order of its [agent index](#tools.docs.agents.agent_index)'s map after the index and `llms.txt`, or with the one file its `path` names, and with [no such file](#tools.server_api.no_such_file) when the export has no file at that path</must>
 </rule>
 
 <rule id="run_results" targets="tools.server.ops" by="system.server">

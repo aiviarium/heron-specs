@@ -1,8 +1,8 @@
 # Standard lenses {#standard_lenses}
 
-`std/docs` ships three lenses, declared in Heron like any other: `user`, for the people
+`std/docs` ships four lenses, declared in Heron like any other: `user`, for the people
 who use what a tree describes; `developer`, for the people who write trees of their own;
-and `explore`, the whole tree. [The standard lenses](#tools.docs.standard_lenses.standard_lens_declarations)
+`explore`, the whole tree; and `agent`, the whole spec in Markdown for agents. [The standard lenses](#tools.docs.standard_lenses.standard_lens_declarations)
 are written out below as a file that declares them; a site chooses among them, and a package overrides one by
 declaring a lens of the same name.
 
@@ -32,12 +32,22 @@ explore: lens {
   nav = LensNav.TREE
   prefix = "explore"
 }
+
+agent: lens {
+  title = "Agents"
+  nav = LensNav.TREE
+  format = LensFormat.MARKDOWN
+  marks = false
+  hide = [docs.authored]
+  budget = 6000
+  prefix = "agents"
+}
 ```
 </example>
 
 <rule id="declared_in_heron" targets="tools.docs.standard_lenses" by="system.docs_generator">
-<must>read `user`, `developer` and `explore` from their declarations in `std/docs`, with the fields [the standard lenses](#tools.docs.standard_lenses.standard_lens_declarations) give them, and render them by the same rules as any lens</must>
-<then>no lens is built into the generator, and an override of `user` or `developer` changes what it shows</then>
+<must>read `user`, `developer`, `explore` and `agent` from their declarations in `std/docs`, with the fields [the standard lenses](#tools.docs.standard_lenses.standard_lens_declarations) give them, and render them by the same rules as any lens</must>
+<then>no lens is built into the generator, and an override of `user`, `developer` or `agent` changes what it shows</then>
 </rule>
 
 ## User lens {#user_lens}
@@ -96,4 +106,21 @@ says how it's rendered.
 <rule id="explore_by_name" targets="tools.docs.standard_lenses.explore_lens" by="system.docs_generator">
 <must>render every node in full in a lens named `explore` that a tree declares, whatever its lists, and take only its `title`, `nav`, `entry` and `prefix` from the override</must>
 <then>no lens list and no [lens mark](#tools.docs.lenses.lens_mark) can keep a node out of the full view</then>
+</rule>
+
+## Agent lens {#agent_lens}
+
+For an agent that builds, changes or reviews what the tree specifies: every requirement of
+every [layer](#language.specifications.layers.layer), in full, as the plain Markdown files of the [agent export](#tools.docs.agents.agent_export). It reads no
+[lens marks](#tools.docs.lenses.lens_mark), since the marks choose pages for the site's
+audiences, and it leaves out the [authored pages](#language.markup.authored_pages.authored_page), which retell the spec for people.
+
+<rule id="agent_shows" targets="tools.docs.standard_lenses.agent_lens" by="system.docs_generator">
+<must>write, in the `agent` lens, every node of the tree in full but the [authored pages](#language.markup.authored_pages.authored_page), whatever [lens marks](#tools.docs.lenses.lens_mark) it carries, as Markdown</must>
+<then>a node another lens leaves out by a mark is still in the export, and the tutorials and how-tos aren't</then>
+</rule>
+
+<rule id="agent_not_switched" targets="tools.docs.standard_lenses.agent_lens" by="system.docs_generator">
+<mustNot>list the `agent` lens in the lens switcher, or link a page of the site to it</mustNot>
+<instead>reach it from `llms.txt` at the site's root, where agents look</instead>
 </rule>

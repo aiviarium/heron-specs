@@ -8,7 +8,7 @@ not_in_workspace: error("server.NOT_IN_WORKSPACE", status = 400) {
   | A path that is absolute or leaves the workspace's folder.
 }
 
-@realizes(tools.server.ops.file_changes)
+@realizes(tools.server.ops.file_changes, tools.server.ops.agent_export_op)
 no_such_file: error("server.NO_SUCH_FILE", status = 404) {
   title = "{path}: no such file"
   path: field(String)
