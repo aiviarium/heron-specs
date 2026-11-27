@@ -62,7 +62,7 @@ in full and the surface of what it links, for a task that needs that part alone.
 
 <rule id="budget_split" targets="tools.docs.agents.size_budget" by="system.docs_generator">
 <where>an [area file](#tools.docs.agents.area_file) would hold more [approximate tokens](#tools.docs.agents.approximate_tokens) than the lens's [size budget](#tools.docs.agents.size_budget)</where>
-<must>give each section and [folder scope](#guide.layout.folder_scope) it holds a file of its own; and where it's still over the budget and holds no section, split it into parts at the boundaries between its nodes, each part as full as the budget allows, the first named by the id and the others by the id, a dot and the part's number from 2, as `language.apis.grpc.2.md`</must>
+<must>give each section and [folder scope](#guide.layout.folder_scope) it holds a file of its own; and where it's still over the budget and holds no section, split it into parts at the boundaries between its nodes, in order, each within the budget, the first named by the id and the others by the id, a dot and the part's number from 2, as `language.apis.grpc.2.md`</must>
 <then>only a file of one node larger than the budget is over it, and the same tree always splits the same way</then>
 </rule>
 
