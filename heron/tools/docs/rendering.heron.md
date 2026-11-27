@@ -79,8 +79,8 @@ its header.
 </rule>
 
 <rule id="content_width" targets="tools.docs.rendering" by="system.docs_generator">
-<must>set what a page gives to be read, its prose, rules, callouts, lists and fields, to the measure of the [type scale](#tools.frontend.design_system.tokens.type_scale), and what it gives to be looked at, its code blocks, [tables](#heron.language.markup.components.table), field lists, examples and diagrams, to the page's wide width, about 1100 px, and scroll a code block or a [table](#heron.language.markup.components.table) wider than that inside its own frame</must>
-<then>every block of a page shares one left edge, and a reader's lines stay short while code and [tables](#heron.language.markup.components.table) use the window</then>
+<must>set every block of a page, prose, rules, callouts, lists, fields, code blocks, [tables](#heron.language.markup.components.table), examples and diagrams, to the page's one width, the measure of the [type scale](#tools.frontend.design_system.tokens.type_scale), whatever the page holds, and scroll a code block or a [table](#heron.language.markup.components.table) wider than that inside its own frame; an op's examples stand in the right [column](#heron.language.grammar.lexical.column), at its width</must>
+<then>every block of a page shares one left and one right edge, and that width is the same on every page</then>
 </rule>
 
 <rule id="no_nested_boxes" targets="tools.docs.rendering" by="system.docs_generator">

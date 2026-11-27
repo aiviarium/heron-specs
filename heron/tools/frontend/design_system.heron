@@ -55,7 +55,7 @@ design_system: section {
     }
 
     type_scale: rule(tools.frontend.design_system.tokens, by = system.editor) {
-      must {{ set the interface at 13 px, docs prose at 15 px with lines of about 72 to 80 characters, code, paths, identifiers, field names and numbers in the mono at 12.5 px, and group labels at 11 px }}
+      must {{ set the interface at 13 px, docs prose at 15 px growing with the window to 17 px with lines of about 72 to 90 characters, code, paths, identifiers, field names and numbers in the mono at 12.5 px, and group labels at 11 px }}
     }
 
     quiet_motion: rule(tools.frontend.design_system.tokens, by = system.editor) {

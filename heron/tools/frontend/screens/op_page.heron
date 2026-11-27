@@ -8,12 +8,17 @@ op_page: screen(route = "/<api>.<op>.html") {
     | switch and the theme switch.
   }
 
-  @realizes(tools.frontend.screens.op_page.sidebar.ops_by_resource, tools.frontend.screens.op_page.sidebar.types_by_api, tools.frontend.screens.op_page.sidebar.methods_follow_binding)
+  @realizes(tools.frontend.screens.op_page.sidebar.apis_by_size, tools.frontend.screens.op_page.sidebar.ops_by_resource, tools.frontend.screens.op_page.sidebar.types_by_api, tools.frontend.screens.op_page.sidebar.methods_follow_binding)
   sidebar: region {
     | The API reference's navigation: each API's ops, each with its method, or an RPC
     | method's [streaming kind](#language.apis.rpc.streaming_kind), in a fixed-width mono
-    | [column](#heron.language.grammar.lexical.column), then its types, and the
-    | [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
+    | [column](#heron.language.grammar.lexical.column), then its types in a group that opens,
+    | and the [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
+
+    apis_by_size: rule(by = system.docs_generator) {
+      must {{ list the apis by the count of their ops, the highest first, and apis with equal counts in the order they're declared }}
+      then {{ an api of 18 ops leads the reference ahead of an api of 12 declared before it }}
+    }
 
     ops_by_resource: rule(by = system.docs_generator) {
       must {{ list each api's ops under it, in the order written, each with its HTTP method, or for an op bound by RPC alone its [streaming kind](#language.apis.rpc.streaming_kind), and its [display name](#language.core_format.naming.display_name), then the tree's errors as a group of their own }}
@@ -25,7 +30,7 @@ op_page: screen(route = "/<api>.<op>.html") {
     }
 
     types_by_api: rule(by = system.docs_generator) {
-      must {{ list each api's types as a group right after its ops, each type under the first api that names it, and the types no api names grouped by the scope that declares them }}
+      must {{ list each api's types right after its ops, under the api's own heading, as a group titled Types that's closed unless the page shown is one of them, each type under the first api that names it, and the types no api names under the name of the scope that declares them }}
       then {{ an HTTP api's types and an RPC service's messages are never listed as one group }}
     }
   }
@@ -133,10 +138,16 @@ op_page: screen(route = "/<api>.<op>.html") {
       }
     }
 
-    @realizes(tools.frontend.screens.op_page.body.responses.responses_by_outcome, tools.frontend.screens.op_page.body.responses.streams_shown, tools.frontend.screens.op_page.body.responses.errors_by_code)
+    @realizes(tools.frontend.screens.op_page.body.responses.responses_by_outcome, tools.frontend.screens.op_page.body.responses.error_rule_once, tools.frontend.screens.op_page.body.responses.streams_shown, tools.frontend.screens.op_page.body.responses.errors_by_code)
     responses: region {
       responses_by_outcome: rule(by = system.docs_generator) {
         must {{ list the success response first with status 200, then each error the op or its api throws, an interface by each type that implements it, with its `@status` and the rule or condition behind it }}
+      }
+
+      error_rule_once: rule(by = system.docs_generator) {
+        where {{ the rule behind an error is among the op's rules the lens shows }}
+        must {{ show that rule once, in full under the op's rules, and under the error a link to it by its name }}
+        then {{ an op page never prints one rule's sentence twice }}
       }
 
       error_projections: rule(by = system.docs_generator) {

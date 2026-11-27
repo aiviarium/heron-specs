@@ -41,12 +41,13 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="frame_uses_window" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>use the window's width: put the navigation at the window's left edge and the right [column](#heron.language.grammar.lexical.column) at its right edge, each with a modest margin, and give the page what lies between them; and on a window wider than the frame's maximum width, about 1920 px, centre the frame with equal room on both sides</must>
-<then>no window leaves a wide empty band on one side of the page</then>
+<where>the window is wider than 1180 px</where>
+<must>lay the frame out as three [columns](#heron.language.grammar.lexical.column) inside the window's width, up to a maximum of 1920 px and centred beyond it: the navigation at the frame's left edge, the right [column](#heron.language.grammar.lexical.column) at its right edge, each as wide on every page at a given window width, the right one whether it holds an outline, an op's examples or nothing; and the page in the space between them, at one width that depends only on the window, clamped between about 560 and 760 px, centred in that space</must>
+<then>the content has the same width and the same x on every page at a given window width, so moving between pages never changes it, and the room on either side of it is equal</then>
 </rule>
 
 <rule id="stable_frame" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>start the content at the same distance from the window's left edge on every page that has the navigation, whatever the right side of the page holds, and paint a page whole, never before its frame, the navigation, the page and what stands beside it, is parsed</must>
+<must>give the content the same width and start it at the same distance from the window's left edge on every page that has the navigation, whatever the page or the right side of it holds, and paint a page whole, never before its frame, the navigation, the page and what stands beside it, is parsed</must>
 <then>moving between pages never slides the content sideways or shows a half-built page</then>
 </rule>
 
