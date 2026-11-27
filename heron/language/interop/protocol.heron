@@ -3,14 +3,13 @@ protocol: section {
   | heron speaks one protocol to the [JS host](#language.interop.host.js_host) and to every
   | [extension process](#language.schemas.extensions.extension_process): a
   | [Sparrow session](#language.interop.protocol.sparrow_session) over the process's standard
-  | input and output, on which foreign code calls back into Heron too. Its messages are
+  | input and output, on which foreign code calls back too. Its messages are
   | declared once and [included below](#language.interop.protocol.messages); both sides'
   | bindings and both facets, the apis [extension](#language.interop.protocol.messages.extension)
   | and [host](#language.interop.protocol.messages.host), are generated from them.
 
   sparrow_session: term(aliases = ["extension session"]) {{
-    The protocol: a session of [Sparrow](https://github.com/aiviarium/sparrow/blob/main/spec/core.md)
-    on its pipe binding (core 4.7), its `Hello` from the
+    The protocol: a Sparrow session on the pipe binding (core 4.7), its `Hello` from the
     [extension process](#language.schemas.extensions.extension_process) with the facet
     `heron.extension`, its `Welcome` from heron with `heron.host`. Calls, streams,
     cancellation, progress, time limits and errors are Sparrow's own messages.
@@ -20,7 +19,7 @@ protocol: section {
     @by(system.extension_host)
     @targets(sparrow_session)
     frames: rule {
-      must {{ run the session on Sparrow's pipe binding (core 4.7): each message one CBOR item behind its length as a QUIC variable-length integer, with no stream header, and every call on the shared lane }}
+      must {{ run the session on the pipe binding: each message one CBOR item behind its length as a QUIC variable-length integer, with no stream header, and every call on the shared lane }}
     }
 
     @by(system.extension_host)
@@ -34,7 +33,7 @@ protocol: section {
     @targets(sparrow_session)
     frame_limit: rule {
       if {{ a message is longer than the session's `max_message` }}
-      must {{ refuse it as Sparrow's `maxMessageSize` says (core 4.7, 5.4): a call that would send one fails with the limit-exceeded code, and a message that arrives ends the session with `GoAway(message_too_large)` }}
+      must {{ refuse it as Sparrow's `maxMessageSize` says (core 5.4): a call that would send one fails with the limit-exceeded code, and a message that arrives ends the session with `GoAway(message_too_large)` }}
     }
 
     @by(system.extension_host)
@@ -56,7 +55,7 @@ protocol: section {
     @targets(sparrow_session)
     initialize_first: rule {
       when {{ a process starts }}
-      must {{ take its `Hello` within the 10 seconds Sparrow's handshake allows (core 5.2), answer it with a `Welcome`, then call `initialize` with the protocol version, heron's name and version, the project's root, the declarations the process serves, the limits and the folder for run-scoped files, and wait up to 30 seconds for the answer }}
+      must {{ answer its `Hello`, due in 10 seconds (core 5.2), with a `Welcome`, then call `initialize` with the protocol version, heron's name and version, the project's root, the declarations it serves, the limits and the folder for run-scoped files, and wait up to 30 seconds for the answer }}
       then {{ a process whose `Hello` doesn't publish `heron.extension` is refused with `GoAway(schema_mismatch)` }}
     }
 
@@ -100,7 +99,7 @@ protocol: section {
     @targets(sparrow_session)
     timeouts: rule {
       where {{ a call is made without a time limit of its own }}
-      must {{ give it `timeout_ms` as its `deadline` (core 7.2, 7.5), and when that passes, send `Cancel(deadline_exceeded)` and fail it with the timeout code }}
+      must {{ give it `timeout_ms` as its `deadline` (core 7.5), and when that passes, send `Cancel(deadline_exceeded)` and fail it with the timeout code }}
     }
   }
 
@@ -127,7 +126,7 @@ protocol: section {
     @targets(sparrow_session)
     cancel: rule {
       when {{ the caller cancels a call }}
-      must {{ send Sparrow's `Cancel`, fail it on the caller's side with the cancelled code, and abort its handler on the other side, which answers with `Error(cancelled)` if it finishes anyway }}
+      must {{ send Sparrow's `Cancel`, fail it with the cancelled code, and abort its handler, which answers `Error(cancelled)` if it finishes anyway }}
     }
 
     @by(system.extension_host)
@@ -140,7 +139,7 @@ protocol: section {
     @by(system.extension_host)
     @targets(sparrow_session)
     log_and_progress: rule {
-      must {{ accept the notification `log` with a level and a message, and Sparrow's `Progress` on a call with counts done and total and a note, at any time }}
+      must {{ accept the notification `log` with a level and a message, and Sparrow's `Progress` on a call, with its counts and note, at any time }}
     }
 
     @by(system.extension_host)
@@ -174,7 +173,7 @@ protocol: section {
     @by(system.extension_host)
     @targets(sparrow_session)
     handler_failures: rule {
-      must {{ end a failed call with Sparrow's `Error` (core 7.2, 8): the status the [table](#heron.language.markup.components.table) gives its code, its message, and `ErrorDetails` with the code as details, `-32603` for a handler that fails with anything but a protocol error }}
+      must {{ end a failed call with Sparrow's `Error` (core 8): the status the [table](#heron.language.markup.components.table) gives its code, its message, and `ErrorDetails` with the code as details, `-32603` for a handler that fails with anything but a protocol error }}
       then {{ a status without details, as from a peer that isn't heron's, reads as the code the [table](#heron.language.markup.components.table) gives the status first }}
     }
   }
