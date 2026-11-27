@@ -15,21 +15,25 @@ op_page: screen(route = "/<api>.<op>.html") {
     | [column](#heron.language.grammar.lexical.column), then its types in a group that opens,
     | and the [lifecycles](#language.specifications.lifecycles.lifecycle) and errors.
 
-    apis_by_size: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    apis_by_size: rule {
       must {{ list the apis by the count of their ops, the highest first, and apis with equal counts in the order they're declared }}
       then {{ an api of 18 ops leads the reference ahead of an api of 12 declared before it }}
     }
 
-    ops_by_resource: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    ops_by_resource: rule {
       must {{ list each api's ops under it, in the order written, each with its HTTP method, or for an op bound by RPC alone its [streaming kind](#language.apis.rpc.streaming_kind), and its [display name](#language.core_format.naming.display_name), then the tree's errors as a group of their own }}
     }
 
-    methods_follow_binding: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    methods_follow_binding: rule {
       must {{ show beside each op the method of the binding the reader picked last, where the op has that binding, and of its first binding otherwise, before the page paints }}
       example {{ with gRPC picked, Get parcel shows RPC rather than GET }}
     }
 
-    types_by_api: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    types_by_api: rule {
       must {{ list each api's types right after its ops, under the api's own heading, as a group titled Types that's closed unless the page shown is one of them, each type under the first api that names it, and the types no api names under the name of the scope that declares them }}
       then {{ an HTTP api's types and an RPC service's messages are never listed as one group }}
     }
@@ -40,7 +44,8 @@ op_page: screen(route = "/<api>.<op>.html") {
     | The breadcrumb, the op's [display name](#language.core_format.naming.display_name), and the bar with the method, the path and a copy
     | button.
 
-    op_header: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    op_header: rule {
       must {{ show the method, and the path with the api's base path dimmed before the op's own, and a copy button for the whole path }}
     }
   }
@@ -51,31 +56,37 @@ op_page: screen(route = "/<api>.<op>.html") {
     | shown once, and a switch picks the binding the parts that differ are shown for. The
     | Buf registry and the Connect docs are the reference for how a method of a service reads.
 
-    binding_switch: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    binding_switch: rule {
       where {{ an op has more than one binding }}
       must {{ show a switch of its bindings, HTTP, gRPC, Connect and JSON-RPC in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, with the switch's selected binding always the one shown, and keep the reader's pick from page to page, applied before the page paints }}
       then {{ an op bound to HTTP and gRPC has one page, never one per binding }}
     }
 
-    op_bindings: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    op_bindings: rule {
       must {{ count as an op's bindings HTTP where it has a route or a socket, gRPC where its [service](#language.apis.grpc.proto_service) is served over gRPC or gRPC-Web, Connect where it's served over Connect, and JSON-RPC where it's a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method) }}
     }
 
-    rpc_header: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    rpc_header: rule {
       where {{ the binding picked is gRPC or Connect }}
       must {{ show the method's path, `/<package>.<Service>/<Method>`, with a copy button, its signature as `Method(Request) returns (stream Response)` with each message linked to its part of the page, and its [streaming kind](#language.apis.rpc.streaming_kind) as a badge }}
     }
 
-    jsonrpc_header: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    jsonrpc_header: rule {
       where {{ the binding picked is JSON-RPC }}
       must {{ show the method's wire name with a copy button, and mark a [notification](#language.apis.jsonrpc.jsonrpc_notification) as one }}
     }
 
-    rpc_facts: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    rpc_facts: rule {
       must {{ show a gRPC method's idempotency level and its default time limit as facts of its gRPC and Connect parts }}
     }
 
-    outline_follows_binding: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    outline_follows_binding: rule {
       where {{ a page has a binding switch }}
       must {{ list in the page's outline the headings of the binding shown alone }}
     }
@@ -88,11 +99,13 @@ op_page: screen(route = "/<api>.<op>.html") {
     facts: region {
       | A short list of what the op does beyond its signature.
 
-      performs_shown: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      performs_shown: rule {
         must {{ list the transitions the op's `@performs` names, each linked to its [lifecycle](#language.specifications.lifecycles.lifecycle) }}
       }
 
-      cross_cutting_shown: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      cross_cutting_shown: rule {
         must {{ show the cross-cutting annotations that apply to the op, its own or its api's, such as authentication, rate limits, pagination and idempotency, by their [display names](#language.core_format.naming.display_name) with their arguments }}
       }
     }
@@ -101,11 +114,13 @@ op_page: screen(route = "/<api>.<op>.html") {
     trace: region {
       | Why the op exists and whether to use it.
 
-      realized_shown: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      realized_shown: rule {
         must {{ list the rules and use case steps the op's `@realizes` names, each by its [display name](#language.core_format.naming.display_name) linked to it, never as the annotation's text }}
       }
 
-      deprecated_shown: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      deprecated_shown: rule {
         where {{ an op is marked `deprecated` }}
         must {{ show a deprecation mark beside its name, on its page, in the sidebar and on its api's page, with the op its prose names in its place }}
       }
@@ -113,54 +128,64 @@ op_page: screen(route = "/<api>.<op>.html") {
 
     @realizes(tools.frontend.screens.op_page.body.parameters.grouped_params, tools.frontend.screens.op_page.body.parameters.schema_trees, tools.frontend.screens.op_page.body.parameters.rpc_messages)
     parameters: region {
-      grouped_params: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      grouped_params: rule {
         must {{ group the parameters by where they go, path, query, header and body, a header by its wire name, each row with its name, its type linked to the type's page, whether it's required, its default, its constraints and its docs }}
         while {{ the op takes a parameter with a location }}
       }
 
-      grouped_params_otherwise: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      grouped_params_otherwise: rule {
         when {{ the op takes no parameter with a location }}
         must {{ put the rows under one heading }}
       }
 
-      rpc_messages: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      rpc_messages: rule {
         where {{ the binding picked is gRPC or Connect }}
         must {{ show the [request message](#language.apis.grpc.request_message) and the [response message](#language.apis.grpc.response_message) as lists of their fields, each with its [field number](#language.apis.grpc.field_number), its name, its protobuf type linked to its type's page, its [JSON name](#language.apis.grpc.json_name), whether it's optional and its docs, and then the [metadata](#language.apis.grpc.proto_metadata) the method reads, by name }}
       }
 
-      jsonrpc_params: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      jsonrpc_params: rule {
         where {{ the binding picked is JSON-RPC }}
         must {{ show the method's params by name or by position, as its [params structure](#language.apis.jsonrpc.params_structure) says, a `@params` record by its fields }}
       }
 
-      schema_trees: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      schema_trees: rule {
         must {{ show a body and a response as an expandable tree of its type, each nested type a collapsible row that opens in place with its fields, the first level open and deeper ones closed, a union's variants as tabs, optional and nullable fields marked, and a type already open above shown as a link instead of expanding again }}
       }
     }
 
     @realizes(tools.frontend.screens.op_page.body.responses.responses_by_outcome, tools.frontend.screens.op_page.body.responses.error_rule_once, tools.frontend.screens.op_page.body.responses.streams_shown, tools.frontend.screens.op_page.body.responses.errors_by_code)
     responses: region {
-      responses_by_outcome: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      responses_by_outcome: rule {
         must {{ list the success response first with status 200, then each error the op or its api throws, an interface by each type that implements it, with its `@status` and the rule or condition behind it }}
       }
 
-      error_rule_once: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      error_rule_once: rule {
         where {{ the rule behind an error is among the op's rules the lens shows }}
         must {{ show that rule once, in full under the op's rules, and under the error a link to it by its name }}
         then {{ an op page never prints one rule's sentence twice }}
       }
 
-      error_projections: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      error_projections: rule {
         where {{ an op throws an `error` node }}
         must {{ show it as an outcome with its HTTP status, its id as the body's `code`, its title with each `{field}` marked, its fields and its prose }}
       }
 
-      errors_by_code: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      errors_by_code: rule {
         where {{ the binding picked is gRPC, Connect or JSON-RPC }}
         must {{ list the errors the op throws keyed by the binding's code, the gRPC code's name, the Connect code with its HTTP status, or the JSON-RPC integer, each with its title with every `{field}` marked, its fields and what causes it, as a list rather than a [table](#heron.language.markup.components.table) }}
       }
 
-      streams_shown: rule(by = system.docs_generator) {
+      @by(system.docs_generator)
+      streams_shown: rule {
         where {{ the op takes or returns a `Stream`, or is a WebSocket }}
         must {{ show the message types in each direction and how they're framed: server-sent events for a stream, frames for a socket }}
       }
@@ -175,43 +200,55 @@ op_page: screen(route = "/<api>.<op>.html") {
     | The sticky right [column](#heron.language.grammar.lexical.column): the request example with its language tabs, the example
     | picker, copy and Try it, the response for the selected status, and the page's outline.
 
-    example_forms: rule(language.apis.examples.op_example, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(language.apis.examples.op_example)
+    example_forms: rule {
       must {{ show each op example's request as curl against `$BASE_URL`, as a call of the TS client by the op's parameters, and as raw HTTP, all the same request, and its response with its status }}
     }
 
-    json_messages: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    json_messages: rule {
       where {{ an op has no example }}
       must {{ show its request body and its response as JSON built from their types, each field with a value of its type, as they travel on the wire }}
       then {{ a reader sees every message as JSON before writing a request }}
     }
 
-    rpc_example_forms: rule(language.apis.examples.op_example, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(language.apis.examples.op_example)
+    rpc_example_forms: rule {
       where {{ the binding picked is gRPC, Connect or JSON-RPC }}
       must {{ show each [op example](#language.apis.examples.op_example) as its request and its response in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, and the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC }}
     }
 
-    rpc_try_it: rule(language.apis.rpc.server_url, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(language.apis.rpc.server_url)
+    rpc_try_it: rule {
       where {{ the op's api declares a [server URL](#language.apis.rpc.server_url) and the binding picked is Connect, for a unary or server-streaming method, or JSON-RPC framed for HTTP }}
       must {{ offer Try it, which sends the example's request as JSON to that server, editable, and shows each message of the response as it arrives, or the error with its code }}
     }
 
-    grpc_no_try_it: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    grpc_no_try_it: rule {
       where {{ the binding picked is gRPC, or Connect for a client-streaming or bidirectional method }}
       mustNot {{ offer Try it }}
       instead {{ show the `grpcurl` call to copy, since a browser can't speak gRPC or stream from the client }}
     }
 
-    served_try_it: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    served_try_it: rule {
       where {{ the docs are served by `heron serve` and the op belongs to the API that server publishes }}
       must {{ offer Try it, which sends the request to the page's own origin through the same client the frontend uses, generated from the API, and shows the response as JSON with its status }}
     }
 
-    static_try_it: rule(by = system.docs_generator) {
+    @by(system.docs_generator)
+    static_try_it: rule {
       where {{ the docs are a static build, opened from disk or from a site that doesn't serve the API }}
       mustNot {{ show Try it on an op of the API `heron serve` publishes }}
     }
 
-    error_bodies: rule(language.apis.examples.op_example, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(language.apis.examples.op_example)
+    error_bodies: rule {
       where {{ an example's response is a [thrown error](#language.scripting.code.thrown_error) }}
       must {{ answer it with the error's `@status` and a body of the error type's defaults }}
     }

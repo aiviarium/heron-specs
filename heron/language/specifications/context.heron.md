@@ -24,7 +24,7 @@ date", and `aliases = […]` lists the synonyms it rules out. Prose links to it 
 </term>
 
 <term id="guidance_kind">
-`guidance(targets) {{ … }}`, hints for whoever builds its targets, such as an internal
+`@targets(nodes…) guidance {{ … }}`, hints for whoever builds its targets, such as an internal
 API to use or a convention to follow.
 </term>
 
@@ -33,46 +33,46 @@ A named span of wording, `<span name="window_wording">…</span>`, that [coverag
 point at when the wording itself must be covered.
 </term>
 
-<rule id="out_of_scope_not_built" targets="language.specifications.intent.nongoal_kind" by="actors.implementer">
+<rule id="out_of_scope_not_built" @targets="language.specifications.intent.nongoal_kind" @by="actors.implementer">
 <mustNot>build what a feature puts [leaves out](#language.specifications.intent.nongoal_kind)</mustNot>
 </rule>
 
-<rule id="out_of_scope_shown" targets="language.specifications.intent.nongoal_kind" by="system.docs_generator">
+<rule id="out_of_scope_shown" @targets="language.specifications.intent.nongoal_kind" @by="system.docs_generator">
 <must>show a `nongoal` and a `guidance` as callouts labelled "Not a goal" and "Guidance", with their text</must>
 </rule>
 
-<rule id="flags_on_sections" targets="cross_cutting_section" by="system.linter">
+<rule id="flags_on_sections" @targets="cross_cutting_section" @by="system.linter">
 <should>report [flag placement](#language.schemas.flags.errors.flag_misplaced) at `<security>`, `<privacy>` or `<operations>` on anything but a section</should>
 </rule>
 
-<rule id="terms_linked" targets="term_kind" by="system.prose_linter">
+<rule id="terms_linked" @targets="term_kind" @by="system.prose_linter">
 <should>report [unlinked term](#language.specifications.quality_checks.errors.unlinked_term) where prose outside the term uses its phrase without linking it, and [ruled-out synonym](#language.specifications.quality_checks.errors.ruled_out_synonym) where it uses one of its [aliases](#language.data.values.alias)</should>
 <then>a fix offered with it links the phrase, or replaces the [alias](#language.data.values.alias) with the linked term</then>
 </rule>
 
-<rule id="one_sense" targets="term_kind" by="system.prose_linter">
+<rule id="one_sense" @targets="term_kind" @by="system.prose_linter">
 <should>report [two senses](#language.specifications.quality_checks.errors.two_senses) at each of two terms that define one phrase, by name or by [alias](#language.data.values.alias)</should>
 </rule>
 
-<rule id="term_shown" targets="term_kind" by="system.docs_generator">
+<rule id="term_shown" @targets="term_kind" @by="system.docs_generator">
 <must>show a term as an entry of a definition list, its name and its text</must>
 </rule>
 
-<rule id="guidance_not_required" targets="guidance_kind" by="system.linter">
+<rule id="guidance_not_required" @targets="guidance_kind" @by="system.linter">
 <mustNot>count guidance as a requirement or as covered</mustNot>
 </rule>
 
-<rule id="stale_guidance" targets="guidance_kind" by="system.linter">
+<rule id="stale_guidance" @targets="guidance_kind" @by="system.linter">
 <if>guidance names a symbol of the code that no longer exists</if>
 <should>report the name as a [dead link](#language.specifications.quality_checks.errors.dead_link)</should>
 </rule>
 
-<rule id="values_in_surface" targets="feature_section" by="actors.author">
+<rule id="values_in_surface" @targets="feature_section" @by="actors.author">
 <should>keep the values code depends on in the surface or the data, as a type, a [value binding](#language.data.configuration.value_binding) or a quality, rather than in a rule's text</should>
 <example>a rule mentions "30 days", and the value an implementation reads comes from a type</example>
 </rule>
 
-<rule id="out_of_scope_hint" targets="feature_section" by="system.linter">
+<rule id="out_of_scope_hint" @targets="feature_section" @by="system.linter">
 <if>a section holds requirements and no `nongoal`</if>
 <may>give a hint that the section says nothing of what it leaves out</may>
 </rule>

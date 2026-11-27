@@ -30,20 +30,26 @@ check: command("heron check") {
   }
 
   | Exits 0 when: no [entry point](#language.core_format.files.entry_point) has an error; warnings and hints don't count.
-  exit_1: error("heron check exit 1", exit = 1, by = system.command_line) {
+  @by(system.command_line)
+  @exit(1)
+  exit_1: error("heron check exit 1") {
     title = "an entry point has an error"
   }
-  exit_2: error("heron check exit 2", exit = 2, by = system.command_line) {
+  @by(system.command_line)
+  @exit(2)
+  exit_2: error("heron check exit 2") {
     title = "an unknown option, or an entry point that doesn't exist"
   }
 
   example {{ `heron check spec petstore` checks two trees in one session, so the standard packages are parsed once. }}
 
-  errors_fail: rule(by = system.command_line) {
+  @by(system.command_line)
+  errors_fail: rule {
     must {{ exit with status 1 when any diagnostic of a checked tree is an error, and 0 when every one is a warning or a hint }}
   }
 
-  watch_rechecks_edit: rule(by = system.command_line) {
+  @by(system.command_line)
+  watch_rechecks_edit: rule {
     when {{ a file of a watched tree changes }}
     must {{ check again, rechecking only the nodes the edit touched }}
   }

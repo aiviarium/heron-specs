@@ -4,12 +4,16 @@ extensions: section {
   | declares. The declaration is the extension's manifest: its command, its limits and its
   | pin, read before it ever runs.
 
-  heron_packages_first: rule(language.schemas.extensions, by = actors.author) {
+  @by(actors.author)
+  @targets(language.schemas.extensions)
+  heron_packages_first: rule {
     should {{ add kinds, types, flags, defaults, lints, tasks, funcs and macros as Heron source in a package }}
     while {{ Heron's own `do` blocks can express the behaviour }}
   }
 
-  heron_packages_first_otherwise: rule(language.schemas.extensions, by = actors.author) {
+  @by(actors.author)
+  @targets(language.schemas.extensions)
+  heron_packages_first_otherwise: rule {
     where {{ the behaviour needs code Heron's own `do` blocks can't express, such as a library of another language }}
     may {{ declare an extension that implements it }}
   }
@@ -31,16 +35,22 @@ extensions: section {
     | | `version`  | `String`       | none    | The version `heron run setup` installs and `heron.lock` pins  |
     | | `checksum` | `String`       | none    | The checksum of what's installed, pinned with the version     |
 
-    one_declaration: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    one_declaration: rule {
       must {{ start an extension only from an `extension(…)` declaration, and bind `@extern(e)` only to such a declaration }}
       then {{ every external program has one declaration with its limits and pin, whatever language it's written in, and a TS module is an extension whose `command` runs it, as `extension(command = ["node", "compliance.js"])` }}
     }
 
-    schema_keeps_types: rule(extension_process, by = system.checker) {
+    @by(system.checker)
+    @targets(extension_process)
+    schema_keeps_types: rule {
       must {{ check, complete and document everything an extension implements against the package's declarations, as for built-in parts }}
     }
 
-    pinned: rule(extension_process, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(extension_process)
+    pinned: rule {
       must {{ install an extension at its declared `version`, check it against its `checksum`, and record both in `heron.lock` }}
     }
   }
@@ -50,59 +60,81 @@ extensions: section {
     | environment does. What's enforced depends on the platform, and what isn't is said
     | each time, never silently allowed.
 
-    sandboxed: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    sandboxed: rule {
       where {{ Linux user, filesystem and network namespaces are available }}
       must {{ run each extension in new user and filesystem namespaces, with every file read-only but its declared `files` and the run's temp directory, with only its declared `commands` on PATH, and in a network namespace with no interfaces when it declares no `network` hosts }}
     }
 
-    unsandboxed: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    unsandboxed: rule {
       where {{ namespaces aren't available }}
       must {{ run the extension without them and report limits not enforced }}
     }
 
-    hosts_not_filtered: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    hosts_not_filtered: rule {
       when {{ an extension that declares `network` hosts starts }}
       must {{ report any host, since declared hosts aren't filtered one by one }}
     }
 
-    trust_first_run: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    trust_first_run: rule {
       when {{ an extension is about to run for the first time on a machine, keyed by a hash of its command and limits }}
       must {{ ask on the terminal, remember the answer in `.heron/trusted-extensions`, and refuse to run it with not trusted where there's no terminal }}
       while {{ `HERON_TRUST_EXTENSIONS` is unset }}
     }
 
-    trust_first_run_otherwise: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    trust_first_run_otherwise: rule {
       where {{ `HERON_TRUST_EXTENSIONS=1` is set }}
       must {{ approve the extension without asking }}
     }
 
-    js_host_unlimited: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    js_host_unlimited: rule {
       mustNot {{ limit the [JS host](#language.interop.host.js_host), which runs the project's own modules }}
       instead {{ treat the project's modules as its own code, trusted as its build scripts are }}
     }
   }
 
   lifecycle: section {
-    handshake: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    handshake: rule {
       when {{ an extension starts }}
       must {{ negotiate the protocol version and what the extension implements, and report doesn't implement for every declaration bound to it that it doesn't }}
       then {{ a mismatch with the [schema](#language.schemas.kinds.schema) is a check error, not a runtime surprise }}
     }
 
-    start_failure: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    start_failure: rule {
       if {{ an extension's command can't start }}
       must {{ report can't start for each declaration bound to it }}
     }
 
-    one_process: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    one_process: rule {
       must {{ start one process per extension per tree, on first use, and restart it after a crash, failing the calls in flight }}
     }
 
-    run_id_on_requests: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    run_id_on_requests: rule {
       must {{ carry the run id on every request, and count calls into an extension toward the gas and timeouts of the node that made them }}
     }
 
-    builtins_same_contract: rule(extension_process, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(extension_process)
+    builtins_same_contract: rule {
       must {{ register built-in funcs, macros, transports, resource drivers and generation adapters by the path of the declaration they implement, the same way an extension's are }}
       then {{ a later registration under a path replaces an earlier one, so an external part can replace a built-in one }}
     }
@@ -118,14 +150,16 @@ extensions: section {
 
   errors: section {
     @realizes(language.interop.protocol.handshake.implements_answered, language.schemas.extensions.lifecycle.handshake)
-    not_implemented: error("extension", by = system.extension_host) {
+    @by(system.extension_host)
+    not_implemented: error("extension") {
       title = "{declaration}: {extension} doesn't implement it"
       declaration: field(String)
       extension: field(String)
     }
 
     @realizes(language.schemas.extensions.lifecycle.start_failure)
-    cant_start: error("extension", by = system.extension_host) {
+    @by(system.extension_host)
+    cant_start: error("extension") {
       title = "{declaration}: {extension} can't start: {error}"
       declaration: field(String)
       extension: field(String)
@@ -133,7 +167,9 @@ extensions: section {
     }
 
     @realizes(language.schemas.extensions.limits.hosts_not_filtered)
-    any_host: error("extension", severity = Severity.warning, by = system.extension_host) {
+    @by(system.extension_host)
+    @severity(warning)
+    any_host: error("extension") {
       title = "{extension}: it may reach any host: per-host network limits ({hosts}) aren't enforced yet"
       extension: field(String)
       hosts: field(String)
@@ -141,7 +177,9 @@ extensions: section {
     }
 
     @realizes(language.schemas.extensions.limits.unsandboxed)
-    limits_not_enforced: error("extension", severity = Severity.warning, by = system.extension_host) {
+    @by(system.extension_host)
+    @severity(warning)
+    limits_not_enforced: error("extension") {
       title = "{extension}: its file and network limits aren't enforced: {why}"
       extension: field(String)
       why: field(String)
@@ -149,7 +187,8 @@ extensions: section {
     }
 
     @realizes(language.schemas.extensions.limits.trust_first_run)
-    not_trusted: error("extension", by = system.extension_host) {
+    @by(system.extension_host)
+    not_trusted: error("extension") {
       title = "{extension} hasn't run on this machine before: run it once from a terminal to approve it, or set HERON_TRUST_EXTENSIONS=1"
       extension: field(String)
       | Thrown as a `ForeignError` from the first call, where no terminal can ask.

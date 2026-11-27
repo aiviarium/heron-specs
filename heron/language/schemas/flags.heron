@@ -3,29 +3,39 @@ flags: section {
   | declaring package's choice, made from its own side: `on` can name another package's
   | kinds, valid wherever both are imported.
 
-  declaring_flags: rule(language.core_format.nodes.flags.flag_term, by = system.checker) {
+  @by(system.checker)
+  @targets(language.core_format.nodes.flags.flag_term)
+  declaring_flags: rule {
     must {{ make a flag known where it's declared or imported, by its name, as `slow: flag(on = [case])` makes `<slow>` }}
   }
 
-  flag_on: rule(language.core_format.nodes.flags.flag_term, by = system.linter) {
+  @by(system.linter)
+  @targets(language.core_format.nodes.flags.flag_term)
+  flag_on: rule {
     where {{ a flag is declared with `on`, a list of kinds and categories }}
     should {{ report flag placement where it stands on a node whose kind is none of them and in none of the categories }}
     while {{ the flag's `on` lists kinds or categories }}
   }
 
-  flag_on_annotation: rule(language.core_format.nodes.flags.flag_term, by = system.linter) {
+  @by(system.linter)
+  @targets(language.core_format.nodes.flags.flag_term)
+  flag_on_annotation: rule {
     where {{ a flag's `on` names an annotation, as `raw: flag(on = [insert])` }}
     should {{ report flag on annotation where it stands on any other annotation }}
   }
 
-  flag_groups: rule(language.core_format.nodes.flags.flag_term, by = system.linter) {
+  @by(system.linter)
+  @targets(language.core_format.nodes.flags.flag_term)
+  flag_groups: rule {
     where {{ flags are declared with the same `group`, as `std/http` declares `get`, `post`, `put`, `patch` and `delete` in the group `"method"` }}
     should {{ report flags of one group where a node carries two flags of one group }}
   }
 
   errors: section {
     @realizes(language.schemas.flags.flag_groups)
-    flag_group_twice: error("flag-group", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    flag_group_twice: error("flag-group") {
       title = "<{flag}> and <{other}> are both in the group {group}; a node carries one of them"
       flag: field(String)
       other: field(String)
@@ -33,7 +43,9 @@ flags: section {
     }
 
     @realizes(language.core_format.nodes.flags.flag_placement, language.schemas.flags.flag_on, language.specifications.traceability.status_placement)
-    flag_misplaced: error("flag-placement", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    flag_misplaced: error("flag-placement") {
       title = "<{flag}> doesn't attach to {kind}; it attaches to {kinds}"
       flag: field(String)
       kind: field(String)
@@ -41,7 +53,9 @@ flags: section {
     }
 
     @realizes(language.schemas.flags.flag_on_annotation)
-    flag_misplaced_on_annotation: error("flag-placement", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    flag_misplaced_on_annotation: error("flag-placement") {
       title = "<{flag}> doesn't attach to @{annotation}; it attaches to {kinds}"
       flag: field(String)
       annotation: field(String)
@@ -49,7 +63,8 @@ flags: section {
     }
 
     @realizes(language.schemas.flags.declaring_flags)
-    not_a_flag: error("not-a-flag", by = system.checker) {
+    @by(system.checker)
+    not_a_flag: error("not-a-flag") {
       title = "{name} is not a flag"
       name: field(String)
       | A flag names something in scope that isn't a flag.

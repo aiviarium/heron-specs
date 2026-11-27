@@ -31,27 +31,37 @@ include = [
 | standard packages may import each other in a cycle, as
 | [import cycles](#language.core_format.imports.packages.import_cycle) allow.
 
-embedded_copy: rule(language.std, by = system.checker) {
+@by(system.checker)
+@targets(language.std)
+embedded_copy: rule {
   must {{ resolve an import `std/<name>@<major>` to `<name>/package.heron` in the copy of `std/` embedded in the binary, with the files it includes, and identify each of them as `std:` and its path }}
   then {{ a tree checks with no standard package installed, and one file of a package has one identity however it's reached }}
 }
 
-checked_like_any: rule(language.std, by = system.checker) {
+@by(system.checker)
+@targets(language.std)
+checked_like_any: rule {
   must {{ read, resolve and type-check a standard package as the Heron source it is, by the same rules as any package, and report its problems as the importing tree's diagnostics }}
   then {{ no kind, type or annotation of a standard package is special to the checker, besides the primitive types }}
 }
 
-std_versions: rule(language.std, by = actors.implementer) {
+@by(actors.implementer)
+@targets(language.std)
+std_versions: rule {
   must {{ raise a standard package's major `version` when a change to its surface can break a tree that imports it, and its minor version when the change only adds to it }}
   example {{ adding `FileError` to `std/files` adds to it; renaming `read` breaks trees and makes it `std/files@2` }}
 }
 
-std_surface_reviewed: rule(language.std, by = actors.implementer) {
+@by(actors.implementer)
+@targets(language.std)
+std_surface_reviewed: rule {
   mustNot {{ add to a standard package surface that no spec node specifies }}
   instead {{ specify the export where its behaviour belongs and link it from the package's component here }}
 }
 
-newer_copy_wins: rule(language.std, by = system.checker) {
+@by(system.checker)
+@targets(language.std)
+newer_copy_wins: rule {
   when {{ a copy of a standard package with the same major version and a newer minor version is installed than the one built into the binary }}
   must {{ use the installed copy, keeping the embedded one as the fallback }}
 }

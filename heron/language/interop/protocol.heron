@@ -20,50 +20,68 @@ protocol: section {
   }}
 
   framing: section {
-    frames: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    frames: rule {
       must {{ send each message as one frame: its length as a 4-byte big-endian integer, then exactly that number of bytes of payload }}
     }
 
-    frame_limit: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    frame_limit: rule {
       if {{ a frame is longer than the connection's `max_frame` }}
       must {{ refuse it without reading its payload: a request that would send one fails with the limit-exceeded code, a response is replaced by a limit-exceeded error, and a frame that arrives ends the connection }}
     }
 
-    unreadable_message: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    unreadable_message: rule {
       if {{ a frame's payload isn't a message }}
       must {{ answer it with a parse error, code `-32700`, and go on reading }}
     }
 
     @display("JSON wire")
-    json_wire: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    json_wire: rule {
       where {{ the [JS host](#language.interop.host.js_host) is started with `--wire json` }}
       must {{ encode the same messages as JSON in the same frames, so traffic can be read while debugging }}
     }
 
     @display("JSON wire option")
-    json_wire_option: rule(cbor_rpc, by = system.command_line) {
+    @by(system.command_line)
+    @targets(cbor_rpc)
+    json_wire_option: rule {
       where {{ heron is run with `--wire json` }}
       must {{ speak the JSON wire to every process it starts, passing `--wire json` to the [JS host](#language.interop.host.js_host) }}
     }
 
-    ids_per_side: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    ids_per_side: rule {
       must {{ number each side's requests from 1 up, apart from the other side's }}
     }
   }
 
   handshake: section {
-    initialize_first: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    initialize_first: rule {
       when {{ a process starts }}
       must {{ send `initialize` with the protocol version, heron's name and version, the project's root, the declarations the process serves, the limits, heron's capabilities and the folder for run-scoped files, and wait up to 30 seconds for the answer }}
     }
 
-    version_match: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    version_match: rule {
       if {{ the protocol version the process answers with has another major number than heron's }}
       must {{ stop the process and fail with `‹process›: speaks protocol ‹version›, and heron speaks ‹version›` }}
       then {{ a minor version apart is accepted }}
     }
 
-    implements_answered: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    implements_answered: rule {
       must {{ read the answer's `implements` as what the process serves, by path and point, and report every declaration it leaves out as doesn't implement }}
     }
   }
@@ -75,17 +93,23 @@ protocol: section {
     | | `max_in_flight` | 64         | the requests a side serves at once            |
     | | `timeout_ms`    | 30 000     | how long a request waits for its response     |
 
-    offered_limits: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    offered_limits: rule {
       must {{ offer the limits of the [table](#heron.language.markup.components.table) in `initialize`, with an extension's `files`, `network` and `commands` beside them, and apply them on both sides }}
     }
 
-    in_flight_limit: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    in_flight_limit: rule {
       if {{ a request arrives while `max_in_flight` requests are being served }}
       must {{ answer it at once with the limit-exceeded code }}
       then {{ a request stops counting once its response is ready, so the caller's next request is never refused for it }}
     }
 
-    timeouts: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    timeouts: rule {
       where {{ a request is sent without a time limit of its own }}
       must {{ give it `timeout_ms`, and when that passes, send `$/cancel` and fail it with the timeout code }}
     }
@@ -98,34 +122,48 @@ protocol: section {
     | | the process   | `node`, `call`, `resource`, `secret`, `temp`                                                    |
     | | either        | the notifications `$/cancel`, `$/stream`, `$/log` and `$/progress`                              |
 
-    calls_by_target: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    calls_by_target: rule {
       must {{ send a call of a [foreign func](#language.interop.declaring.foreign_func), macro or member of an implemented interface as `call` with the declaration's path as `target`, the member, as `send` of a transport, and the arguments by parameter name }}
     }
 
-    unknown_method: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    unknown_method: rule {
       if {{ a request names a method the side doesn't serve }}
       must {{ answer it with the method-not-found code, `-32601` }}
     }
 
-    cancel: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    cancel: rule {
       when {{ the caller cancels a request }}
       must {{ send `$/cancel` with its id, fail it on the caller's side with the cancelled code, and abort its handler on the other side, which answers with the cancelled code if it finishes anyway }}
     }
 
-    stream: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    stream: rule {
       where {{ a handler streams its result }}
       must {{ send each item as `$/stream` with the request's id before the response that ends the request }}
     }
 
-    log_and_progress: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    log_and_progress: rule {
       must {{ accept `$/log` with a level and a message, and `$/progress` with the request's id, a message and counts done and total, at any time }}
     }
 
-    run_ids: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    run_ids: rule {
       must {{ carry the [run](#language.interop.timing.run_scope)'s id as `run` on each request of a run, and hand it to the handler }}
     }
 
-    closed_connection: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    closed_connection: rule {
       when {{ the connection ends }}
       must {{ fail every request in flight on both sides and cancel the handlers still running }}
     }
@@ -145,13 +183,17 @@ protocol: section {
     | | `-32002`  | a limit was exceeded                                             |
     | | `-32003`  | the request timed out                                            |
 
-    handler_failures: rule(cbor_rpc, by = system.extension_host) {
+    @by(system.extension_host)
+    @targets(cbor_rpc)
+    handler_failures: rule {
       if {{ a handler fails with anything but a protocol error }}
       must {{ answer with `-32603` and the failure's message }}
     }
   }
 
-  generated_sides: rule(cbor_rpc, by = system.extension_host) {
+  @by(system.extension_host)
+  @targets(cbor_rpc)
+  generated_sides: rule {
     must {{ generate the host's and the JS runtime's bindings from the messages, each api's ops as its methods, named on the wire by their `@jsonrpc` as `resource/setup`, an op without a result as a [notification](#language.apis.jsonrpc.jsonrpc_notification), and fail CI when either is stale }}
   }
 

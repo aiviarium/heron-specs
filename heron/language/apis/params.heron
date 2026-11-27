@@ -28,45 +28,61 @@ params: section {
     interpolation, so a route is never read as an interpolated string.
   }}
 
-  colon_path_params: rule(path_parameter, by = actors.author) {
+  @by(actors.author)
+  @targets(path_parameter)
+  colon_path_params: rule {
     must {{ write a [path parameter](#language.apis.params.path_parameter) in a route as `:name`, with the parameter's name }}
   }
 
-  location_annotations: rule(param_location, by = system.checker) {
+  @by(system.checker)
+  @targets(param_location)
+  location_annotations: rule {
     must {{ check a location annotation as an ordinary annotation of its package, with its arguments against its parameters }}
     example {{ `@header(name = 1)` reports "expected String, got a number" }}
   }
 
-  location_placement: rule(param_location, by = system.linter) {
+  @by(system.linter)
+  @targets(param_location)
+  location_placement: rule {
     if {{ a location annotation stands on an op or an api rather than a parameter }}
     should {{ report annotation placement, as for any annotation outside its `on` }}
     example {{ `@query` above an op reports "@query doesn't attach to op; it attaches to param" }}
   }
 
-  names_carry_no_location: rule(param_location, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(param_location)
+  names_carry_no_location: rule {
     mustNot {{ read a parameter's [location](#language.apis.params.param_location) from its name }}
     instead {{ group an op's parameters by their annotations, showing a parameter with none among the plain parameters, or as the body when it's the record of an HTTP op }}
     example {{ `note(@path id: String, body: String)` shows `body` as a plain parameter, not as the request body }}
   }
 
-  header_name_default: rule(param_location, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(param_location)
+  header_name_default: rule {
     where {{ `@header` names no header }}
     must {{ show the parameter as the header named after it }}
     example {{ `@header("Idempotency-Key") key: String` travels as `Idempotency-Key`, and `@header key: String` as `key` }}
   }
 
-  default_binding: rule(param_location, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(param_location)
+  default_binding: rule {
     where {{ a parameter of an op bound to `std/http` has no location annotation }}
     must {{ bind it by the transport's default: a parameter the route names as `:name` is a [path parameter](#language.apis.params.path_parameter), and the one remaining parameter whose type is a record is the body }}
   }
 
-  no_guessed_location: rule(param_location, by = system.checker) {
+  @by(system.checker)
+  @targets(param_location)
+  no_guessed_location: rule {
     if {{ the default binding can't place a parameter, or places two parameters in the body }}
     must {{ report unplaced parameter at the parameter }}
     then {{ a binding is never a guess }}
   }
 
-  route_names_params: rule(path_parameter, by = system.checker) {
+  @by(system.checker)
+  @targets(path_parameter)
+  route_names_params: rule {
     if {{ a route's `:name` names no parameter of the op, or a `@path` parameter isn't named in the route }}
     must {{ report route and parameters disagree at the route }}
   }
@@ -74,7 +90,8 @@ params: section {
   errors: section {
     @realizes(language.apis.params.no_guessed_location)
     @display("Unplaced parameter")
-    unplaced_parameter: error("binding", by = system.checker) {
+    @by(system.checker)
+    unplaced_parameter: error("binding") {
       title = "{op} binds {param} nowhere: annotate it with @path, @query, @header or @body"
       op: field(String)
       param: field(String)
@@ -83,7 +100,8 @@ params: section {
 
     @realizes(language.apis.params.route_names_params)
     @display("Route and parameters disagree")
-    route_mismatch: error("binding", by = system.checker) {
+    @by(system.checker)
+    route_mismatch: error("binding") {
       title = "the route of {op} names :{name}, which isn't a parameter of the op"
       related = "the op's parameters"
       op: field(String)

@@ -50,60 +50,75 @@ grpc: section {
   }}
 
   service: section {
-    proto_ops: rule(proto_service, by = system.checker) {
+    @by(system.checker)
+    @targets(proto_service)
+    proto_ops: rule {
       must {{ bind every op of an api that carries `@proto` with a `package` to a method of its [service](#language.apis.grpc.proto_service), and report proto outside a service at an op's `@proto` when its api carries none }}
     }
 
-    proto_arguments: rule(proto_service, by = system.checker) {
+    @by(system.checker)
+    @targets(proto_service)
+    proto_arguments: rule {
       must {{ report proto argument misplaced at `package`, `service` or `protocols` in an op's `@proto`, and at `method`, `idempotency` or `timeout` in an api's }}
       then {{ the service is named once, on the api, and each method on its op }}
     }
 
-    package_names: rule(proto_service, by = system.checker) {
+    @by(system.checker)
+    @targets(proto_service)
+    package_names: rule {
       if {{ a `package` isn't lower-case identifiers joined by dots }}
       must {{ report invalid proto package at it }}
       example {{ `@proto("Acme-Parcels")` reports "Acme-Parcels isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1" }}
     }
 
-    service_name: rule(proto_service) {
+    @targets(proto_service)
+    service_name: rule {
       must {{ name the service by `@proto`'s `service`, or else by the api's name in upper camel case followed by `Service`, unless it ends in `Service` already }}
       example {{ `parcels: api` is `ParcelsService`, and `@proto("acme.parcels.v1", service = "Tracking")` is `Tracking` }}
     }
 
-    method_name: rule(language.apis.rpc.rpc_method) {
+    @targets(language.apis.rpc.rpc_method)
+    method_name: rule {
       must {{ name a method by its op's `@proto(method = …)`, or else by the op's name in upper camel case }}
       example {{ `get_parcel` is `GetParcel` }}
     }
 
-    default_protocol: rule(proto_protocol) {
+    @targets(proto_protocol)
+    default_protocol: rule {
       must {{ serve a [service](#language.apis.grpc.proto_service) over the [protocols](#language.apis.grpc.proto_protocol) its `@proto(protocols = […])` lists, and over gRPC alone where it lists none }}
     }
   }
 
   messages: section {
-    request_fields: rule(request_message) {
+    @targets(request_message)
+    request_fields: rule {
       must {{ make the [request message](#language.apis.grpc.request_message) from the op's parameters in the order written, leaving out those that travel as [metadata](#language.apis.grpc.proto_metadata), with each field named after its parameter, and a streamed parameter as one field of the stream's element type }}
       then {{ each message of a client stream carries one element }}
       example {{ `get_parcel(@path id: String)` takes `GetParcelRequest { string id = 1; }` }}
     }
 
-    response_field: rule(response_message) {
+    @targets(response_message)
+    response_field: rule {
       must {{ give the [response message](#language.apis.grpc.response_message) one field, numbered 1, of the [result type](#language.apis.responses.result_type), or of its element type for a streamed result, named after that type in snake case where it's a record, a union or an enum, `items` for a list or a set, `entries` for a map, and `value` for anything else }}
       then {{ an op with no result, or a `Null` one, answers with an empty message }}
       example {{ `get_parcel(…): op(Parcel)` answers `GetParcelResponse { Parcel parcel = 1; }`, and `watch_parcel` streams `WatchParcelResponse { ParcelEvent parcel_event = 1; }` }}
     }
 
-    message_names_taken: rule(request_message) {
+    @targets(request_message)
+    message_names_taken: rule {
       where {{ a type the service reaches already has the name `<Method>Request` or `<Method>Response` }}
       must {{ name the method's message with the service's name before it, as `<Service><Method>Request` }}
     }
 
-    type_messages: rule(request_message) {
+    @targets(request_message)
+    type_messages: rule {
       must {{ make a message of every record, union and [error type](#language.data.types.error_type) a method's messages reach, named as the type, and of an instance of a [generic type](#language.data.types.generic_type) named after the type and then its arguments }}
       example {{ `Page(Parcel)` is the message `PageParcel` }}
     }
 
-    client_stream_alone: rule(request_message, by = system.checker) {
+    @by(system.checker)
+    @targets(request_message)
+    client_stream_alone: rule {
       if {{ an op takes a streamed parameter and another parameter that doesn't travel as [metadata](#language.apis.grpc.proto_metadata) }}
       must {{ report stream with fields at the other parameter }}
       then {{ what a client stream needs once is metadata, sent before the first message }}
@@ -115,29 +130,38 @@ grpc: section {
     | its fields are written in. Adding a field at the end keeps every number; moving one
     | changes them, so a service that's deployed numbers its fields.
 
-    auto_numbers: rule(field_number) {
+    @targets(field_number)
+    auto_numbers: rule {
       must {{ number a message's fields by their `@field(n)`, or, where none of them carries one, 1, 2, 3 and on in the order written, skipping the numbers the type's `@reserved` names }}
       example {{ a type with `@reserved(2)` and the fields `id` and `status` numbers them 1 and 3 }}
     }
 
-    all_or_none: rule(field_number, by = system.checker) {
+    @by(system.checker)
+    @targets(field_number)
+    all_or_none: rule {
       if {{ some fields of a message carry `@field` and others don't }}
       must {{ report mixed numbering at the first field without one }}
       then {{ a number is never half written and half derived }}
     }
 
-    unique_numbers: rule(field_number, by = system.checker) {
+    @by(system.checker)
+    @targets(field_number)
+    unique_numbers: rule {
       if {{ two fields of a message, or two values of an enum, have one number }}
       must {{ report number used twice at the second }}
     }
 
-    number_range: rule(field_number, by = system.checker) {
+    @by(system.checker)
+    @targets(field_number)
+    number_range: rule {
       if {{ a field's number is below 1, above 536870911 or from 19000 to 19999, or an enum value's is below 1 }}
       must {{ report number out of range at it }}
       then {{ 0 stays every enum's unspecified value }}
     }
 
-    reserved_numbers: rule(field_number, by = system.checker) {
+    @by(system.checker)
+    @targets(field_number)
+    reserved_numbers: rule {
       if {{ a field's number is one its type's `@reserved` names }}
       must {{ report reserved number at it }}
     }
@@ -159,29 +183,36 @@ grpc: section {
     | | `T \| Null`, of a primitive `T`     | `google.protobuf.StringValue` and the other wrappers | the value or `null`  |
     | | an enum, a union, a record         | an enum, a message with a `oneof`, a message | a string, an object          |
 
-    scalar_mapping: rule(field_number) {
+    @targets(field_number)
+    scalar_mapping: rule {
       must {{ map each field's type to protobuf and to JSON by the [table](#heron.language.markup.components.table), and every other type of `std/types`, such as `Money`, to a message of the service's package like the tree's own }}
     }
 
-    int_encodings: rule(field_number) {
+    @targets(field_number)
+    int_encodings: rule {
       where {{ an integer field's `@field` is flagged `<sint>` or `<fixed>` }}
       must {{ encode it as `sint32` or `sint64`, or as `fixed32`, `fixed64`, `sfixed32` or `sfixed64` by its size and sign }}
     }
 
-    enum_values: rule(field_number) {
+    @targets(field_number)
+    enum_values: rule {
       must {{ map an enum to a protobuf enum of its name whose values are the enum's name and the value's in upper snake case, after a zero value `<ENUM>_UNSPECIFIED`, numbered by their `@field` or from 1 in the order written }}
       then {{ JSON writes a value as its protobuf name, as `"PARCEL_STATUS_IN_TRANSIT"` }}
     }
 
-    union_oneof: rule(field_number) {
+    @targets(field_number)
+    union_oneof: rule {
       must {{ map a union to a message with one `oneof`, named after the union in snake case, whose fields are its variants numbered like a message's }}
     }
 
-    json_names: rule(json_name) {
+    @targets(json_name)
+    json_names: rule {
       must {{ name each field in JSON by its [JSON name](#language.apis.grpc.json_name), and leave a field out of JSON where it has its default and no presence }}
     }
 
-    unmappable_types: rule(field_number, by = system.checker) {
+    @by(system.checker)
+    @targets(field_number)
+    unmappable_types: rule {
       if {{ a type a method reaches has no protobuf form: a list or map of lists or maps, a map keyed by anything but a string, an integer or a boolean, a list or map as a union's variant, or a union expression other than `T | Null` of a primitive type }}
       must {{ report no protobuf mapping at the type, saying why }}
     }
@@ -208,18 +239,22 @@ grpc: section {
       gRPC's canonical status codes but `OK`, from its `Code` enum.
     }}
 
-    error_status: rule(grpc_code) {
+    @targets(grpc_code)
+    error_status: rule {
       when {{ a method fails with an error it declares }}
       must {{ answer with a gRPC status of the error's [code](#language.apis.grpc.status_codes.grpc_code), its message, and one detail: for a type, the type's own message, and for an `error` node, a `google.rpc.ErrorInfo` with the error's id as `reason`, the service's package as `domain` and its fields as `metadata` }}
       then {{ a client reads which error it got from the detail, never from the message }}
     }
 
-    connect_errors: rule(grpc_code) {
+    @targets(grpc_code)
+    connect_errors: rule {
       where {{ a service is served over Connect }}
       must {{ answer an error with the HTTP status of the [table](#heron.language.markup.components.table) and a JSON body of its Connect `code`, its `message` and its `details`, each with its `type`, its `value` and its fields as `debug` }}
     }
 
-    uncoded_errors: rule(grpc_code, by = system.linter) {
+    @by(system.linter)
+    @targets(grpc_code)
+    uncoded_errors: rule {
       if {{ an op bound to a [service](#language.apis.grpc.proto_service) throws an error with no `@code` of `std/proto` }}
       should {{ report uncoded gRPC error at the error }}
       then {{ the docs show the error as `UNKNOWN`, the code a server sends for a failure it doesn't name }}
@@ -227,27 +262,32 @@ grpc: section {
   }
 
   calls: section {
-    metadata_params: rule(proto_metadata) {
+    @targets(proto_metadata)
+    metadata_params: rule {
       must {{ send a parameter marked `@metadata` as the metadata its name gives, or the parameter's name, and a parameter marked `@header` of an op bound to HTTP too as the metadata named after its header in lower case, a `Bytes` value base64-encoded under a name ending `-bin` }}
       example {{ `@header("Tenant") tenant?: String` travels as `tenant` }}
     }
 
-    idempotency_level: rule(language.apis.rpc.rpc_method) {
+    @targets(language.apis.rpc.rpc_method)
+    idempotency_level: rule {
       where {{ an op's `@proto` sets `idempotency`, `no_side_effects` or `idempotent` }}
       must {{ give its method that idempotency level, which marks it safe to retry, and serve a `no_side_effects` method over Connect with GET as well as POST }}
     }
 
-    default_deadline: rule(language.apis.rpc.rpc_method) {
+    @targets(language.apis.rpc.rpc_method)
+    default_deadline: rule {
       where {{ an op's `@proto` sets `timeout` }}
       must {{ end each of its calls after that time unless the caller sets another }}
     }
 
-    connect_unary: rule(proto_protocol) {
+    @targets(proto_protocol)
+    connect_unary: rule {
       where {{ a unary method is served over Connect }}
       must {{ take it as POST to `/<package>.<Service>/<Method>` with the [request message](#language.apis.grpc.request_message)'s JSON as the body and `application/json` as its type, and, for a `no_side_effects` method, as GET with the query `encoding=json`, `message` and `connect=v1` }}
     }
 
-    connect_streams: rule(proto_protocol) {
+    @targets(proto_protocol)
+    connect_streams: rule {
       where {{ a streaming method is served over Connect }}
       must {{ frame each message as `application/connect+json`: a flags byte, a 4-byte big-endian length and the message's JSON, with an end-of-stream message flagged `2` last, holding the error, if any }}
       then {{ a browser can call unary and server-streaming methods, and only gRPC and Connect over HTTP/2 carry client and bidirectional streams }}
@@ -257,7 +297,8 @@ grpc: section {
   errors: section {
     @realizes(language.apis.grpc.service.proto_ops)
     @display("Proto outside a service")
-    proto_outside_service: error("proto", by = system.checker) {
+    @by(system.checker)
+    proto_outside_service: error("proto") {
       title = "{op} carries @proto, but its api names no protobuf package"
       op: field(String)
       | An op's `@proto` sets its method's options, which need the service its api's `@proto(package)` declares.
@@ -265,7 +306,8 @@ grpc: section {
 
     @realizes(language.apis.grpc.service.proto_arguments)
     @display("Proto argument misplaced")
-    proto_argument_misplaced: error("proto", by = system.checker) {
+    @by(system.checker)
+    proto_argument_misplaced: error("proto") {
       title = "@proto on {kind} doesn't take {argument}"
       kind: field(String)
       argument: field(String)
@@ -273,14 +315,16 @@ grpc: section {
 
     @realizes(language.apis.grpc.service.package_names)
     @display("Invalid proto package")
-    invalid_proto_package: error("proto", by = system.checker) {
+    @by(system.checker)
+    invalid_proto_package: error("proto") {
       title = "{package} isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1"
       package: field(String)
     }
 
     @realizes(language.apis.grpc.messages.client_stream_alone)
     @display("Stream with fields")
-    stream_with_fields: error("proto", by = system.checker) {
+    @by(system.checker)
+    stream_with_fields: error("proto") {
       title = "{op} streams from the client, so {param} can only travel as @metadata"
       op: field(String)
       param: field(String)
@@ -288,7 +332,8 @@ grpc: section {
 
     @realizes(language.apis.grpc.numbering.all_or_none)
     @display("Mixed numbering")
-    mixed_numbering: error("field-number", by = system.checker) {
+    @by(system.checker)
+    mixed_numbering: error("field-number") {
       title = "{message} numbers some fields with @field and not {field}: number all of them or none"
       message: field(String)
       field: field(String)
@@ -296,7 +341,8 @@ grpc: section {
 
     @realizes(language.apis.grpc.numbering.unique_numbers)
     @display("Number used twice")
-    duplicate_field_number: error("field-number", by = system.checker) {
+    @by(system.checker)
+    duplicate_field_number: error("field-number") {
       title = "{field} has number {number}, which {other} already has in {message}"
       related = "the field that has it first"
       message: field(String)
@@ -307,7 +353,8 @@ grpc: section {
 
     @realizes(language.apis.grpc.numbering.number_range)
     @display("Number out of range")
-    field_number_out_of_range: error("field-number", by = system.checker) {
+    @by(system.checker)
+    field_number_out_of_range: error("field-number") {
       title = "{number} can't number {field}: use 1 to 536870911, outside 19000 to 19999"
       field: field(String)
       number: field(String)
@@ -315,7 +362,8 @@ grpc: section {
 
     @realizes(language.apis.grpc.numbering.reserved_numbers)
     @display("Reserved number")
-    reserved_field_number: error("field-number", by = system.checker) {
+    @by(system.checker)
+    reserved_field_number: error("field-number") {
       title = "{field} has number {number}, which {message} reserves"
       message: field(String)
       field: field(String)
@@ -324,7 +372,8 @@ grpc: section {
 
     @realizes(language.apis.grpc.types.unmappable_types)
     @display("No protobuf mapping")
-    no_proto_mapping: error("proto", by = system.checker) {
+    @by(system.checker)
+    no_proto_mapping: error("proto") {
       title = "{type} has no protobuf form: {reason}"
       type: field(String)
       reason: field(String)
@@ -332,7 +381,9 @@ grpc: section {
 
     @realizes(language.apis.grpc.status_codes.uncoded_errors)
     @display("Uncoded gRPC error")
-    uncoded_grpc_error: error("rpc-code", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    uncoded_grpc_error: error("rpc-code") {
       title = "{error} is thrown by {op}, a gRPC method, and has no @code: it's answered as UNKNOWN"
       error: field(String)
       op: field(String)

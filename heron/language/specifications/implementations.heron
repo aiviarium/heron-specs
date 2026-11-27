@@ -28,13 +28,17 @@ implementations: section {
   }}
 
   sealed: section {
-    sealed_locked: rule(sealed_package, by = system.checker) {
+    @by(system.checker)
+    @targets(sealed_package)
+    sealed_locked: rule {
       if {{ a tree that imports a [sealed package](#language.specifications.implementations.sealed_package) amends, scopes or sets into one of its nodes }}
       must {{ report sealed at the path }}
       then {{ an implementation can't change what the spec states, and a change to the behaviour is made in the spec first }}
     }
 
-    spec_kinds_in_spec: rule(implements_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(implements_kind)
+    spec_kinds_in_spec: rule {
       if {{ a tree whose root holds an [implements](#language.specifications.implementations.implements_kind) declares a goal, a rule, a scenario, a use case, a term, a quality, a [lifecycle](#language.specifications.lifecycles.lifecycle), an actor, a persona, a grammar, a command, a screen, an error or an api }}
       must {{ report spec content at the outermost such node }}
     }
@@ -45,28 +49,38 @@ implementations: section {
     | them and adds its own after them, so a version of the implementation always says which
     | spec it builds.
 
-    spec_version_form: rule(implements_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(implements_kind)
+    spec_version_form: rule {
       if {{ an [implements](#language.specifications.implementations.implements_kind)'s `at` isn't three numbers `SM.Sm.Sp`, or differs from the version of the spec package the tree imports }}
       must {{ report spec version at the `implements` }}
     }
 
-    version_starts_with_spec: rule(implementation_version, by = system.checker) {
+    @by(system.checker)
+    @targets(implementation_version)
+    version_starts_with_spec: rule {
       if {{ a project's `version` doesn't start with the spec version its `at` names, or doesn't have the form of its scheme }}
       must {{ report project version at the version }}
       example {{ `0.2.0+build1` implements `0.2.0`; `0.2.1+build1` at `"0.2.0"` and `0.2.0.1` without the four-number scheme are reported }}
     }
 
-    schemes: rule(implementation_version, by = system.checker) {
+    @by(system.checker)
+    @targets(implementation_version)
+    schemes: rule {
       if {{ a project's `versioning` sets a `scheme` other than `"SM.Sm.Sp"`, the default, or `"SM.Sm.Sp.IP"` }}
       must {{ report project version at the scheme, naming the two }}
     }
 
-    build_order: rule(implementation_version, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(implementation_version)
+    build_order: rule {
       must {{ order two versions of an implementation by their spec version, then their implementation patch, then their build number, and start the build number and the patch again from 1 and 0 when the spec version changes }}
       then {{ `0.2.0+build2` follows `0.2.0+build1`, though semantic versioning gives `+` metadata no order }}
     }
 
-    release_tags: rule(implementation_version, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(implementation_version)
+    release_tags: rule {
       must {{ record a release of version ‹version› with the git tag `v‹version›`, as `v0.2.0+build1` }}
     }
   }
@@ -74,7 +88,8 @@ implementations: section {
   errors: section {
     @realizes(language.specifications.implementations.sealed.sealed_locked)
     @display("Sealed")
-    sealed_node: error("sealed", by = system.checker) {
+    @by(system.checker)
+    sealed_node: error("sealed") {
       title = "{path} is in the sealed package {package}: nothing outside it may amend, scope or set into its nodes; import it and refer to them instead"
       path: field(String)
       package: field(String)
@@ -82,7 +97,8 @@ implementations: section {
 
     @realizes(language.specifications.implementations.sealed.spec_kinds_in_spec)
     @display("Spec content")
-    spec_content: error("project-mode", by = system.checker) {
+    @by(system.checker)
+    spec_content: error("project-mode") {
       title = "{name} is a {kind}, which is spec content: this tree implements {spec}, so the spec's kinds belong in the spec package, and the project only refers to them"
       name: field(String)
       kind: field(String)
@@ -91,7 +107,8 @@ implementations: section {
 
     @realizes(language.specifications.implementations.versions.spec_version_form)
     @display("Spec version")
-    spec_version: error("version", by = system.checker) {
+    @by(system.checker)
+    spec_version: error("version") {
       title = "implements {spec} at {at}, but the spec package is version {version}: at copies the spec version exactly"
       spec: field(String)
       at: field(String)
@@ -100,7 +117,8 @@ implementations: section {
 
     @realizes(language.specifications.implementations.versions.schemes, language.specifications.implementations.versions.version_starts_with_spec)
     @display("Project version")
-    project_version: error("version", by = system.checker) {
+    @by(system.checker)
+    project_version: error("version") {
       title = "the project version {version} {reason}"
       version: field(String)
       reason: field(String)
@@ -118,7 +136,9 @@ implementations: section {
     |   shopper: actor {{ Someone who buys from the shop. }}
     |
     |   checkout: section {
-    |     totals: rule(checkout, by = shopper) {
+    |     @by(shopper)
+    |     @targets(checkout)
+    |     totals: rule {
     |       must {{ see the order's total before paying }}
     |     }
     |   }

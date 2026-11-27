@@ -39,32 +39,40 @@ generate: command("heron generate") {
   }
 
   | Exits 0 when: every target ran; unchanged files aren't rewritten.
-  exit_1: error("heron generate exit 1", exit = 1, by = system.command_line) {
+  @by(system.command_line)
+  @exit(1)
+  exit_1: error("heron generate exit 1") {
     title = "the tree doesn't check, an extension couldn't load, a target has no adapter, or an adapter failed or returned a path outside the working folder"
   }
-  exit_2: error("heron generate exit 2", exit = 2, by = system.command_line) {
+  @by(system.command_line)
+  @exit(2)
+  exit_2: error("heron generate exit 2") {
     title = "an unknown option, an entry point whose path can't be resolved, or `--pack` with a target other than `agents`"
   }
 
   example {{ `heron generate --entry example ts` writes the TS types of the inventory sample, which its TS code imports, as CI runs it. }}
 
-  unknown_target: rule(by = system.generator) {
+  @by(system.generator)
+  unknown_target: rule {
     when {{ a target has no adapter }}
     must {{ fail naming it and listing the targets that have one, as `no adapter is registered for target "‹target›"; targets: docs, ts` }}
   }
 
-  on_request_targets: rule(by = system.generator) {
+  @by(system.generator)
+  on_request_targets: rule {
     mustNot {{ run a target that runs on request alone, as `asyncapi`, `proto` and `openrpc` do, unless it's named }}
     example {{ `heron generate` writes the TS types, the docs and the [agent export](#tools.docs.agents.agent_export), and `heron generate proto` the `.proto` files alone }}
   }
 
-  pack_runs_agents: rule(by = system.generator) {
+  @by(system.generator)
+  pack_runs_agents: rule {
     when {{ `--pack` is given }}
     must {{ run the `agents` target alone, writing the export and the [context pack](#tools.docs.agents.context_pack) of the node the id names, and fail naming the id, as `no node ‹id› in the tree`, when it names none }}
     example {{ `heron generate --pack language.apis` writes `.heron/agents/packs/language.apis.md` beside the export }}
   }
 
-  block_only_for_all: rule(by = system.generator) {
+  @by(system.generator)
+  block_only_for_all: rule {
     mustNot {{ write the managed ignore block when it runs only the targets it was given }}
   }
 

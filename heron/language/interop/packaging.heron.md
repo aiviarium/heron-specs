@@ -27,70 +27,70 @@ bound to a module, typed with its arguments, result and instance types.
 
 <section id="sdk">
 
-<rule id="tagged_implementations" targets="define_functions" by="system.extension_host">
+<rule id="tagged_implementations" @targets="define_functions" @by="system.extension_host">
 <must>serve an export as the implementation of a declaration only when it was made with a `define…` function of the declaration's point, or is a plain function for a func</must>
 </rule>
 
-<rule id="wrong_point" targets="define_functions" by="system.extension_host">
+<rule id="wrong_point" @targets="define_functions" @by="system.extension_host">
 <if>an export is tagged with another point than its declaration's, or stamped for another declaration</if>
 <must>fail the handshake with `‹path› is declared as a ‹point› but implemented as a ‹point›`, or `‹path› is bound to the implementation generated for ‹other›`</must>
 </rule>
 
-<rule id="not_an_implementation" targets="define_functions" by="system.extension_host">
+<rule id="not_an_implementation" @targets="define_functions" @by="system.extension_host">
 <if>the export a declaration names is missing or isn't an implementation</if>
 <must>fail with `‹module›: export ‹name› isn't an implementation made with @heron/runtime`</must>
 </rule>
 
-<rule id="async_results" targets="define_functions" by="system.extension_host">
+<rule id="async_results" @targets="define_functions" @by="system.extension_host">
 <must>accept a result returned, as a promise, or for a func as an `AsyncIterable` whose items are sent as `$/stream`</must>
 </rule>
 
-<rule id="ctx_signal" targets="define_functions" by="system.extension_host">
+<rule id="ctx_signal" @targets="define_functions" @by="system.extension_host">
 <must>abort `ctx.signal` of a call when heron cancels it or its time runs out</must>
 </rule>
 
-<rule id="renderer_modules" targets="define_functions" by="system.extension_host">
+<rule id="renderer_modules" @targets="define_functions" @by="system.extension_host">
 <must>serve a docs `renderers` module as every renderer its exports hold, by kind, and report those kinds in the handshake</must>
 </rule>
 </section>
 
 <section id="types">
 
-<rule id="ts_target" targets="generated_bindings" by="system.generator">
+<rule id="ts_target" @targets="generated_bindings" @by="system.generator">
 <must>write [the bindings](#language.interop.packaging.generated_bindings) as the `ts` target of `heron generate`, `heron generate ts`, with every type, enum and module binding of the tree and the packages it imports</must>
 </rule>
 
-<rule id="bindings_stamp" targets="generated_bindings" by="system.generator">
+<rule id="bindings_stamp" @targets="generated_bindings" @by="system.generator">
 <must>make each member of `bind` wrap its implementation with its point's `define…` function and stamp it with the declaration's path</must>
 <example>`export_orders: (fn: (args: { pet_id: number; orders?: Array<T.Order> }, ctx: Ctx) => string | Promise<string>) => stamp(defineFunc(fn), "export_orders")`</example>
 </rule>
 
-<rule id="heron_owns_signatures" targets="generated_bindings" by="system.generator">
+<rule id="heron_owns_signatures" @targets="generated_bindings" @by="system.generator">
 <must>type the bindings from the Heron declarations alone, so `tsc` checks each implementation against them</must>
 <then>a signature that drifts from its implementation is a compile error, not a runtime failure</then>
 </rule>
 
-<rule id="bindings_are_build_outputs" targets="generated_bindings" by="system.generator">
+<rule id="bindings_are_build_outputs" @targets="generated_bindings" @by="system.generator">
 <must>list `.heron/` in the managed ignore block, so the bindings stay out of the repository</must>
 </rule>
 
-<rule id="bindings_on_setup" targets="generated_bindings" by="system.interpreter">
+<rule id="bindings_on_setup" @targets="generated_bindings" @by="system.interpreter">
 <must>write the bindings during `heron run setup` and again after every change to the tree</must>
 </rule>
 </section>
 
 <section id="distribution">
 
-<rule id="npm_packages" targets="heron_runtime" by="system.interpreter">
+<rule id="npm_packages" @targets="heron_runtime" @by="system.interpreter">
 <must>resolve a package whose `package.json` has a `heron` field through the project's package manager and lockfile, and pin it in `heron.lock`</must>
 </rule>
 
-<rule id="heron_dev" targets="generated_bindings" by="system.command_line">
+<rule id="heron_dev" @targets="generated_bindings" @by="system.command_line">
 <when>`heron dev` runs</when>
 <must>watch the specs and the TS sources together and regenerate the bindings as either changes</must>
 </rule>
 
-<rule id="testing_package" targets="heron_runtime" by="system.extension_host">
+<rule id="testing_package" @targets="heron_runtime" @by="system.extension_host">
 <must>offer `@heron/testing`, which gives Vitest a mock tree and `ctx`, so an implementation is tested without heron</must>
 </rule>
 

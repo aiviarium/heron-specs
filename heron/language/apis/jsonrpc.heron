@@ -43,93 +43,117 @@ jsonrpc: section {
   }}
 
   methods: section {
-    method_names: rule(jsonrpc_method) {
+    @targets(jsonrpc_method)
+    method_names: rule {
       must {{ name a method by its op's `@jsonrpc(method)`, or else by the op's name }}
       example {{ `@jsonrpc("heron/source") source(…)` is `heron/source`, and `get_parcel` with a bare `@jsonrpc` is `get_parcel` }}
     }
 
-    unique_methods: rule(jsonrpc_method, by = system.checker) {
+    @by(system.checker)
+    @targets(jsonrpc_method)
+    unique_methods: rule {
       if {{ two ops of one api have one method name }}
       must {{ report duplicate method at the second }}
     }
 
-    jsonrpc_arguments: rule(jsonrpc_method, by = system.checker) {
+    @by(system.checker)
+    @targets(jsonrpc_method)
+    jsonrpc_arguments: rule {
       must {{ report JSON-RPC argument misplaced at `method` in an api's `@jsonrpc`, and at `batch`, `framing` or `encoding` in an op's }}
     }
 
-    no_streams: rule(jsonrpc_method, by = system.checker) {
+    @by(system.checker)
+    @targets(jsonrpc_method)
+    no_streams: rule {
       if {{ an op bound by `@jsonrpc` takes or returns a `Stream` }}
       must {{ report stream over JSON-RPC at the stream }}
       then {{ a method answers once, and progress travels as [notifications](#language.apis.jsonrpc.jsonrpc_notification) of its own }}
     }
 
-    null_results: rule(jsonrpc_method) {
+    @targets(jsonrpc_method)
+    null_results: rule {
       must {{ answer a method whose [result type](#language.apis.responses.result_type) is `Null` with a `result` of `null`, and every other with its result's JSON }}
       example {{ `shutdown(): op(Null)` is answered `{"jsonrpc": "2.0", "id": 1, "result": null}` }}
     }
 
-    notifications_unanswered: rule(jsonrpc_notification) {
+    @targets(jsonrpc_notification)
+    notifications_unanswered: rule {
       must {{ send a [notification](#language.apis.jsonrpc.jsonrpc_notification) without an `id`, and never answer one }}
     }
 
-    notifications_throw_nothing: rule(jsonrpc_notification, by = system.checker) {
+    @by(system.checker)
+    @targets(jsonrpc_notification)
+    notifications_throw_nothing: rule {
       if {{ an op with no [result type](#language.apis.responses.result_type) is bound by `@jsonrpc` and declares errors with `@throws`, its own or its api's }}
       must {{ report notification throws at the `@throws` }}
     }
 
-    batches: rule(jsonrpc_method) {
+    @targets(jsonrpc_method)
+    batches: rule {
       where {{ an api's `@jsonrpc` sets `batch = true` }}
       must {{ accept an array of requests as one message, and answer it with an array of their responses, [notifications](#language.apis.jsonrpc.jsonrpc_notification) left out }}
     }
   }
 
   params: section {
-    by_name: rule(params_structure) {
+    @targets(params_structure)
+    by_name: rule {
       must {{ send an op's parameters as an object of its parameters by name, optional ones left out when unset, unless its or its api's `@jsonrpc` sets `params = by_position` }}
       example {{ `move(from: Position, to: Position)` takes `"params": {"from": …, "to": …}` }}
     }
 
-    by_position: rule(params_structure) {
+    @targets(params_structure)
+    by_position: rule {
       where {{ an op's or its api's `@jsonrpc` sets `params = by_position` }}
       must {{ send its parameters as an array in the order written, leaving out only trailing optional ones that are unset }}
     }
 
-    whole_params: rule(params_structure) {
+    @targets(params_structure)
+    whole_params: rule {
       where {{ an op's parameter is marked `@params` }}
       must {{ send that parameter's value as the whole of `params` }}
       example {{ `hover(@params p: HoverParams)` takes `"params": {"textDocument": …, "position": …}`, the fields of `HoverParams` }}
     }
 
-    wire_names: rule(params_structure) {
+    @targets(params_structure)
+    wire_names: rule {
       must {{ name a method's params, by name, and the fields of its params and result by their names in JSON, where an api's `@keys(case)` sets the case of its ops' parameters and of every type they reach that sets none }}
       then {{ `@keys(camel)` on an api gives it the language server protocol's names, as `textDocument` for `text_document` }}
     }
 
-    params_alone: rule(params_structure, by = system.checker) {
+    @by(system.checker)
+    @targets(params_structure)
+    params_alone: rule {
       if {{ a parameter marked `@params` isn't its op's only parameter, or its type isn't a record }}
       must {{ report params not alone at it }}
     }
   }
 
   wire: section {
-    framed_messages: rule(jsonrpc_framing) {
+    @targets(jsonrpc_framing)
+    framed_messages: rule {
       must {{ frame an api's messages by its `@jsonrpc(framing)`, `http` where it sets none, and encode them as its `encoding` says: JSON, or, for `cbor`, CBOR maps without the `jsonrpc` member }}
       then {{ the extension protocol is this binding, `length_prefixed` and `cbor` }}
     }
   }
 
   error_objects: section {
-    error_object: rule(jsonrpc_code) {
+    @targets(jsonrpc_code)
+    error_object: rule {
       when {{ a method fails with an error it declares }}
       must {{ answer with an error object of the error's [code](#language.apis.jsonrpc.jsonrpc_code), its message, and as `data` its fields, with an `error` node's id first as `id` }}
     }
 
-    reserved_codes: rule(jsonrpc_code, by = system.linter) {
+    @by(system.linter)
+    @targets(jsonrpc_code)
+    reserved_codes: rule {
       if {{ a `@code` of `std/jsonrpc` is from -32768 to -32000, but neither a predefined code nor from -32099 to -32000 }}
       should {{ report reserved error code at it }}
     }
 
-    uncoded_jsonrpc: rule(jsonrpc_code, by = system.linter) {
+    @by(system.linter)
+    @targets(jsonrpc_code)
+    uncoded_jsonrpc: rule {
       if {{ a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method) throws an error with no `@code` of `std/jsonrpc` }}
       should {{ report uncoded JSON-RPC error at the error }}
     }
@@ -184,7 +208,8 @@ jsonrpc: section {
   errors: section {
     @realizes(language.apis.jsonrpc.methods.unique_methods)
     @display("Duplicate method")
-    duplicate_method: error("jsonrpc", by = system.checker) {
+    @by(system.checker)
+    duplicate_method: error("jsonrpc") {
       title = "{op} is the JSON-RPC method {method}, which {other} already is"
       related = "the op that has the name first"
       op: field(String)
@@ -194,7 +219,8 @@ jsonrpc: section {
 
     @realizes(language.apis.jsonrpc.methods.jsonrpc_arguments)
     @display("JSON-RPC argument misplaced")
-    jsonrpc_argument_misplaced: error("jsonrpc", by = system.checker) {
+    @by(system.checker)
+    jsonrpc_argument_misplaced: error("jsonrpc") {
       title = "@jsonrpc on {kind} doesn't take {argument}"
       kind: field(String)
       argument: field(String)
@@ -202,14 +228,16 @@ jsonrpc: section {
 
     @realizes(language.apis.jsonrpc.methods.no_streams)
     @display("Stream over JSON-RPC")
-    jsonrpc_stream: error("jsonrpc", by = system.checker) {
+    @by(system.checker)
+    jsonrpc_stream: error("jsonrpc") {
       title = "{op} streams, and a JSON-RPC method answers once"
       op: field(String)
     }
 
     @realizes(language.apis.jsonrpc.methods.notifications_throw_nothing)
     @display("Notification throws")
-    notification_throws: error("jsonrpc", by = system.checker) {
+    @by(system.checker)
+    notification_throws: error("jsonrpc") {
       title = "{op} is a notification, which is never answered, so it can't throw {error}"
       op: field(String)
       error: field(String)
@@ -217,7 +245,8 @@ jsonrpc: section {
 
     @realizes(language.apis.jsonrpc.params.params_alone)
     @display("Params not alone")
-    params_not_alone: error("jsonrpc", by = system.checker) {
+    @by(system.checker)
+    params_not_alone: error("jsonrpc") {
       title = "@params {param} must be the only parameter of {op}, of a record type"
       op: field(String)
       param: field(String)
@@ -225,14 +254,18 @@ jsonrpc: section {
 
     @realizes(language.apis.jsonrpc.error_objects.reserved_codes)
     @display("Reserved error code")
-    reserved_error_code: error("rpc-code", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    reserved_error_code: error("rpc-code") {
       title = "{code} is in JSON-RPC's reserved range: use a code outside -32768 to -32000, or a server code from -32099 to -32000"
       code: field(String)
     }
 
     @realizes(language.apis.jsonrpc.error_objects.uncoded_jsonrpc)
     @display("Uncoded JSON-RPC error")
-    uncoded_jsonrpc_error: error("rpc-code", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    uncoded_jsonrpc_error: error("rpc-code") {
       title = "{error} is thrown by {op}, a JSON-RPC method, and has no @code"
       error: field(String)
       op: field(String)

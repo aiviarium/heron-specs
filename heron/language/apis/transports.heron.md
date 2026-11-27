@@ -26,38 +26,38 @@ the op's calls through that transport, as `@inventory.in_memory` sends
 `shelf.find` through `inventory.memory`.
 </term>
 
-<rule id="binding_by_package" targets="transport_binding" by="system.interpreter">
+<rule id="binding_by_package" @targets="transport_binding" @by="system.interpreter">
 <when>an op is called in a run</when>
 <must>send the call through the one transport declared in the packages of the annotations on the op and on its api</must>
 </rule>
 
-<rule id="request_by_parameter" targets="transport_kind" by="system.interpreter">
+<rule id="request_by_parameter" @targets="transport_kind" @by="system.interpreter">
 <must>give the transport the op's path and its arguments by parameter name, and return what the transport answers as the call's result</must>
 </rule>
 
-<rule id="unbound_op" targets="transport_binding" by="system.interpreter">
+<rule id="unbound_op" @targets="transport_binding" @by="system.interpreter">
 <if>an op called in a run has no annotation from a package, on it or on its api</if>
 <must>fail the call with "op ‹op› has no binding: annotate it or its api with a transport package's annotation"</must>
 </rule>
 
-<rule id="binding_without_transport" targets="transport_binding" by="system.interpreter">
+<rule id="binding_without_transport" @targets="transport_binding" @by="system.interpreter">
 <if>the packages of an op's annotations declare no transport</if>
 <must>fail the call with "op ‹op› is bound by ‹annotations›, but no transport of those packages is declared"</must>
 <example>an op with only `@http<get>` fails so until `std/http` has a transport</example>
 </rule>
 
-<rule id="several_transports" targets="transport_binding" by="system.interpreter">
+<rule id="several_transports" @targets="transport_binding" @by="system.interpreter">
 <if>an op's annotations name packages that declare more than one transport</if>
 <must>fail the call, naming the transports in sorted order</must>
 <then>a binding is never a guess</then>
 <example>an op bound to three transports fails with "… (twin.left, twin.right, wire.carrier); a run can't pick one"</example>
 </rule>
 
-<rule id="unimplemented_transport" targets="transport_kind" by="system.interpreter">
+<rule id="unimplemented_transport" @targets="transport_kind" @by="system.interpreter">
 <if>the run has no implementation registered for the op's transport</if>
 <must>fail the call with "op ‹op› is carried by transport ‹transport›, but nothing implements it"</must>
 </rule>
 
-<rule id="std_transports" targets="transport_kind" by="system.extension_host">
+<rule id="std_transports" @targets="transport_kind" @by="system.extension_host">
 <must>implement transports for `std/http`, `std/proto`, `std/jsonrpc` and `std/ws` in `heron`, so the standard protocols work without a third-party package</must>
 </rule>

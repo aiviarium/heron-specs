@@ -36,71 +36,99 @@ funcs_and_templates: section {
   }}
 
   funcs: section {
-    func_forms: rule(func_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(func_kind)
+    func_forms: rule {
       must {{ give a call the value of the func's `=` expression, or of the `return` that ends its `do` body, and null when the body ends without one }}
     }
 
-    bodiless_registered: rule(func_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(func_kind)
+    bodiless_registered: rule {
       where {{ a func has no body and no value }}
       must {{ call what `heron` itself or an extension registered under its path in the declaring package, such as `process.run` or `repo.ensure_toolchain` }}
     }
 
-    values_once: rule(evaluation, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(evaluation)
+    values_once: rule {
       must {{ evaluate a node's value the first time code reads it, and keep it for the rest of the run }}
     }
 
-    pure_only_while_evaluating: rule(pure_func, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(pure_func)
+    pure_only_while_evaluating: rule {
       if {{ a [foreign func](#language.interop.declaring.foreign_func) that isn't `<pure>` is called during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
       must {{ fail with isn't pure }}
       then {{ a value of the tree never depends on a side effect }}
     }
 
-    pure_cache: rule(pure_func, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(pure_func)
+    pure_cache: rule {
       must {{ keep each result of a pure [foreign func](#language.interop.declaring.foreign_func) for the run, by a hash of its path and its arguments as plain data, and answer a call with equal arguments from it without calling the foreign code }}
       then {{ a value read twice, or by two nodes, costs one call }}
     }
 
-    pure_cache_misses: rule(pure_func, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(pure_func)
+    pure_cache_misses: rule {
       mustNot {{ keep the outcome of a call that threw or failed, or of one that took a trailing block }}
       then {{ the next call with those arguments calls the foreign code again }}
     }
 
-    no_effects_while_evaluating: rule(evaluation, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(evaluation)
+    no_effects_while_evaluating: rule {
       mustNot {{ start a process, write a file or make a temporary one during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
       then {{ a value that `run(…)` or `write(…)` would compute fails as a [foreign func](#language.interop.declaring.foreign_func) that isn't pure does }}
     }
 
-    func_macro_foreign: rule(language.scripting.funcs_and_templates, by = actors.author) {
+    @by(actors.author)
+    @targets(language.scripting.funcs_and_templates)
+    func_macro_foreign: rule {
       should {{ use a func for a value, a macro for repeated source, and a [foreign func](#language.interop.declaring.foreign_func) for anything that needs a real language }}
     }
   }
 
   macros: section {
-    template_expansion: rule(macro_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(macro_kind)
+    template_expansion: rule {
       must {{ produce a template macro's source by filling its template from the arguments, with the template's shared indentation removed as any multi-line string's is }}
       example {{ `resource_ops(name = "pet_category", path = "/categories")` writes `list_pet_categorys(@query cursor?: String): op(Page(PetCategory))` from `list_${name}s(…): op(Page(${name.pascal}))` }}
     }
 
-    emit_expansion: rule(macro_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(macro_kind)
+    emit_expansion: rule {
       must {{ produce a `do` macro's source as the pieces its `emit(source)` calls add, in order, joined by line breaks }}
     }
 
-    emit_outside_macro: rule(macro_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(macro_kind)
+    emit_outside_macro: rule {
       if {{ `emit` is called outside a macro's expansion }}
       must {{ fail with emit outside a macro }}
     }
 
-    expansion_is_evaluation: rule(macro_kind, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(macro_kind)
+    expansion_is_evaluation: rule {
       must {{ expand a macro as [evaluation](#language.scripting.funcs_and_templates.evaluation), so only pure [foreign funcs](#language.interop.declaring.foreign_func) run in it }}
     }
 
-    macro_expansion: rule(macro_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(macro_kind)
+    macro_expansion: rule {
       when {{ a macro is invoked in a body, as `resource_ops(name = "category", path = "/categories")` inside an api }}
       must {{ add what it produces to that body, parsed as if it had been written there, before the body is checked }}
       then {{ a macro can add ops, cases or any other members, and a reference to one of them resolves }}
     }
 
-    expansion_errors: rule(macro_kind, by = system.checker) {
+    @by(system.checker)
+    @targets(macro_kind)
+    expansion_errors: rule {
       if {{ a macro's source doesn't parse or check where it lands }}
       must {{ report the error at the invocation, with the line of the produced source it came from }}
     }
@@ -109,14 +137,16 @@ funcs_and_templates: section {
   errors: section {
     @realizes(language.scripting.funcs_and_templates.funcs.pure_only_while_evaluating)
     @display("Isn't pure")
-    not_pure: error("fault", by = system.interpreter) {
+    @by(system.interpreter)
+    not_pure: error("fault") {
       title = "{path} is a foreign func that isn't <pure>, so it can't run while the tree is evaluated"
       path: field(String)
     }
 
     @realizes(language.scripting.funcs_and_templates.macros.emit_outside_macro)
     @display("Emit outside a macro")
-    emit_outside: error("fault", by = system.interpreter) {
+    @by(system.interpreter)
+    emit_outside: error("fault") {
       title = "emit(…) adds source only inside a macro"
     }
   }

@@ -35,22 +35,22 @@ Where an api is served: `@server("https://parcels.example.com")` of `std/apis`, 
 written once for every binding, and more than once for more than one server.
 </term>
 
-<rule id="streaming_kinds" targets="streaming_kind" by="system.checker">
+<rule id="streaming_kinds" @targets="streaming_kind" @by="system.checker">
 <must>give each op the [streaming kind](#language.apis.rpc.streaming_kind) its `Stream(T)` parameters and result make, whatever binds it</must>
 <example>`navigate(positions: Stream(Position)): op(Stream(Instruction))` is bidirectional, and `upload_scans(scans: Stream(Scan)): op(ScanSummary)` is client streaming</example>
 </rule>
 
-<rule id="stream_example_values" targets="streaming_kind" by="system.checker">
+<rule id="stream_example_values" @targets="streaming_kind" @by="system.checker">
 <must>check an example's value for a streamed parameter or result as a list of the stream's element type, the messages in the order they're sent</must>
 <example>`returns = [ParcelEvent(…), ParcelEvent(…)]` in an example of `watch_parcel` is two messages the server sends</example>
 </rule>
 
-<rule id="qualified_codes" targets="rpc_code" by="actors.author">
+<rule id="qualified_codes" @targets="rpc_code" @by="actors.author">
 <where>a file imports both `std/proto` and `std/jsonrpc`</where>
 <must>write each [RPC code](#language.apis.rpc.rpc_code) qualified by its package, as `@proto.code(NOT_FOUND)` and `@jsonrpc.code(-32004)`, since an unqualified `@code` is [ambiguous](#language.core_format.nodes.annotations.ambiguous_annotations)</must>
 </rule>
 
-<rule id="servers_shown" targets="server_url" by="system.docs_generator">
+<rule id="servers_shown" @targets="server_url" @by="system.docs_generator">
 <must>show an api's [server URLs](#language.apis.rpc.server_url) on its page, and write the first in its request examples and fill it into Try it in place of `$BASE_URL`</must>
 </rule>
 

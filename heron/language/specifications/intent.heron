@@ -8,7 +8,7 @@ intent: section {
   |
   | | Kind                   | Holds                                                                  |
   | | ---------------------- | ---------------------------------------------------------------------- |
-  | | `goal(measure, source)` | what the product is for, with an optional measure of success and who asked for it |
+  | | `goal(measure)`        | what the product is for, with an optional measure of success, and who asked for it in `@source` |
   | | `actor(kind)`          | a role that crosses the boundary: `PERSON`, the default, `SYSTEM` or `AGENT` |
   | | `persona(plays)`       | an archetype of a person who plays an actor, with `goals` and `pains`   |
   | | `nongoal`              | something the product could plausibly do and deliberately doesn't       |
@@ -40,7 +40,7 @@ intent: section {
   assumption_kind: term {{
     `name: assumption {{ … }}`, what the spec relies on an actor or the environment to do,
     such as an operator keeping a clock in sync. A rule or use case that depends on it names
-    it with `relies`.
+    it with `@relies`.
   }}
 
   quality_kind: term {{
@@ -48,42 +48,60 @@ intent: section {
     responsiveness or recovery. Its measurable form is a quality scenario that serves it.
   }}
 
-  intent_layer: rule(intent, by = system.checker) {
+  @by(system.checker)
+  @targets(intent)
+  intent_layer: rule {
     must {{ give `goal`, `actor`, `persona`, `nongoal`, `assumption` and `quality` the `INTENT` [layer](#language.specifications.layers.layer) }}
   }
 
-  persona_plays_actor: rule(persona_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(persona_kind)
+  persona_plays_actor: rule {
     if {{ a persona's `plays` is missing or names a node that isn't an actor }}
     must {{ report it as an error at the persona or at the reference }}
   }
 
-  actor_kinds: rule(actor_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(actor_kind)
+  actor_kinds: rule {
     must {{ read an actor's `kind` as `ActorKind.PERSON` when it's left out }}
   }
 
-  references_named_kind: rule(actor_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(actor_kind)
+  references_named_kind: rule {
     if {{ a reference that must name an actor, a goal or another kind names a node of a different kind }}
     must {{ report it as an error at the reference }}
   }
 
-  goals_never_proven: rule(goal_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(goal_kind)
+  goals_never_proven: rule {
     mustNot {{ require a proof or a status for a goal, a `nongoal`, an assumption, an actor, a persona or a quality }}
     then {{ conformance lists none of them }}
   }
 
-  goal_measure_shown: rule(goal_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(goal_kind)
+  goal_measure_shown: rule {
     must {{ show a goal's measure and source under its text, and below them the [derived lists](#heron.language.specifications.layers.derived_list) of the rules, use cases, constraints and scenarios that serve it }}
   }
 
-  actor_view: rule(actor_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(actor_kind)
+  actor_view: rule {
     must {{ show an actor with its kind, the personas that play it, and the use cases and rules that name it }}
   }
 
-  stakeholders_as_source: rule(goal_kind, by = actors.author) {
-    must {{ name who asked for a goal or a constraint in its `source` or its prose, and declare no node for them }}
+  @by(actors.author)
+  @targets(goal_kind)
+  stakeholders_as_source: rule {
+    must {{ name who asked for a goal or a constraint in its `@source` or its prose, and declare no node for them }}
   }
 
-  product_intent_on_top: rule(intent, by = actors.author) {
+  @by(actors.author)
+  @targets(intent)
+  product_intent_on_top: rule {
     must {{ put a product's vision, actors, personas and top goals at the top of its package, and open each area with its own goals }}
   }
 
@@ -92,7 +110,8 @@ intent: section {
     | ```heron
     | import = ["std/doc@1", "std/spec@1"]
     |
-    | self_service: goal(measure = "Nine refunds in ten need no support ticket.", source = "support team") {{
+    | @source("support team")
+    | self_service: goal(measure = "Nine refunds in ten need no support ticket.") {{
     |   Customers fix a wrong charge themselves.
     | }}
     |
@@ -113,7 +132,8 @@ intent: section {
   errors: section {
     @realizes(persona_plays_actor, references_named_kind)
     @display("Not an actor")
-    not_an_actor: error("type", by = system.checker) {
+    @by(system.checker)
+    not_an_actor: error("type") {
       title = "{name} is a {kind}, not an actor"
       name: field(String)
       kind: field(String)

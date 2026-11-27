@@ -40,56 +40,78 @@ projects: section {
     source out at the project's path and `heron.lock` pins the commit.
   }}
 
-  project_fields: rule(project_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(project_kind)
+  project_fields: rule {
     must {{ check a project's fields against `project`'s declaration, and its references to other projects as names in scope }}
     example {{ `owner = "x"` reports "p (a project) has no field owner", and `depends_on = [nobody]` reports "unknown name nobody" }}
   }
 
-  project_tasks: rule(project_kind, by = system.checker) {
+  @by(system.checker)
+  @targets(project_kind)
+  project_tasks: rule {
     must {{ accept tasks in a project's body, so the tasks that build and test a project live in it }}
   }
 
-  project_heading: rule(project_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(project_kind)
+  project_heading: rule {
     must {{ show a project with its path from the tree's entry file beside its name, and no path for a project at the entry file's folder or above it }}
     then {{ the root project's `"."` isn't shown, since it says nothing a reader needs }}
   }
 
-  lock_pins_sources: rule(git_source, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(git_source)
+  lock_pins_sources: rule {
     must {{ write each source's url, ref and the commit it resolved to into `heron.lock`, and read them back unchanged }}
   }
 
-  external_read_only: rule(external_project, by = actors.implementer) {
+  @by(actors.implementer)
+  @targets(external_project)
+  external_read_only: rule {
     mustNot {{ change the code of an [external project](#language.specifications.projects.external_project) }}
     while {{ the scope of the work at hand leaves the [external project](#heron.language.specifications.projects.external_project) out }}
   }
 
-  spec_versioned_by_project: rule(project_kind, by = actors.author) {
+  @by(actors.author)
+  @targets(project_kind)
+  spec_versioned_by_project: rule {
     must {{ version a spec through the project that holds it, separately from the projects that implement it }}
     then {{ each release of an implementing project can record which spec version it implements }}
   }
 
-  undeclared_dependency: rule(project_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(project_kind)
+  undeclared_dependency: rule {
     if {{ a project's code imports another project's code that its `depends_on` doesn't name }}
     should {{ report undeclared dependency at the project }}
   }
 
-  version_from_changelog: rule(project_kind, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(project_kind)
+  version_from_changelog: rule {
     must {{ take a project's version from its latest release in the changelog its `releases` names, never from its declaration }}
   }
 
-  unversioned_change: rule(project_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(project_kind)
+  unversioned_change: rule {
     if {{ a change alters a project's public surface and records no release that bumps its version }}
     should {{ report unversioned change }}
   }
 
-  group_defaults: rule(project_group, by = system.interpreter) {
+  @by(system.interpreter)
+  @targets(project_group)
+  group_defaults: rule {
     must {{ give each member of a group the group's `versioning` and `releases` as defaults it amends, and the group's one version where `versioning<shared>` is set }}
   }
 
   errors: section {
     @realizes(language.specifications.projects.undeclared_dependency)
     @display("Undeclared dependency")
-    undeclared_dependency: error("project-dependency", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    undeclared_dependency: error("project-dependency") {
       title = "{project} uses {other} without naming it in depends_on"
       project: field(String)
       other: field(String)
@@ -98,7 +120,9 @@ projects: section {
 
     @realizes(language.specifications.projects.unversioned_change)
     @display("Unversioned change")
-    unversioned_change: error("project-version", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    unversioned_change: error("project-version") {
       title = "the public surface of {project} changed without a version change"
       project: field(String)
       | A change to what callers rely on that no release records.

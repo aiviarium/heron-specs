@@ -26,7 +26,7 @@ traceability: section {
   }}
 
   outdated_proof: term {{
-    A `proves` whose `rev` is lower than the current [revision](#language.specifications.layers.revisions.revision)
+    A `proves` whose `@rev` is lower than the current [revision](#language.specifications.layers.revisions.revision)
     of a requirement it names: it proved an earlier meaning, and counts as no proof.
   }}
 
@@ -37,37 +37,53 @@ traceability: section {
     cite nothing.
   }}
 
-  verify_shown: rule(verify_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(verify_kind)
+  verify_shown: rule {
     must {{ list the `verify` links of the proofs that name a requirement under it as "Verified by", each its path, its test as code and the [revision](#heron.language.specifications.layers.revisions.revision) it proves }}
   }
 
-  status_shown: rule(status_flag, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(status_flag)
+  status_shown: rule {
     must {{ show a node's [status flag](#language.specifications.traceability.status_flag) as a quiet mark beside its name }}
   }
 
-  status_placement: rule(status_flag, by = system.linter) {
+  @by(system.linter)
+  @targets(status_flag)
+  status_placement: rule {
     should {{ report flag placement at a [status flag](#language.specifications.traceability.status_flag) outside its `on`, such as `<delivered>` on a rule }}
   }
 
-  planned_has_no_verify: rule(status_flag, by = actors.author) {
+  @by(actors.author)
+  @targets(status_flag)
+  planned_has_no_verify: rule {
     mustNot {{ name a requirement in both a `status<planned>` and a `proves` that has a `verify` link }}
     instead {{ drop the status in the change that builds the behaviour, and add its proof in that change }}
   }
 
-  verify_paths_exist: rule(verify_kind, by = system.linter) {
+  @by(system.linter)
+  @targets(verify_kind)
+  verify_paths_exist: rule {
     if {{ a `verify` names a file that doesn't exist, or a test the file doesn't declare }}
     should {{ report missing proof at the `verify` }}
   }
 
-  proves_at_revision: rule(outdated_proof, by = system.interpreter) {
-    must {{ read a `proves` without `rev` as proving [revision](#heron.language.specifications.layers.revisions.revision) 1, and count a requirement as proven only by a proof at its current [revision](#heron.language.specifications.layers.revisions.revision), listing an [outdated proof](#language.specifications.traceability.outdated_proof) apart as "outdated" }}
+  @by(system.interpreter)
+  @targets(outdated_proof)
+  proves_at_revision: rule {
+    must {{ read a `proves` without `@rev` as proving [revision](#heron.language.specifications.layers.revisions.revision) 1, and count a requirement as proven only by a proof at its current [revision](#heron.language.specifications.layers.revisions.revision), listing an [outdated proof](#language.specifications.traceability.outdated_proof) apart as "outdated" }}
   }
 
-  traceability_page: rule(verify_kind, by = system.docs_generator) {
+  @by(system.docs_generator)
+  @targets(verify_kind)
+  traceability_page: rule {
     must {{ render a page that lists every requirement with its status and the `verify` links of its proofs, and the requirements nothing proves }}
   }
 
-  uncovered_shown: rule(coverage, by = system.linter) {
+  @by(system.linter)
+  @targets(coverage)
+  uncovered_shown: rule {
     must {{ show the requirements nothing covers in editors and in CI }}
   }
 
@@ -78,7 +94,7 @@ traceability: section {
     | | Gap                                                        | Reported by          | As        |
     | | ---------------------------------------------------------- | -------------------- | --------- |
     | | a goal or quality nothing serves                           | `heron lint`         | warning   |
-    | | a rule or use case with no `serves` or `derives` chain to a goal, other than a constraint | `heron lint` | warning |
+    | | a rule or use case with no `@serves` or `@derives` chain to a goal, other than a constraint | `heron lint` | warning |
     | | an entry or error that realizes nothing                    | `heron lint`         | warning   |
     | | a failing extension no error realizes                      | `heron lint`         | warning   |
     | | a rule or step about the boundary that no entry realizes   | the [gap report](#heron.language.specifications.traceability.gap_report)       | listed    |
@@ -86,36 +102,50 @@ traceability: section {
     | | a test that cites no requirement                           | conformance          | listed, never failed |
     | | a reference that points down                               | `heron check`        | error     |
 
-    unserved_goal: rule(traceability.gaps, by = system.linter) {
+    @by(system.linter)
+    @targets(traceability.gaps)
+    unserved_goal: rule {
       if {{ no rule, constraint, use case or scenario serves a goal or a quality, directly or through a rule derived from one that does }}
       should {{ report the goal as served by nothing }}
     }
 
-    unmotivated_requirement: rule(traceability.gaps, by = system.linter) {
-      if {{ a rule or a use case reaches no goal through its `serves` and `derives` links or the goals of the sections above it, and isn't a constraint }}
+    @by(system.linter)
+    @targets(traceability.gaps)
+    unmotivated_requirement: rule {
+      if {{ a rule or a use case reaches no goal through its `@serves` and `@derives` links or the goals of the sections above it, and isn't a constraint }}
       should {{ report unmotivated requirement at it }}
     }
 
-    orphan_entry: rule(traceability.gaps, by = system.linter) {
+    @by(system.linter)
+    @targets(traceability.gaps)
+    orphan_entry: rule {
       if {{ a [surface entry](#heron.language.specifications.contract.surface_entry) or an error realizes nothing, and nothing in its surface realizes anything either }}
       should {{ report orphan entry at it }}
     }
 
-    unhandled_failure: rule(traceability.gaps, by = system.linter) {
+    @by(system.linter)
+    @targets(traceability.gaps)
+    unhandled_failure: rule {
       if {{ a use case's extension ends with `Fails.` and no error realizes it or its use case }}
       should {{ report unhandled failure at the extension }}
     }
 
-    unrealized_listed: rule(traceability.gaps, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(traceability.gaps)
+    unrealized_listed: rule {
       must {{ list in the [gap report](#language.specifications.traceability.gap_report) the rules and use case steps no [surface entry](#heron.language.specifications.contract.surface_entry) or error realizes, among the rules whose `by` is a part or the system and the steps whose `by` is a part }}
       then {{ the list is for reading, and never fails a build }}
     }
 
-    uncited_tests: rule(traceability.gaps, by = system.interpreter) {
+    @by(system.interpreter)
+    @targets(traceability.gaps)
+    uncited_tests: rule {
       must {{ list in the conformance report the tests of the project's own languages that no `verify` names, and fail nothing for them }}
     }
 
-    gap_report_shown: rule(gap_report, by = system.docs_generator) {
+    @by(system.docs_generator)
+    @targets(gap_report)
+    gap_report_shown: rule {
       must {{ render the [gap report](#language.specifications.traceability.gap_report) on the project's conformance page and in `heron generate conformance`, one list per gap, grouped by the area each entry is in, the first two names of its path, with the count of each group and the groups folded, and each entry linked, and leave out a gap with nothing in it }}
     }
   }
@@ -123,7 +153,9 @@ traceability: section {
   errors: section {
     @realizes(language.specifications.traceability.verify_paths_exist)
     @display("Missing proof")
-    missing_proof: error("verify", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    missing_proof: error("verify") {
       title = "verify names {path}, which doesn't exist"
       path: field(String)
       | A `verify` whose file or test is gone; the message names the test when the file is there and the test isn't.
@@ -131,28 +163,36 @@ traceability: section {
 
     @realizes(language.specifications.traceability.gaps.unserved_goal)
     @display("Unserved goal")
-    unserved_goal: error("Spec.UnservedGoal", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    unserved_goal: error("Spec.UnservedGoal") {
       title = "nothing serves {name}; serve it from a rule, a use case or a scenario, or drop it"
       name: field(String)
     }
 
     @realizes(language.specifications.traceability.gaps.unmotivated_requirement)
     @display("Unmotivated requirement")
-    unmotivated: error("Spec.Unmotivated", severity = Severity.warning, by = system.linter) {
-      title = "{name} serves no goal; give it serves or derives, or make it a constraint with its reason"
+    @by(system.linter)
+    @severity(warning)
+    unmotivated: error("Spec.Unmotivated") {
+      title = "{name} serves no goal; give it @serves or @derives, or make it a constraint with its reason"
       name: field(String)
     }
 
     @realizes(language.specifications.traceability.gaps.orphan_entry)
     @display("Orphan entry")
-    orphan_entry: error("Spec.OrphanEntry", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    orphan_entry: error("Spec.OrphanEntry") {
       title = "{name} realizes nothing; name the rules or steps it exists for with @realizes"
       name: field(String)
     }
 
     @realizes(language.specifications.traceability.gaps.unhandled_failure)
     @display("Unhandled failure")
-    unhandled_failure: error("Spec.UnhandledFailure", severity = Severity.warning, by = system.linter) {
+    @by(system.linter)
+    @severity(warning)
+    unhandled_failure: error("Spec.UnhandledFailure") {
       title = "extension {step} fails, and no error realizes it"
       step: field(String)
     }
