@@ -24,12 +24,10 @@ fmt: command("heron fmt") {
   }
 
   | Exits 0 when: every file is formatted, or was rewritten.
-  @by(system.command_line)
   @exit(1)
   exit_1: error("heron fmt exit 1") {
     title = "with --check, a file isn't formatted; or a path doesn't exist, or a file can't be read or written"
   }
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron fmt exit 2") {
     title = "an unknown option"

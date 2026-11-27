@@ -63,19 +63,16 @@ accept: section {
   }
 
   errors: section {
-    @realizes(language.schemas.accept.unaccepted_child, language.specifications.lifecycles.transition_body)
     @display("Doesn't accept")
-    @by(system.checker)
     doesnt_accept: error("accept") {
       title = "{kind} doesn't accept {child_kind}; it accepts {kinds}"
       kind: field(String)
       child_kind: field(String)
       kinds: field(String)
       | The tail reads "; it accepts no child kinds" when the kind accepts none.
+      | Reported as [language.schemas.accept.unaccepted_child] and [language.specifications.lifecycles.transition_body] say.
     }
 
-    @realizes(language.schemas.accept.max_bound)
-    @by(system.checker)
     accepts_at_most: error("accept") {
       title = "{kind} accepts at most {n} {child_kind}"
       kind: field(String)
@@ -83,20 +80,19 @@ accept: section {
       child_kind: field(String)
       | For a category entry the child kind reads as the category, as "1 strength node" or "2
       | block nodes".
+      | Reported as [language.schemas.accept.max_bound] says.
     }
 
-    @realizes(language.core_format.prose_layer.prose_needs_a_kind, language.schemas.accept.prose_and_code)
-    @by(system.checker)
     takes_no_prose: error("accept") {
       title = "{kind} takes no prose"
       kind: field(String)
+      | Reported as [language.core_format.prose_layer.prose_needs_a_kind] and [language.schemas.accept.prose_and_code] say.
     }
 
-    @realizes(language.schemas.accept.prose_and_code)
-    @by(system.checker)
     takes_no_do_block: error("accept") {
       title = "{kind} takes no do block"
       kind: field(String)
+      | Reported as [language.schemas.accept.prose_and_code] says.
     }
   }
 }

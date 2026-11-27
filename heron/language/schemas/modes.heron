@@ -23,7 +23,7 @@ modes: section {
   accepted_kind_wins: rule {
     when {{ a member's name could mean two or more kinds visible where it stands }}
     must {{ take the kind the enclosing node's kind accepts, and otherwise the innermost declaration }}
-    example {{ a spec imports `std/doc`'s `if` tag and `std/spec`'s `if` condition, and the `if` in a rule's body is the condition, because rules accept it }}
+    example {{ a spec imports `std/doc`'s `if` tag and sees the core's `if` condition, and the `if` in a rule's body is the condition, because rules accept it }}
   }
 
   @by(system.linter)
@@ -64,8 +64,6 @@ modes: section {
   }
 
   errors: section {
-    @realizes(language.schemas.modes.wrong_mode)
-    @by(system.linter)
     @severity(warning)
     wrong_mode_name: error("wrong-mode") {
       title = "{name} isn't declared in {here}; it's declared in {mode}"
@@ -73,23 +71,22 @@ modes: section {
       here: field(String)
       mode: field(String)
       | A name used in prose that only code declares, or the other way round.
+      | Reported as [language.schemas.modes.wrong_mode] says.
     }
 
-    @realizes(language.markup.tags.tag_names_a_kind, language.schemas.modes.structure_only)
-    @by(system.linter)
     @severity(warning)
     structure_only_tag: error("tag-kind") {
       title = "<{kind}> is a kind that stands only in structure, not as a tag"
       kind: field(String)
+      | Reported as [language.markup.tags.tag_names_a_kind] and [language.schemas.modes.structure_only] say.
     }
 
-    @realizes(language.markup.tags.tag_names_a_kind, language.schemas.modes.tag_names_kind)
-    @by(system.linter)
     @severity(warning)
     tag_not_a_kind: error("tag-kind") {
       title = "<{path}> names {name}, which isn't a kind; a tag must name a kind in scope"
       path: field(String)
       name: field(String)
+      | Reported as [language.markup.tags.tag_names_a_kind] and [language.schemas.modes.tag_names_kind] say.
     }
   }
 }

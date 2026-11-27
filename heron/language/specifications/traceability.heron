@@ -32,9 +32,9 @@ traceability: section {
 
   gap_report: term {{
     The lists of what the links leave open: intent nothing serves, requirements that serve
-    nothing, behaviour no contract entry realizes, entries and errors that realize nothing,
-    failing extensions no error realizes, requirements without a current proof and tests that
-    cite nothing.
+    nothing, behaviour no contract entry realizes and no error links, entries that realize
+    nothing, errors that link no rule and that nothing holds or throws, failing extensions no
+    error links, requirements without a current proof and tests that cite nothing.
   }}
 
   @by(system.docs_generator)
@@ -95,9 +95,9 @@ traceability: section {
     | | ---------------------------------------------------------- | -------------------- | --------- |
     | | a goal or quality nothing serves                           | `heron lint`         | warning   |
     | | a rule or use case with no `@serves` or `@derives` chain to a goal, other than a constraint | `heron lint` | warning |
-    | | an entry or error that realizes nothing                    | `heron lint`         | warning   |
-    | | a failing extension no error realizes                      | `heron lint`         | warning   |
-    | | a rule or step about the boundary that no entry realizes   | the [gap report](#heron.language.specifications.traceability.gap_report)       | listed    |
+    | | an entry that realizes nothing, or an error whose prose links no rule and that no command or op holds or throws | `heron lint` | warning |
+    | | a `Fails.` extension that no error's prose links           | `heron lint`         | warning   |
+    | | a rule or step about the boundary that no entry realizes and no error links | the [gap report](#heron.language.specifications.traceability.gap_report) | listed |
     | | a requirement without a proof at its current [revision](#heron.language.specifications.layers.revisions.revision)      | conformance          | missing or outdated |
     | | a test that cites no requirement                           | conformance          | listed, never failed |
     | | a reference that points down                               | `heron check`        | error     |
@@ -119,21 +119,21 @@ traceability: section {
     @by(system.linter)
     @targets(traceability.gaps)
     orphan_entry: rule {
-      if {{ a [surface entry](#heron.language.specifications.contract.surface_entry) or an error realizes nothing, and nothing in its surface realizes anything either }}
+      if {{ a [surface entry](#heron.language.specifications.contract.surface_entry) realizes nothing and nothing in its surface realizes anything either, or an error's prose links no rule or step and no command holds it and no op or api throws it }}
       should {{ report orphan entry at it }}
     }
 
     @by(system.linter)
     @targets(traceability.gaps)
     unhandled_failure: rule {
-      if {{ a use case's extension ends with `Fails.` and no error realizes it or its use case }}
+      if {{ a use case's extension ends with `Fails.` and no error's prose links it or its use case, and no entry realizes either }}
       should {{ report unhandled failure at the extension }}
     }
 
     @by(system.interpreter)
     @targets(traceability.gaps)
     unrealized_listed: rule {
-      must {{ list in the [gap report](#language.specifications.traceability.gap_report) the rules and use case steps no [surface entry](#heron.language.specifications.contract.surface_entry) or error realizes, among the rules whose `by` is a part or the system and the steps whose `by` is a part }}
+      must {{ list in the [gap report](#language.specifications.traceability.gap_report) the rules and use case steps no [surface entry](#heron.language.specifications.contract.surface_entry) realizes and no error's prose links, among the rules whose `by` is a part or the system and the steps whose `by` is a part }}
       then {{ the list is for reading, and never fails a build }}
     }
 
@@ -151,50 +151,45 @@ traceability: section {
   }
 
   errors: section {
-    @realizes(language.specifications.traceability.verify_paths_exist)
     @display("Missing proof")
-    @by(system.linter)
     @severity(warning)
     missing_proof: error("verify") {
       title = "verify names {path}, which doesn't exist"
       path: field(String)
       | A `verify` whose file or test is gone; the message names the test when the file is there and the test isn't.
+      | Reported as [language.specifications.traceability.verify_paths_exist] says.
     }
 
-    @realizes(language.specifications.traceability.gaps.unserved_goal)
     @display("Unserved goal")
-    @by(system.linter)
     @severity(warning)
     unserved_goal: error("Spec.UnservedGoal") {
       title = "nothing serves {name}; serve it from a rule, a use case or a scenario, or drop it"
       name: field(String)
+      | Reported as [language.specifications.traceability.gaps.unserved_goal] says.
     }
 
-    @realizes(language.specifications.traceability.gaps.unmotivated_requirement)
     @display("Unmotivated requirement")
-    @by(system.linter)
     @severity(warning)
     unmotivated: error("Spec.Unmotivated") {
       title = "{name} serves no goal; give it @serves or @derives, or make it a constraint with its reason"
       name: field(String)
+      | Reported as [language.specifications.traceability.gaps.unmotivated_requirement] says.
     }
 
-    @realizes(language.specifications.traceability.gaps.orphan_entry)
     @display("Orphan entry")
-    @by(system.linter)
     @severity(warning)
     orphan_entry: error("Spec.OrphanEntry") {
-      title = "{name} realizes nothing; name the rules or steps it exists for with @realizes"
+      title = "{name} names no rule or step it exists for; give an entry @realizes, and link an error's rule in its prose"
       name: field(String)
+      | Reported as [language.specifications.traceability.gaps.orphan_entry] says.
     }
 
-    @realizes(language.specifications.traceability.gaps.unhandled_failure)
     @display("Unhandled failure")
-    @by(system.linter)
     @severity(warning)
     unhandled_failure: error("Spec.UnhandledFailure") {
-      title = "extension {step} fails, and no error realizes it"
+      title = "extension {step} fails, and no error links it"
       step: field(String)
+      | Reported as [language.specifications.traceability.gaps.unhandled_failure] says.
     }
   }
 }

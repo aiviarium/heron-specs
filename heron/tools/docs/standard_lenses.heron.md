@@ -8,7 +8,7 @@ declaring a lens of the same name.
 
 <example id="standard_lens_declarations" @display="The standard lenses">
 ```heron
-import = ["std/doc@1", "std/spec@1", "std/grammar@1", "std/docs@1"]
+import = ["std/doc@1", "std/grammar@1", "std/docs@1"]
 
 user: lens {
   title = "User"

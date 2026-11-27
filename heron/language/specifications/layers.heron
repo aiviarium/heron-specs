@@ -93,14 +93,19 @@ layers: section {
 
   links: section {
     | A link is an annotation of the node it starts from, written above it, and always points
-    | up or across. `proves`, the link from a test, lives in the implementation's project.
+    | up or across. `proves`, the link from a test, lives in the implementation's project. The
+    | links are core annotations, with no import; a kind of another package that takes one stands
+    | in the core category its `on` lists: `serving` for `@serves`, `realizing` for `@realizes`,
+    | `revised` for `@rev` and `sourced` for `@source`.
+    | An error takes none of these links: it's a result, not a surface, so its prose links the rule
+    | that says when it's reported, and it never names who reports it.
     |
     | | Link           | From                                             | To                                    |
     | | -------------- | ------------------------------------------------ | ------------------------------------- |
     | | `@serves`      | a rule, constraint, use case or quality scenario | a goal or a quality                   |
     | | `@derives`     | a rule                                           | the rule it's derived from            |
     | | `@illustrates` | an outcome scenario                              | one rule, or one path of a use case   |
-    | | `@realizes`    | a contract entry or an error                     | rules, use cases, steps or extensions |
+    | | `@realizes`    | a [surface entry](#heron.language.specifications.contract.surface_entry) that solves them: an op, a command, a screen, … | rules, use cases, steps or extensions |
     | | `@refines`     | an example                                       | an outcome scenario                   |
     | | `@relies`      | a rule or a use case                             | assumptions                           |
     | | `proves`       | a test, in a project                             | any requirement, at a [revision](#heron.language.specifications.layers.revisions.revision) |
@@ -116,7 +121,7 @@ layers: section {
     @by(system.checker)
     @targets(layers.links)
     realizes_annotation: rule {
-      must {{ accept `@realizes(targets…)` on a node of the `CONTRACT` [layer](#language.specifications.layers.layer) and on a project's component, and read a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
+      must {{ accept `@realizes(targets…)` on a [surface entry](#heron.language.specifications.contract.surface_entry) of the `CONTRACT` [layer](#language.specifications.layers.layer) and on a kind in the `realizing` category, as a grammar or a project's component, never on an error, and read a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
     }
 
     @by(system.checker)
@@ -164,7 +169,7 @@ layers: section {
   @display("A goal, a rule and the op that realizes it")
   layers_example: example {
     | ```heron
-    | import = ["std/doc@1", "std/types@1", "std/spec@1", "std/apis@1", "std/http@1"]
+    | import = ["std/doc@1", "std/types@1", "std/apis@1", "std/http@1"]
     |
     | self_service: goal(measure = "Most refunds need no support ticket.") {{
     |   Customers fix a wrong charge themselves.
@@ -190,44 +195,40 @@ layers: section {
   }
 
   errors: section {
-    @realizes(layers.references_point_up)
     @display("Reference points down")
-    @by(system.checker)
     points_down: error("layer") {
       title = "{name} is a {kind} in the {to} layer, and a {from} node can't reference a lower layer; link it from the lower node instead"
       name: field(String)
       kind: field(String)
       to: field(String)
       from: field(String)
-      | A goal linking a rule, or a rule linking an op or an error. The fix is a link on the lower node: `@serves`, `@realizes` or `@illustrates`.
+      | A goal linking a rule, or a rule linking an op or an error. The fix is a link on the lower node: `@serves`, `@realizes`, `@illustrates`, or a link to the rule in the error's prose.
+      | Reported as [layers.references_point_up] says.
     }
 
-    @realizes(layers.links.link_kinds)
     @display("Wrong link target")
-    @by(system.checker)
     wrong_link_target: error("link") {
       title = "{link} takes {kinds}, and {name} is a {kind}"
       link: field(String)
       kinds: field(String)
       name: field(String)
       kind: field(String)
+      | Reported as [layers.links.link_kinds] says.
     }
 
-    @realizes(layers.links.derives_acyclic)
     @display("Derivation cycle")
-    @by(system.checker)
     derives_cycle: error("cycle") {
       title = "{name} derives from itself through {path}"
       name: field(String)
       path: field(String)
+      | Reported as [layers.links.derives_acyclic] says.
     }
 
-    @realizes(layers.revisions.revision_positive)
     @display("Revision below 1")
-    @by(system.checker)
     revision_below_one: error("type") {
       title = "a revision is a whole number from 1, not {value}"
       value: field(String)
+      | Reported as [layers.revisions.revision_positive] says.
     }
   }
 }

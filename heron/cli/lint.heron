@@ -28,12 +28,10 @@ lint: command("heron lint") {
   }
 
   | Exits 0 when: no diagnostic and no finding, of any severity.
-  @by(system.command_line)
   @exit(1)
   exit_1: error("heron lint exit 1") {
     title = "a diagnostic or a finding is left, a warning or a hint included; or a fix couldn't be written"
   }
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron lint exit 2") {
     title = "an unknown option, or an entry point that doesn't exist"

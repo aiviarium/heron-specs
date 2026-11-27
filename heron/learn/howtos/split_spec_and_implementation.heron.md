@@ -10,7 +10,7 @@ as a package, sealed, at its version.
 
 <example id="spec_package" @display="The spec package">
 ```heron
-import = ["std/schema@1", "std/doc@1", "std/spec@1"]
+import = ["std/schema@1", "std/doc@1"]
 
 shop: package(version = "0.2.0", sealed = true) {
   shopper: actor {{ Someone who buys from the shop. }}

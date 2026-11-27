@@ -60,22 +60,20 @@ values: section {
   }
 
   errors: section {
-    @realizes(language.core_format.values.literal_types, language.data.typed_strings.other_literals)
-    @by(system.checker)
     wrong_type: error("type") {
       title = "expected {type}, got {what}"
       type: field(String)
       what: field(String)
       | ‹what› says what the literal is, as "expected Int, got a string".
+      | Reported as [language.core_format.values.literal_types] and [language.data.typed_strings.other_literals] say.
     }
 
-    @realizes(language.core_format.values.enum_values)
-    @by(system.checker)
     not_a_variant: error("type") {
       title = "{value} is not a value of {enum}"
       value: field(String)
       enum: field(String)
       | ‹value› is written as the source has it, a string in quotes: `"hint" is not a value of NoteKind`.
+      | Reported as [language.core_format.values.enum_values] says.
     }
   }
 }

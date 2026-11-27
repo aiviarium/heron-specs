@@ -255,17 +255,14 @@ tasks: section {
   errors: section {
     | `heron run` prints each of these on standard error after `heron run: `.
 
-    @realizes(language.scripting.tasks.finding.no_such_task)
     @display("No task")
-    @by(system.command_line)
     no_task: error("run") {
       title = "no task {path}"
       path: field(String)
+      | Reported as [language.scripting.tasks.finding.no_such_task] says.
     }
 
-    @realizes(language.scripting.tasks.params.bad_params)
     @display("Bad parameter")
-    @by(system.command_line)
     bad_param: error("run") {
       title = "--{param} takes an Int, not \"{text}\""
       param: field(String)
@@ -273,49 +270,45 @@ tasks: section {
       | Or the message for the type, such as `takes one of RED, BLUE`, or `‹task› takes no
       | parameter --‹name›`, `--‹name› needs a value`, `--‹name› is given more than once` and
       | `unexpected argument ‹arg›; parameters are given as --name value`.
+      | Reported as [language.scripting.tasks.params.bad_params] says.
     }
 
-    @realizes(language.scripting.tasks.params.missing_params_fail)
     @display("Needs a parameter")
-    @by(system.command_line)
     needs_param: error("run") {
       title = "{task} needs --{param} ({type})"
       task: field(String)
       param: field(String)
       type: field(String)
+      | Reported as [language.scripting.tasks.params.missing_params_fail] says.
     }
 
-    @realizes(language.scripting.tasks.ordering.needs_cycle)
     @display("Needs a cycle")
-    @by(system.command_line)
     needs_cycle: error("run") {
       title = "@needs forms a cycle: {task} → … → {task}"
       task: field(String)
+      | Reported as [language.scripting.tasks.ordering.needs_cycle] says.
     }
 
-    @realizes(language.scripting.tasks.ordering.needs_non_task)
     @display("Needs no task")
-    @by(system.command_line)
     needs_non_task: error("run") {
       title = "{task} needs {path}, which is no task"
       task: field(String)
       path: field(String)
+      | Reported as [language.scripting.tasks.ordering.needs_non_task] says.
     }
 
-    @realizes(language.scripting.tasks.confirming.declined)
     @display("Not confirmed")
-    @by(system.command_line)
     not_confirmed: error("run") {
       title = "{task} was not confirmed"
       task: field(String)
+      | Reported as [language.scripting.tasks.confirming.declined] says.
     }
 
-    @realizes(language.scripting.tasks.confirming.confirm_without_terminal)
     @display("Asks before it runs")
-    @by(system.command_line)
     needs_yes: error("run") {
       title = "{task} asks before it runs; pass --yes to run it without a terminal"
       task: field(String)
+      | Reported as [language.scripting.tasks.confirming.confirm_without_terminal] says.
     }
   }
 

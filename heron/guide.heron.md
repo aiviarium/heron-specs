@@ -94,7 +94,7 @@ renderer can read it. Prose carries context and reasons, never a behaviour on it
 | A measured quality                | a `quality` and a quality `scenario` with its `measure`              |
 | A subcommand                      | a `command` with its usage, arguments, options and errors           |
 | Syntax                            | a `grammar` of `production` and `token` nodes, from `std/grammar`   |
-| A problem the product reports     | an `error` with its id, title, fields, projections and `@realizes`  |
+| A problem the product reports     | an `error` with its id, title, fields, projections and a link to its rule |
 | A screen                          | a `screen` of nested `region` nodes                                 |
 | An example a reader can run       | an `example` with a complete code block                             |
 
@@ -118,9 +118,14 @@ renderer can read it. Prose carries context and reasons, never a behaviour on it
 </rule>
 
 <rule id="diagnostics_section" @targets="guide.kinds" @by="actors.author">
-<must>write each problem the system reports as an `error` node of its own, in an `errors` section of the concern that reports it, with `@by` naming the part that reports it and `@realizes` the rules it answers, and keep the ids the command line prints</must>
+<must>write each problem the system reports as an `error` node of its own, in an `errors` section of the concern that reports it, with its prose linking the rule that says when it's reported, and keep the ids the command line prints</must>
 <then>one id such as `conflict` can name more than one error, and the docs list them all on one page by id</then>
 </rule>
+
+An error is a result, not a party: it never names who reports it, with `@by` or `@realizes`. The
+raiser names it, as an op's `@throws` or a command holding it, or the rule its prose links names the
+raiser with its own `@by`. The spec kinds and their annotations are part of the core, so a spec
+imports `std/doc` for its sections and terms and nothing for its rules and errors.
 
 <rule id="layer_placement" @targets="guide.kinds" @by="actors.author">
 <must>place each statement in the [layer](#heron.language.specifications.layers.layer) its test puts it in: what the people it's for want is intent, what the product guarantees at its boundary in the domain's words is the specification, and the exact bytes, flags, fields or screens of the boundary are the contract</must>

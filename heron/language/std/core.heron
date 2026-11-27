@@ -1,6 +1,7 @@
 @display("std/core")
 core: part {
   | The [prelude](#language.core_format.imports.packages.prelude): the flags, annotations, code kinds and names every tree sees without importing anything.
+  | The core also includes [std/spec](#language.std.spec): the spec kinds and the annotations they share, which every spec needs.
   |
   | Its surface is declared in `std/core/package.heron`, whose types the API
   | reference renders; each export is specified where its behaviour is:

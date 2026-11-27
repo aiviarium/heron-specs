@@ -148,23 +148,21 @@ prose: section {
     }
 
     errors: section {
-      @realizes(tools.prose.vale.alert_mapping)
-      @by(system.prose_linter)
       @severity(warning)
       vale_alert: error("Vale.‹check›") {
         title = "{vale_s_message}"
         vale_s_message: field(String)
         | One alert, coded after its check, as `Vale.Vale.Spelling`, so `@lint(allow)` takes the code
         | or the check. Vale's `error` is an error, `warning` a warning, and `suggestion` a hint.
+        | Reported as [tools.prose.vale.alert_mapping] says.
       }
 
-      @realizes(tools.prose.vale.vale_failure)
       @display("Vale failed")
-      @by(system.prose_linter)
       @severity(warning)
       vale_failed: error("Vale.Error") {
         title = "vale failed: {reason}"
         reason: field(String)
+        | Reported as [tools.prose.vale.vale_failure] says.
       }
     }
   }

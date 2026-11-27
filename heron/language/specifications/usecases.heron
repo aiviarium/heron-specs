@@ -157,7 +157,7 @@ usecases: section {
   @display("A use case in a Heron file")
   usecase_example: example {
     | ```heron
-    | import = ["std/doc@1", "std/spec@1"]
+    | import = ["std/doc@1"]
     |
     | self_service: goal {{ Customers fix a wrong charge themselves. }}
     |
@@ -195,42 +195,38 @@ usecases: section {
   }
 
   errors: section {
-    @realizes(step_actor, usecase_actor_checked)
     @display("Step without an actor or a part")
-    @by(system.checker)
     step_by: error("usecase") {
       title = "step {step} opens with {name}, a {kind}; a step's first link names an actor or a part"
       step: field(String)
       name: field(String)
       kind: field(String)
+      | Reported as [step_actor] and [usecase_actor_checked] say.
     }
 
-    @realizes(extension_at_step, step_references_resolve)
     @display("No such step")
-    @by(system.checker)
     no_such_step: error("usecase") {
       title = "use case {usecase} has no step {step}"
       usecase: field(String)
       step: field(String)
+      | Reported as [extension_at_step] and [step_references_resolve] say.
     }
 
-    @realizes(one_outcome)
     @display("Extension without one outcome")
-    @by(system.checker)
     extension_outcome: error("usecase") {
       title = "extension {step} ends with {text}; it ends with exactly one of \"Fails.\", \"Back to N.\" or \"Succeeds.\""
       step: field(String)
       text: field(String)
+      | Reported as [one_outcome] says.
     }
 
-    @realizes(step_include)
     @display("Include not at a lower level")
-    @by(system.checker)
     include_level: error("usecase") {
       title = "step {step} includes {usecase}, which is at level {level}; an include is at a lower level, with no cycle"
       step: field(String)
       usecase: field(String)
       level: field(String)
+      | Reported as [step_include] says.
     }
   }
 }

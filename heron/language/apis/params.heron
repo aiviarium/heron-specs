@@ -88,25 +88,23 @@ params: section {
   }
 
   errors: section {
-    @realizes(language.apis.params.no_guessed_location)
     @display("Unplaced parameter")
-    @by(system.checker)
     unplaced_parameter: error("binding") {
       title = "{op} binds {param} nowhere: annotate it with @path, @query, @header or @body"
       op: field(String)
       param: field(String)
       | A parameter of an HTTP-bound op that neither an annotation nor the default binding places.
+      | Reported as [language.apis.params.no_guessed_location] says.
     }
 
-    @realizes(language.apis.params.route_names_params)
     @display("Route and parameters disagree")
-    @by(system.checker)
     route_mismatch: error("binding") {
       title = "the route of {op} names :{name}, which isn't a parameter of the op"
       related = "the op's parameters"
       op: field(String)
       name: field(String)
       | A route segment and the op's [path parameters](#language.apis.params.path_parameter) that don't match one to one.
+      | Reported as [language.apis.params.route_names_params] says.
     }
   }
 }

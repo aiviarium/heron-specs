@@ -65,7 +65,7 @@ links: section {
   @targets(node_link)
   imported_declarations: rule {
     must {{ resolve a [node link](#language.markup.links.node_link) to a declaration of a package the file imports, by the path the package's names are visible under }}
-    example {{ `[rule](#spec.rule)` in a file that imports `std/spec@1` links to `std/spec`'s `rule` kind }}
+    example {{ `[rule](#spec.rule)` links to the core's `rule` kind, in `std/spec`, which every file sees }}
   }
 
   @by(system.docs_generator)
@@ -95,13 +95,12 @@ links: section {
   }
 
   errors: section {
-    @realizes(language.markup.links.short_links_resolve)
     @display("Unresolved short link")
-    @by(system.checker)
     unresolved_short_link: error("unresolved") {
       title = "[{path}] names no node"
       path: field(String)
       | A [short_link] whose name matches no node; the message ends with the closest name when one is close.
+      | Reported as [language.markup.links.short_links_resolve] says.
     }
   }
 }

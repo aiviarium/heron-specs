@@ -11,12 +11,12 @@ then run ${cli.help.name}: it lists the commands you have.
 <step id="first_file">
 Make an empty folder and write this as `index.heron` in it. The folder's
 `index.heron` is where every command starts reading. Its `import` brings in the
-standard packages whose kinds the file uses: `section` and `term` from `std/doc`,
-`rule` and `actor` from `std/spec`.
+standard packages whose kinds the file uses: `section` and `term` from `std/doc`.
+`rule` and `actor` need no import: they're part of the core.
 
 <example id="first_tree" @display="index.heron">
 ```heron
-import = ["std/doc@1", "std/spec@1"]
+import = ["std/doc@1"]
 
 shopper: actor {{ Someone who buys from the shop. }}
 

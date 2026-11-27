@@ -16,12 +16,10 @@ lsp: command("heron lsp") {
   }
 
   | Exits 0 when: the editor shut the server down.
-  @by(system.command_line)
   @exit(1)
   exit_1: error("heron lsp exit 1") {
     title = "the connection failed"
   }
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron lsp exit 2") {
     title = "an unknown option"

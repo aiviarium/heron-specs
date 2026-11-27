@@ -43,7 +43,7 @@ the package's last path segment, as `doc: package(version = "1.0")` in `std/doc`
 
 <rule id="package_requires" @targets="language.schemas.kinds.packages" @by="actors.author">
 <must>list in `requires` every package whose kinds or types the package's declarations use, by name and major version, and import the same packages in the file</must>
-<example>`tech: package(version = "1.0", requires = ["std/doc@1", "std/spec@1"])`</example>
+<example>`tech: package(version = "1.0", requires = ["std/doc@1"])`</example>
 </rule>
 
 <rule id="package_body" @targets="language.schemas.kinds.packages" @by="system.checker">

@@ -16,8 +16,9 @@ responses: section {
   }}
 
   status_annotation: term {{
-    `std/http`'s annotation for the status code an error is answered with over HTTP,
-    `@status(422)` above a type that implements `Error`.
+    The core's annotation for the status code an error is answered with over HTTP,
+    `@status(422)` above a spec error or a type that implements `Error`: the HTTP projection of
+    the error's identity, beside `@exit` and `@severity`. No package declares another.
   }}
 
   @by(system.docs_generator)
@@ -64,15 +65,14 @@ responses: section {
   }
 
   errors: section {
-    @realizes(language.apis.responses.status_on_errors)
     @display("Status outside an error")
-    @by(system.linter)
     @severity(warning)
     status_misplaced: error("status") {
       title = "@status({code}) stands on {type}, which isn't an error with a 4xx or 5xx code"
       code: field(String)
       type: field(String)
       | A status code on a type no op can throw, or one that doesn't signal an error.
+      | Reported as [language.apis.responses.status_on_errors] says.
     }
   }
 }

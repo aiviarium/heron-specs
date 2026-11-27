@@ -5,7 +5,6 @@
 import = [
   "std/schema@1",
   "std/doc@1",
-  "std/spec@1",
   "std/grammar@1",
   "std/lint@1",
   "std/docs@1",

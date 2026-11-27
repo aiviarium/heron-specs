@@ -143,22 +143,21 @@ authored_pages: section {
   }
 
   errors: section {
-    @realizes(language.markup.authored_pages.checked_examples.example_errors)
     @display("Example doesn't check")
-    @by(system.checker)
     example_fails: error("example") {
       title = "the example {path} doesn't check: {message} (line {line})"
       path: field(String)
       message: field(String)
       line: field(String)
       | Fix the code in the example, or move code that isn't a whole file out of the example into a code block of the page.
+      | Reported as [language.markup.authored_pages.checked_examples.example_errors] says.
     }
   }
 
   @display("A how-to")
   howto_example: example {
     | ```heron
-    | import = ["std/doc@1", "std/spec@1", "std/docs@1"]
+    | import = ["std/doc@1", "std/docs@1"]
     |
     | cli: section {
     |   check: command("acme check") {

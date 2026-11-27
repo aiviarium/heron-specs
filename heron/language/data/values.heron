@@ -76,22 +76,20 @@ values: section {
   }
 
   errors: section {
-    @realizes(language.data.values.required_members)
-    @by(system.checker)
     missing_member: error("missing-argument") {
       title = "{type} needs the member {name}"
       type: field(String)
       name: field(String)
+      | Reported as [language.data.values.required_members] says.
     }
 
-    @realizes(language.data.values.sized_numbers)
-    @by(system.checker)
     out_of_range: error("type") {
       title = "{value} doesn't fit {type}, which holds {min} to {max}"
       value: field(String)
       type: field(String)
       min: field(String)
       max: field(String)
+      | Reported as [language.data.values.sized_numbers] says.
     }
   }
 }

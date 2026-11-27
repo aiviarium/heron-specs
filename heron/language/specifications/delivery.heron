@@ -73,31 +73,29 @@ delivery: section {
   }
 
   errors: section {
-    @realizes(story_lists_items)
     @display("Behaviour in a story")
-    @by(system.checker)
     behaviour_in_story: error("story") {
       title = "story {story} holds a {kind}; a story lists the spec items it adds or changes, which state the behaviour"
       story: field(String)
       kind: field(String)
+      | Reported as [story_lists_items] says.
     }
 
-    @realizes(uses_enforced)
     @display("Import outside uses")
-    @by(system.linter)
     @severity(warning)
     import_outside_uses: error("component-uses") {
       title = "{component} imports {other}, which its uses doesn't list"
       component: field(String)
       other: field(String)
       | An import that breaks a component's contract.
+      | Reported as [uses_enforced] says.
     }
   }
 
   @display("A story in a project")
   delivery_example: example {
     | ```heron
-    | import = ["std/doc@1", "std/spec@1", "std/project@1"]
+    | import = ["std/doc@1", "std/project@1"]
     |
     | self_service: goal {{ Customers fix a wrong charge themselves. }}
     |

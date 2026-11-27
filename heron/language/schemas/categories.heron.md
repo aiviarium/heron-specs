@@ -20,7 +20,8 @@ accept with `accept(category = …)`.
 
 `std/doc` declares the categories prose and documentation are built from: `block`, for
 what stands on a line of its own or as a block tag, and `inline`, for what stands inside
-a sentence. `std/spec` adds `strength` and `condition`. `std/schema` declares `flow` and
+a sentence. `std/spec` adds `strength` and `condition`, and `serving`, `realizing`, `revised`
+and `sourced`, through which other packages' kinds take its links. `std/schema` declares `flow` and
 `phrasing`, the sketch's names for the same two sets, which no standard kind joins.
 
 <rule id="builtin_categories" @targets="category_term" @by="actors.author">

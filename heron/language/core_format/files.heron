@@ -90,27 +90,24 @@ files: section {
   }
 
   errors: section {
-    @realizes(language.core_format.files.directives)
-    @by(system.checker)
     not_a_list: error("directive") {
       title = "{directive} takes a list of strings"
       directive: field(String)
       | ‹directive› is `include` or `import`.
+      | Reported as [language.core_format.files.directives] says.
     }
 
-    @realizes(language.core_format.files.directives)
-    @by(system.checker)
     not_plain: error("directive") {
       title = "{directive} entries are plain strings"
       directive: field(String)
+      | Reported as [language.core_format.files.directives] says.
     }
 
-    @realizes(language.core_format.files.unreachable_file)
-    @by(system.linter)
     @severity(warning)
     unreachable_file: error("unreachable-file") {
       title = "no entry point reaches {file}, so nothing checks it"
       file: field(String)
+      | Reported as [language.core_format.files.unreachable_file] says.
     }
   }
 }

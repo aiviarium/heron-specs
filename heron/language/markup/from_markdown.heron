@@ -49,8 +49,6 @@ from_markdown: section {
   }
 
   errors: section {
-    @realizes(language.markup.from_markdown.markdown_forms_reported)
-    @by(system.linter)
     @severity(warning)
     markdown_form: error("markdown-form") {
       title = "{form} isn't markup here; use {instead}"
@@ -58,6 +56,7 @@ from_markdown: section {
       instead: field(String)
       | ‹form› is "a heading", "a footnote reference" or "`$…$` math"; ‹instead› is a section,
       | `<footnote>` or `<math>`.
+      | Reported as [language.markup.from_markdown.markdown_forms_reported] says.
     }
   }
 }

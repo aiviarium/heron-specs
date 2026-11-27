@@ -93,7 +93,7 @@ lenses: section {
     @display("Declaring a lens")
     declaring_a_lens: example {
       | ```heron
-      | import = ["std/doc@1", "std/spec@1", "std/docs@1"]
+      | import = ["std/doc@1", "std/docs@1"]
       |
       | /// For the support team: the commands they run and the errors customers meet.
       | support: lens {
@@ -331,97 +331,87 @@ lenses: section {
   }
 
   errors: section {
-    @realizes(tools.docs.lenses.declaring.budget_form)
     @display("Bad budget")
-    @by(system.checker)
     bad_budget: error("lens") {
       title = "{lens}: a budget is at least 500 tokens, not {budget}"
       lens: field(String)
       budget: field(String)
+      | Reported as [tools.docs.lenses.declaring.budget_form] says.
     }
 
-    @realizes(tools.docs.lenses.choosing.html_lenses_only)
     @display("Not a site lens")
-    @by(system.checker)
     markdown_lens_listed: error("lens") {
       title = "{lens} is written as Markdown; a site's lenses are written as HTML, and heron generate agents writes the agent lens"
       lens: field(String)
+      | Reported as [tools.docs.lenses.choosing.html_lenses_only] says.
     }
 
-    @realizes(tools.docs.lenses.declaring.lens_names_resolve)
     @display("Unknown lens")
-    @by(system.checker)
     unknown_lens: error("unresolved") {
       title = "unknown lens {name}; the lenses in scope are {names}"
       name: field(String)
       names: field(String)
       | A [lens mark](#tools.docs.lenses.lens_mark) or a docs block's `lenses` naming a lens that's declared nowhere in scope.
+      | Reported as [tools.docs.lenses.declaring.lens_names_resolve] says.
     }
 
-    @realizes(tools.docs.lenses.declaring.lens_names_resolve)
     @display("Not a lens")
-    @by(system.checker)
     not_a_lens: error("lens") {
       title = "{name} is a {kind}, not a lens"
       name: field(String)
       kind: field(String)
       | A [lens mark](#tools.docs.lenses.lens_mark) or a docs block's `lenses` naming a node of another kind.
+      | Reported as [tools.docs.lenses.declaring.lens_names_resolve] says.
     }
 
-    @realizes(tools.docs.lenses.declaring.lists_name_kinds)
     @display("Not a kind")
-    @by(system.checker)
     lens_not_a_kind: error("lens") {
       title = "{name} is a {kind}; a lens's {field} lists kinds and categories"
       name: field(String)
       kind: field(String)
       field: field(String)
+      | Reported as [tools.docs.lenses.declaring.lists_name_kinds] says.
     }
 
-    @realizes(tools.docs.lenses.declaring.entry_names_pages)
     @display("Not an authored page")
-    @by(system.checker)
     entry_not_a_page: error("lens") {
       title = "{name} is a {kind}; a lens's entry lists guides, how-tos, concepts and tutorials"
       name: field(String)
       kind: field(String)
+      | Reported as [tools.docs.lenses.declaring.entry_names_pages] says.
     }
 
-    @realizes(tools.docs.lenses.choosing.no_lens)
     @display("No lens")
-    @by(system.checker)
     no_lens: error("lens") {
       title = "the site builds no lens: name at least one in lenses"
+      | Reported as [tools.docs.lenses.choosing.no_lens] says.
     }
 
-    @realizes(tools.docs.lenses.choosing.one_default)
     @display("One default lens")
-    @by(system.checker)
     one_default_lens: error("lens") {
       title = "a site has exactly one default lens; {count} of {names} set default = true"
       count: field(String)
       names: field(String)
       | Set `default = true` on the lens the site's root serves, and on no other lens of the list.
+      | Reported as [tools.docs.lenses.choosing.one_default] says.
     }
 
-    @realizes(tools.docs.lenses.choosing.empty_prefix_only_default, tools.docs.lenses.declaring.prefix_form)
     @display("Bad prefix")
-    @by(system.checker)
     bad_prefix: error("lens") {
       title = "{lens}: {reason}"
       lens: field(String)
       reason: field(String)
       | A prefix is `""` or one lower-case path segment, and only the default lens is written at the root.
+      | Reported as [tools.docs.lenses.choosing.empty_prefix_only_default] and [tools.docs.lenses.declaring.prefix_form] say.
     }
 
-    @realizes(tools.docs.lenses.choosing.distinct_prefixes)
     @display("Prefix taken")
-    @by(system.checker)
     prefix_taken: error("lens") {
       title = "{lens} and {other} are both served under {prefix}/"
       lens: field(String)
       other: field(String)
       prefix: field(String)
+      | Reported as [tools.docs.lenses.choosing.distinct_prefixes] says.
     }
   }
 }

@@ -17,12 +17,10 @@ serve: command("heron serve") {
   }
 
   | Exits 0 when: the server was closed.
-  @by(system.command_line)
   @exit(1)
   exit_1: error("heron serve exit 1") {
     title = "the address can't be listened on, or the server failed"
   }
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron serve exit 2") {
     title = "an unknown option, or a workspace that can't be opened at the entry point"

@@ -21,7 +21,7 @@ targets, asked in its text, with `@owner` naming who answers it.
 </rule>
 
 <rule id="open_beside_flag" @targets="open_kind" @by="actors.author">
-<where>a file imports `std/types` beside `std/spec`</where>
+<where>a file imports `std/types`, beside the core's `std/spec`</where>
 <must>write an open question as `spec.open {{ … }}`</must>
 <then>the name `open` can't resolve to the `<open>` flag `std/types` gives records, which "open is not a kind or a type" reports</then>
 </rule>
@@ -43,7 +43,7 @@ targets, asked in its text, with `@owner` naming who answers it.
 <example id="specifications_planning" @display="A planning file">
 ```heron
 // planning/refunds.heron
-import = ["std/spec@1", "../refunds/"]
+import = ["../refunds/"]
 
 @targets(refunds.refund_window)
 @owner("cf")

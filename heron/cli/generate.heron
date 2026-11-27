@@ -39,12 +39,10 @@ generate: command("heron generate") {
   }
 
   | Exits 0 when: every target ran; unchanged files aren't rewritten.
-  @by(system.command_line)
   @exit(1)
   exit_1: error("heron generate exit 1") {
     title = "the tree doesn't check, an extension couldn't load, a target has no adapter, or an adapter failed or returned a path outside the working folder"
   }
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron generate exit 2") {
     title = "an unknown option, an entry point whose path can't be resolved, or `--pack` with a target other than `agents`"

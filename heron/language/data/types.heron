@@ -123,21 +123,19 @@ types: section {
   }
 
   errors: section {
-    @realizes(language.apis.responses.thrown_types_are_errors, language.data.types.errors_never_enums, language.data.types.only_errors_thrown)
-    @by(system.checker)
     not_an_error: error("type") {
       title = "{type} can't be thrown: it doesn't implement Error"
       type: field(String)
+      | Reported as [language.apis.responses.thrown_types_are_errors], [language.data.types.errors_never_enums] and [language.data.types.only_errors_thrown] say.
     }
 
-    @realizes(language.data.types.restating_members)
-    @by(system.checker)
     restate_member: error("conflict") {
       title = "{type} gets {member} from both {a} and {b}; restate it"
       type: field(String)
       member: field(String)
       a: field(String)
       b: field(String)
+      | Reported as [language.data.types.restating_members] says.
     }
   }
 

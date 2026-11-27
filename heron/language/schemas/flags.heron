@@ -32,42 +32,38 @@ flags: section {
   }
 
   errors: section {
-    @realizes(language.schemas.flags.flag_groups)
-    @by(system.linter)
     @severity(warning)
     flag_group_twice: error("flag-group") {
       title = "<{flag}> and <{other}> are both in the group {group}; a node carries one of them"
       flag: field(String)
       other: field(String)
       group: field(String)
+      | Reported as [language.schemas.flags.flag_groups] says.
     }
 
-    @realizes(language.core_format.nodes.flags.flag_placement, language.schemas.flags.flag_on, language.specifications.traceability.status_placement)
-    @by(system.linter)
     @severity(warning)
     flag_misplaced: error("flag-placement") {
       title = "<{flag}> doesn't attach to {kind}; it attaches to {kinds}"
       flag: field(String)
       kind: field(String)
       kinds: field(String)
+      | Reported as [language.core_format.nodes.flags.flag_placement], [language.schemas.flags.flag_on] and [language.specifications.traceability.status_placement] say.
     }
 
-    @realizes(language.schemas.flags.flag_on_annotation)
-    @by(system.linter)
     @severity(warning)
     flag_misplaced_on_annotation: error("flag-placement") {
       title = "<{flag}> doesn't attach to @{annotation}; it attaches to {kinds}"
       flag: field(String)
       annotation: field(String)
       kinds: field(String)
+      | Reported as [language.schemas.flags.flag_on_annotation] says.
     }
 
-    @realizes(language.schemas.flags.declaring_flags)
-    @by(system.checker)
     not_a_flag: error("not-a-flag") {
       title = "{name} is not a flag"
       name: field(String)
       | A flag names something in scope that isn't a flag.
+      | Reported as [language.schemas.flags.declaring_flags] says.
     }
   }
 }

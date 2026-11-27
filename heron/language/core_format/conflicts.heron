@@ -34,49 +34,44 @@ conflicts: section {
   }
 
   errors: section {
-    @realizes(language.core_format.nodes.declaring.declared_once, language.schemas.overloads.overloads_together)
-    @by(system.checker)
     declared_twice: error("conflict") {
       title = "{name} is declared twice"
       related = "first declared here"
       name: field(String)
       | A name declared twice in one scope.
+      | Reported as [language.core_format.nodes.declaring.declared_once] and [language.schemas.overloads.overloads_together] say.
     }
 
-    @realizes(language.apis.examples.one_outcome_each, language.core_format.conflicts.set_once)
-    @by(system.checker)
     set_twice: error("conflict") {
       title = "{path} is set twice in one body"
       related = "set here first"
       path: field(String)
       | A field set twice in one body.
+      | Reported as [language.apis.examples.one_outcome_each] and [language.core_format.conflicts.set_once] say.
     }
 
-    @realizes(language.core_format.conflicts.unordered_conflict)
-    @by(system.checker)
     set_in_two_files: error("conflict") {
       title = "{path} is set in two files, and neither includes the other"
       related = "also set here"
       path: field(String)
       | A path set in two files, neither including the other.
+      | Reported as [language.core_format.conflicts.unordered_conflict] says.
     }
 
-    @realizes(language.core_format.conflicts.set_once)
-    @by(system.checker)
     exported_twice: error("conflict") {
       title = "two packages export {name}"
       name: field(String)
       | A name exported by two packages.
+      | Reported as [language.core_format.conflicts.set_once] says.
     }
 
-    @realizes(language.core_format.conflicts.set_once)
-    @by(system.checker)
     exported_and_declared: error("conflict") {
       title = "{name} is exported by {package} and also declared in this tree"
       related = "declared here"
       name: field(String)
       package: field(String)
       | An exported name also declared in the tree.
+      | Reported as [language.core_format.conflicts.set_once] says.
     }
   }
 }

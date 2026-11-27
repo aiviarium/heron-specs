@@ -18,7 +18,7 @@ reads "refund window" on the page; a bracket meant as text is written `\[optiona
 
 <example id="refunds_section" @display="A section with rules">
 ```heron
-import = ["std/doc@1", "std/spec@1"]
+import = ["std/doc@1"]
 
 desk: part {{ The support console. }}
 

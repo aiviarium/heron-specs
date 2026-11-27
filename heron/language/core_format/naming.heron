@@ -71,30 +71,27 @@ naming: section {
   }
 
   errors: section {
-    @realizes(language.core_format.naming.unknown_names, language.core_format.prose_layer.inserts_resolve, language.markup.authored_pages.facts.inserted_facts_required)
-    @by(system.checker)
     unknown_name: error("unresolved") {
       title = "unknown name {name}"
       name: field(String)
+      | Reported as [language.core_format.naming.unknown_names], [language.core_format.prose_layer.inserts_resolve] and [language.markup.authored_pages.facts.inserted_facts_required] say.
     }
 
-    @realizes(language.core_format.naming.unknown_names, language.data.types.closed_records)
-    @by(system.checker)
     no_member: error("unresolved") {
       title = "{path} has no member {name}"
       path: field(String)
       name: field(String)
+      | Reported as [language.core_format.naming.unknown_names] and [language.data.types.closed_records] say.
     }
 
-    @realizes(language.core_format.naming.ambiguous_links)
     @display("Ambiguous link")
-    @by(system.checker)
     ambiguous_link: error("ambiguous") {
       title = "{path} names {count} nodes: {candidates}; write a longer path"
       path: field(String)
       count: field(String)
       candidates: field(String)
       | Two or more nodes whose paths end with the link's names, at the same precedence; each candidate is named by the shortest end of its path that picks it.
+      | Reported as [language.core_format.naming.ambiguous_links] says.
     }
   }
 }

@@ -108,7 +108,7 @@ intent: section {
   @display("A product's intent")
   intent_example: example {
     | ```heron
-    | import = ["std/doc@1", "std/spec@1"]
+    | import = ["std/doc@1"]
     |
     | @source("support team")
     | self_service: goal(measure = "Nine refunds in ten need no support ticket.") {{
@@ -130,14 +130,13 @@ intent: section {
   }
 
   errors: section {
-    @realizes(persona_plays_actor, references_named_kind)
     @display("Not an actor")
-    @by(system.checker)
     not_an_actor: error("type") {
       title = "{name} is a {kind}, not an actor"
       name: field(String)
       kind: field(String)
       | A reference that must name an actor naming another kind of node; any `Ref(kind)` is checked the same way.
+      | Reported as [persona_plays_actor] and [references_named_kind] say.
     }
   }
 }

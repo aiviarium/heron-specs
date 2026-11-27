@@ -74,32 +74,28 @@ typed_strings: section {
   }
 
   errors: section {
-    @realizes(language.core_format.values.strings_parsed_by_type)
-    @by(system.checker)
     not_a_duration: error("typed-string") {
       title = "\"{text}\" is not a duration; write a number and a unit, as in \"30d\", \"20m\" or \"200ms\""
       text: field(String)
+      | Reported as [language.core_format.values.strings_parsed_by_type] says.
     }
 
-    @realizes(language.data.typed_strings.currency_codes)
-    @by(system.checker)
     not_money: error("typed-string") {
       title = "\"{text}\" is not an amount of money; write the amount and an ISO 4217 currency, as in \"40.00 EUR\""
       text: field(String)
+      | Reported as [language.data.typed_strings.currency_codes] says.
     }
 
-    @realizes(language.data.typed_strings.timestamp_form)
-    @by(system.checker)
     not_a_timestamp: error("typed-string") {
       title = "\"{text}\" is not a timestamp; write an RFC 3339 time or a date, as in \"2026-03-01\""
       text: field(String)
+      | Reported as [language.data.typed_strings.timestamp_form] says.
     }
 
-    @realizes(language.data.typed_strings.version_form)
-    @by(system.checker)
     not_a_version: error("typed-string") {
       title = "\"{text}\" is not a version; write two or three numbers, as in \"1.0\" or \"2.1.4\""
       text: field(String)
+      | Reported as [language.data.typed_strings.version_form] says.
     }
   }
 }

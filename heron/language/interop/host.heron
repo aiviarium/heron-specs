@@ -153,22 +153,20 @@ host: section {
   }
 
   errors: section {
-    @realizes(language.interop.host.starting.host_missing)
     @display("Host not installed")
-    @by(system.extension_host)
     host_missing: error("extension") {
       title = "the JS host isn't installed: add @heron/runtime to the project's dev dependencies, or set HERON_JS_HOST"
       | Or `the JS host needs Node: ‹error›` when there's no runtime. Thrown as a
       | `ForeignError` from the call.
+      | Reported as [language.interop.host.starting.host_missing] says.
     }
 
-    @realizes(language.interop.host.supervising.restart_limit)
     @display("Keeps exiting")
-    @by(system.extension_host)
     keeps_exiting: error("extension") {
       title = "{process}: the extension exited 5 times in 1m0s; not starting it again"
       process: field(String)
       | Thrown as a `ForeignError` from the call.
+      | Reported as [language.interop.host.supervising.restart_limit] says.
     }
   }
 }

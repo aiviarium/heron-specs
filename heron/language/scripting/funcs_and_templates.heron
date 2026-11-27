@@ -135,19 +135,17 @@ funcs_and_templates: section {
   }
 
   errors: section {
-    @realizes(language.scripting.funcs_and_templates.funcs.pure_only_while_evaluating)
     @display("Isn't pure")
-    @by(system.interpreter)
     not_pure: error("fault") {
       title = "{path} is a foreign func that isn't <pure>, so it can't run while the tree is evaluated"
       path: field(String)
+      | Reported as [language.scripting.funcs_and_templates.funcs.pure_only_while_evaluating] says.
     }
 
-    @realizes(language.scripting.funcs_and_templates.macros.emit_outside_macro)
     @display("Emit outside a macro")
-    @by(system.interpreter)
     emit_outside: error("fault") {
       title = "emit(…) adds source only inside a macro"
+      | Reported as [language.scripting.funcs_and_templates.macros.emit_outside_macro] says.
     }
   }
 

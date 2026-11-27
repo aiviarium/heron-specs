@@ -27,8 +27,10 @@ include = [
 | where each of its exports is specified.
 | The package files are the one statement of the surface: the API reference renders their
 | types, and this tree links to them rather than repeating them. Only the primitive types are
-| built into `heron`, as the [prelude](#language.core_format.imports.packages.prelude) says;
-| standard packages may import each other in a cycle, as
+| built into `heron`, as the [prelude](#language.core_format.imports.packages.prelude) says.
+| The core is `std/core` with `std/spec`; every other package, `std/project`, `std/grammar` and
+| `std/http` among them, is optional and imported by the trees that need it. Standard packages
+| import no package in a cycle, besides the one
 | [import cycles](#language.core_format.imports.packages.import_cycle) allow.
 
 @by(system.checker)

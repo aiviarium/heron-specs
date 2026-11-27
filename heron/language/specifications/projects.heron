@@ -107,25 +107,23 @@ projects: section {
   }
 
   errors: section {
-    @realizes(language.specifications.projects.undeclared_dependency)
     @display("Undeclared dependency")
-    @by(system.linter)
     @severity(warning)
     undeclared_dependency: error("project-dependency") {
       title = "{project} uses {other} without naming it in depends_on"
       project: field(String)
       other: field(String)
       | A dependency between projects that the project graph doesn't show.
+      | Reported as [language.specifications.projects.undeclared_dependency] says.
     }
 
-    @realizes(language.specifications.projects.unversioned_change)
     @display("Unversioned change")
-    @by(system.linter)
     @severity(warning)
     unversioned_change: error("project-version") {
       title = "the public surface of {project} changed without a version change"
       project: field(String)
       | A change to what callers rely on that no release records.
+      | Reported as [language.specifications.projects.unversioned_change] says.
     }
   }
 

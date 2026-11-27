@@ -295,53 +295,46 @@ grpc: section {
   }
 
   errors: section {
-    @realizes(language.apis.grpc.service.proto_ops)
     @display("Proto outside a service")
-    @by(system.checker)
     proto_outside_service: error("proto") {
       title = "{op} carries @proto, but its api names no protobuf package"
       op: field(String)
       | An op's `@proto` sets its method's options, which need the service its api's `@proto(package)` declares.
+      | Reported as [language.apis.grpc.service.proto_ops] says.
     }
 
-    @realizes(language.apis.grpc.service.proto_arguments)
     @display("Proto argument misplaced")
-    @by(system.checker)
     proto_argument_misplaced: error("proto") {
       title = "@proto on {kind} doesn't take {argument}"
       kind: field(String)
       argument: field(String)
+      | Reported as [language.apis.grpc.service.proto_arguments] says.
     }
 
-    @realizes(language.apis.grpc.service.package_names)
     @display("Invalid proto package")
-    @by(system.checker)
     invalid_proto_package: error("proto") {
       title = "{package} isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1"
       package: field(String)
+      | Reported as [language.apis.grpc.service.package_names] says.
     }
 
-    @realizes(language.apis.grpc.messages.client_stream_alone)
     @display("Stream with fields")
-    @by(system.checker)
     stream_with_fields: error("proto") {
       title = "{op} streams from the client, so {param} can only travel as @metadata"
       op: field(String)
       param: field(String)
+      | Reported as [language.apis.grpc.messages.client_stream_alone] says.
     }
 
-    @realizes(language.apis.grpc.numbering.all_or_none)
     @display("Mixed numbering")
-    @by(system.checker)
     mixed_numbering: error("field-number") {
       title = "{message} numbers some fields with @field and not {field}: number all of them or none"
       message: field(String)
       field: field(String)
+      | Reported as [language.apis.grpc.numbering.all_or_none] says.
     }
 
-    @realizes(language.apis.grpc.numbering.unique_numbers)
     @display("Number used twice")
-    @by(system.checker)
     duplicate_field_number: error("field-number") {
       title = "{field} has number {number}, which {other} already has in {message}"
       related = "the field that has it first"
@@ -349,44 +342,41 @@ grpc: section {
       field: field(String)
       other: field(String)
       number: field(String)
+      | Reported as [language.apis.grpc.numbering.unique_numbers] says.
     }
 
-    @realizes(language.apis.grpc.numbering.number_range)
     @display("Number out of range")
-    @by(system.checker)
     field_number_out_of_range: error("field-number") {
       title = "{number} can't number {field}: use 1 to 536870911, outside 19000 to 19999"
       field: field(String)
       number: field(String)
+      | Reported as [language.apis.grpc.numbering.number_range] says.
     }
 
-    @realizes(language.apis.grpc.numbering.reserved_numbers)
     @display("Reserved number")
-    @by(system.checker)
     reserved_field_number: error("field-number") {
       title = "{field} has number {number}, which {message} reserves"
       message: field(String)
       field: field(String)
       number: field(String)
+      | Reported as [language.apis.grpc.numbering.reserved_numbers] says.
     }
 
-    @realizes(language.apis.grpc.types.unmappable_types)
     @display("No protobuf mapping")
-    @by(system.checker)
     no_proto_mapping: error("proto") {
       title = "{type} has no protobuf form: {reason}"
       type: field(String)
       reason: field(String)
+      | Reported as [language.apis.grpc.types.unmappable_types] says.
     }
 
-    @realizes(language.apis.grpc.status_codes.uncoded_errors)
     @display("Uncoded gRPC error")
-    @by(system.linter)
     @severity(warning)
     uncoded_grpc_error: error("rpc-code") {
       title = "{error} is thrown by {op}, a gRPC method, and has no @code: it's answered as UNKNOWN"
       error: field(String)
       op: field(String)
+      | Reported as [language.apis.grpc.status_codes.uncoded_errors] says.
     }
   }
 }

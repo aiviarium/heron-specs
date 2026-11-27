@@ -222,88 +222,77 @@ nodes: section {
   }
 
   errors: section {
-    @realizes(language.core_format.nodes.declaring.declared_kinds)
-    @by(system.checker)
     unknown_kind: error("unresolved") {
       title = "unknown kind or type {name}"
       name: field(String)
+      | Reported as [language.core_format.nodes.declaring.declared_kinds] says.
     }
 
-    @realizes(language.core_format.nodes.declaring.declared_kinds)
-    @by(system.checker)
     not_a_kind: error("not-a-kind") {
       title = "{name} is not a kind or a type"
       name: field(String)
+      | Reported as [language.core_format.nodes.declaring.declared_kinds] says.
     }
 
-    @realizes(language.core_format.nodes.entering.enter_never_creates)
-    @by(system.checker)
     entered_missing: error("unresolved") {
       title = "{path} doesn't exist, and entering never creates a node"
       path: field(String)
+      | Reported as [language.core_format.nodes.entering.enter_never_creates] says.
     }
 
-    @realizes(language.core_format.nodes.creating.argument_errors)
-    @by(system.checker)
     too_many_arguments: error("too-many-arguments") {
       title = "{callee} takes {n} positional arguments"
       callee: field(String)
       n: field(String)
       | ‹callee› is the kind or type as `kind note` or `type Refund`, and the plural follows
       | ‹n›: "takes 1 positional argument".
+      | Reported as [language.core_format.nodes.creating.argument_errors] says.
     }
 
-    @realizes(language.core_format.nodes.creating.argument_errors)
-    @by(system.checker)
     unknown_argument: error("unknown-argument") {
       title = "{callee} takes no argument {name}"
       callee: field(String)
       name: field(String)
+      | Reported as [language.core_format.nodes.creating.argument_errors] says.
     }
 
-    @realizes(language.core_format.nodes.creating.argument_errors)
-    @by(system.checker)
     missing_argument: error("missing-argument") {
       title = "{callee} needs the argument {name}"
       callee: field(String)
       name: field(String)
+      | Reported as [language.core_format.nodes.creating.argument_errors] says.
     }
 
-    @realizes(language.core_format.nodes.flags.known_flags)
-    @by(system.checker)
     unknown_flag: error("unresolved") {
       title = "unknown flag {name}"
       name: field(String)
+      | Reported as [language.core_format.nodes.flags.known_flags] says.
     }
 
-    @realizes(language.core_format.nodes.annotations.annotations_resolve)
-    @by(system.checker)
     unknown_annotation: error("unresolved") {
       title = "unknown annotation @{name}"
       name: field(String)
+      | Reported as [language.core_format.nodes.annotations.annotations_resolve] says.
     }
 
-    @realizes(language.core_format.nodes.annotations.annotations_resolve)
-    @by(system.checker)
     not_an_annotation: error("not-an-annotation") {
       title = "{name} is not an annotation"
       name: field(String)
+      | Reported as [language.core_format.nodes.annotations.annotations_resolve] says.
     }
 
-    @realizes(language.core_format.nodes.annotations.ambiguous_annotations)
-    @by(system.checker)
     ambiguous_annotation: error("ambiguous") {
       title = "@{name} is declared by more than one imported package: write {forms}"
       name: field(String)
       forms: field(String)
+      | Reported as [language.core_format.nodes.annotations.ambiguous_annotations] says.
     }
 
-    @realizes(language.core_format.nodes.locals.unused_locals)
-    @by(system.linter)
     @severity(warning)
     unused_let: error("unused-let") {
       title = "let {name} is never used"
       name: field(String)
+      | Reported as [language.core_format.nodes.locals.unused_locals] says.
     }
   }
 }

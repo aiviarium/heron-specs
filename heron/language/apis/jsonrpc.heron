@@ -206,69 +206,62 @@ jsonrpc: section {
   }
 
   errors: section {
-    @realizes(language.apis.jsonrpc.methods.unique_methods)
     @display("Duplicate method")
-    @by(system.checker)
     duplicate_method: error("jsonrpc") {
       title = "{op} is the JSON-RPC method {method}, which {other} already is"
       related = "the op that has the name first"
       op: field(String)
       other: field(String)
       method: field(String)
+      | Reported as [language.apis.jsonrpc.methods.unique_methods] says.
     }
 
-    @realizes(language.apis.jsonrpc.methods.jsonrpc_arguments)
     @display("JSON-RPC argument misplaced")
-    @by(system.checker)
     jsonrpc_argument_misplaced: error("jsonrpc") {
       title = "@jsonrpc on {kind} doesn't take {argument}"
       kind: field(String)
       argument: field(String)
+      | Reported as [language.apis.jsonrpc.methods.jsonrpc_arguments] says.
     }
 
-    @realizes(language.apis.jsonrpc.methods.no_streams)
     @display("Stream over JSON-RPC")
-    @by(system.checker)
     jsonrpc_stream: error("jsonrpc") {
       title = "{op} streams, and a JSON-RPC method answers once"
       op: field(String)
+      | Reported as [language.apis.jsonrpc.methods.no_streams] says.
     }
 
-    @realizes(language.apis.jsonrpc.methods.notifications_throw_nothing)
     @display("Notification throws")
-    @by(system.checker)
     notification_throws: error("jsonrpc") {
       title = "{op} is a notification, which is never answered, so it can't throw {error}"
       op: field(String)
       error: field(String)
+      | Reported as [language.apis.jsonrpc.methods.notifications_throw_nothing] says.
     }
 
-    @realizes(language.apis.jsonrpc.params.params_alone)
     @display("Params not alone")
-    @by(system.checker)
     params_not_alone: error("jsonrpc") {
       title = "@params {param} must be the only parameter of {op}, of a record type"
       op: field(String)
       param: field(String)
+      | Reported as [language.apis.jsonrpc.params.params_alone] says.
     }
 
-    @realizes(language.apis.jsonrpc.error_objects.reserved_codes)
     @display("Reserved error code")
-    @by(system.linter)
     @severity(warning)
     reserved_error_code: error("rpc-code") {
       title = "{code} is in JSON-RPC's reserved range: use a code outside -32768 to -32000, or a server code from -32099 to -32000"
       code: field(String)
+      | Reported as [language.apis.jsonrpc.error_objects.reserved_codes] says.
     }
 
-    @realizes(language.apis.jsonrpc.error_objects.uncoded_jsonrpc)
     @display("Uncoded JSON-RPC error")
-    @by(system.linter)
     @severity(warning)
     uncoded_jsonrpc_error: error("rpc-code") {
       title = "{error} is thrown by {op}, a JSON-RPC method, and has no @code"
       error: field(String)
       op: field(String)
+      | Reported as [language.apis.jsonrpc.error_objects.uncoded_jsonrpc] says.
     }
   }
 }

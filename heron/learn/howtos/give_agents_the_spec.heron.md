@@ -27,7 +27,7 @@ the size each file is split at.
 
 <example id="own_agent_lens" @display="An agent lens of your own">
 ```heron
-import = ["std/doc@1", "std/spec@1", "std/docs@1"]
+import = ["std/doc@1", "std/docs@1"]
 
 agent: lens {
   title = "Agents"

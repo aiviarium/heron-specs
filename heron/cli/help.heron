@@ -16,7 +16,6 @@ help: command("heron help") {
   }
 
   | Exits 0 when: `heron help`, `heron -h` or `heron --help`, with or without a command.
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron help exit 2") {
     title = "heron with no arguments, which lists the commands on standard error"

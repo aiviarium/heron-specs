@@ -103,196 +103,169 @@ recovery: section {
   errors: section {
     | Every syntax error is coded `syntax` and reported by [the parser](#system.parser) at the offset where the parser expected something else.
 
-    @realizes(language.grammar.recovery.lines.rest_of_line)
-    @by(system.parser)
     end_of_line: error("syntax") {
       title = "expected the end of the line"
       | A member or statement is complete, but its line goes on.
+      | Reported as [language.grammar.recovery.lines.rest_of_line] says.
     }
 
-    @realizes(language.grammar.recovery.lines.no_member)
-    @by(system.parser)
     no_member: error("syntax") {
       title = "expected a member"
       | A line in structure starts with none of the forms a member starts with.
+      | Reported as [language.grammar.recovery.lines.no_member] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_brace: error("syntax") {
       title = "expected `}`"
       | A body, a map, a code block or an insert lacks its `}`; at the end of the input when nothing closes it.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_double_brace: error("syntax") {
       title = "expected `}}`"
       | A `{{ }}` body lacks its `}}`, reported at the end of the input.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_set_value: error("syntax") {
       title = "expected a value after `=`"
       | A set has `=` and nothing after it.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_let_equals: error("syntax") {
       title = "expected `=`"
       | A `let` lacks its `=`.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_value: error("syntax") {
       title = "expected a value"
       | An expression lacks a value where one must stand.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_type: error("syntax") {
       title = "expected a type"
       | A `:` isn't followed by a type.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_name: error("syntax") {
       title = "expected a name"
       | A path or a `for` lacks a name.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_in: error("syntax") {
       title = "expected `in`"
       | A `for` lacks its `in`.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_block: error("syntax") {
       title = "expected `{`"
       | An `if` or a `for` lacks its code block.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_param_name: error("syntax") {
       title = "expected a parameter name"
       | A parameter list holds an entry that doesn't start with a name.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_param_type: error("syntax") {
       title = "expected `:` and a type"
       | A parameter's name isn't followed by `:` and a type.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_paren: error("syntax") {
       title = "expected `)`"
       | A group, an argument list or a type lacks its `)`.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_bracket: error("syntax") {
       title = "expected `]`"
       | An array lacks its `]`.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     missing_angle: error("syntax") {
       title = "expected `>`"
       | A flag list or a tag lacks its `>`.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     unterminated_string: error("syntax") {
       title = "unterminated string"
       | A string lacks its closing quote: at the line end for a one-quote string, at the end of the input for a triple-quoted one.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.recovery.missing.missing_parts)
-    @by(system.parser)
     unterminated_raw: error("syntax") {
       title = "unterminated raw string"
       | A raw string lacks the backtick run that closes it.
+      | Reported as [language.grammar.recovery.missing.missing_parts] says.
     }
 
-    @realizes(language.grammar.prose.prose_files.unclosed_fence)
-    @by(system.parser)
     missing_fence: error("syntax") {
       title = "expected the closing fence"
       | A heron fence in prose lacks its closing line.
+      | Reported as [language.grammar.prose.prose_files.unclosed_fence] says.
     }
 
-    @realizes(language.grammar.recovery.lists.list_entries)
-    @by(system.parser)
     argument_list: error("syntax") {
       title = "expected `,` or `)`"
       | An entry of an argument or parameter list isn't followed by `,` or `)`.
+      | Reported as [language.grammar.recovery.lists.list_entries] says.
     }
 
-    @realizes(language.grammar.recovery.lists.list_entries)
-    @by(system.parser)
     array_list: error("syntax") {
       title = "expected `,` or `]`"
       | An entry of an array isn't followed by `,` or `]`.
+      | Reported as [language.grammar.recovery.lists.list_entries] says.
     }
 
-    @realizes(language.grammar.recovery.lists.map_entries)
-    @by(system.parser)
     map_entry: error("syntax") {
       title = "expected a map entry"
       | A map entry doesn't start with a path.
+      | Reported as [language.grammar.recovery.lists.map_entries] says.
     }
 
-    @realizes(language.grammar.recovery.lists.map_entries)
-    @by(system.parser)
     map_equals: error("syntax") {
       title = "expected `=` in a map entry"
       | A map entry's path isn't followed by `=`.
+      | Reported as [language.grammar.recovery.lists.map_entries] says.
     }
 
-    @realizes(language.grammar.recovery.lists.map_entries)
-    @by(system.parser)
     map_separator: error("syntax") {
       title = "expected `,`, a new line or `}`"
       | A map entry is followed by something other than `,`, a line end or `}`.
+      | Reported as [language.grammar.recovery.lists.map_entries] says.
     }
 
-    @realizes(language.grammar.prose.inline_forms.tag_closing, language.markup.tags.tag_closing)
-    @by(system.parser)
     tag_mismatch: error("syntax") {
       title = "`</{other}>` closes `<{name}>`"
       other: field(String)
       name: field(String)
       | A closing tag names another tag than the one open, reported at the closing name.
+      | Reported as [language.grammar.prose.inline_forms.tag_closing] and [language.markup.tags.tag_closing] say.
     }
 
-    @realizes(language.grammar.prose.inline_forms.tag_closing, language.markup.tags.tag_closing)
-    @by(system.parser)
     tag_unclosed: error("syntax") {
       title = "`<{name}>` is never closed"
       name: field(String)
       | An opening tag has no closing tag, reported at the opening tag.
+      | Reported as [language.grammar.prose.inline_forms.tag_closing] and [language.markup.tags.tag_closing] say.
     }
 
-    @realizes(language.grammar.recovery.depth.nesting_limit)
-    @by(system.parser)
     too_deep: error("syntax") {
       title = "nesting is too deep"
       | Members, expressions, statements or tags nest more than 256 deep.
+      | Reported as [language.grammar.recovery.depth.nesting_limit] says.
     }
   }
 }

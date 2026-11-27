@@ -17,7 +17,6 @@ version: command("heron version") {
   | A bug report, a CI log and an agent's notes quote these lines to say which build they ran.
 
   | Exits 0 when: the versions were printed.
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron version exit 2") {
     title = "an argument or an option"

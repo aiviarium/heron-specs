@@ -118,24 +118,22 @@ icons: section {
   }
 
   errors: section {
-    @realizes(tools.docs.icons.declaring.names_resolve)
     @display("Unknown icon")
-    @by(system.checker)
     unknown_icon: error("icon") {
       title = "no icon {name}{hint}"
       name: field(String)
       hint: field(String)
       | An [icon mark](#tools.docs.icons.icon_mark) names an icon no `icon` node of the tree or its imports declares. The hint names the closest icons there are.
+      | Reported as [tools.docs.icons.declaring.names_resolve] says.
     }
 
-    @realizes(tools.docs.icons.declaring.icon_svg_read)
     @display("Unreadable icon")
-    @by(system.checker)
     bad_icon_svg: error("icon") {
       title = "{name}: {reason}"
       name: field(String)
       reason: field(String)
       | An [icon](#tools.docs.icons.icon_kind)'s `file` is missing, unreadable, or not one SVG element with a `viewBox`.
+      | Reported as [tools.docs.icons.declaring.icon_svg_read] says.
     }
   }
 }

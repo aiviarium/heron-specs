@@ -146,48 +146,43 @@ tags: section {
   }
 
   errors: section {
-    @realizes(language.markup.tags.required_attributes)
-    @by(system.checker)
     missing_attribute: error("missing-argument") {
       title = "<{kind}> needs the attribute {name}"
       kind: field(String)
       name: field(String)
+      | Reported as [language.markup.tags.required_attributes] says.
     }
 
-    @realizes(language.markup.tags.slots)
-    @by(system.checker)
     tag_not_accepted: error("accept") {
       title = "<{kind}> doesn't accept <{child}>; it accepts {kinds}"
       kind: field(String)
       child: field(String)
       kinds: field(String)
+      | Reported as [language.markup.tags.slots] says.
     }
 
-    @realizes(language.markup.tags.element_needs_id)
     @display("Element needs an id")
-    @by(system.checker)
     element_needs_id: error("unnamed") {
       title = "<{kind}> declares a node and needs an id"
       kind: field(String)
       | A section, a step, a concept or another kind with a heading, or a term, written as an element without `id`.
+      | Reported as [language.markup.tags.element_needs_id] says.
     }
 
-    @realizes(language.markup.tags.code_stays_in_heron)
     @display("Code in an element")
-    @by(system.checker)
     code_in_element: error("element-code") {
       title = "<{kind}>'s body is code; write it in a .heron file"
       kind: field(String)
       | A kind whose body is a `do` block, written as an element; code has no element form.
+      | Reported as [language.markup.tags.code_stays_in_heron] says.
     }
 
-    @realizes(language.markup.tags.quoted_attributes)
     @display("Unquoted attribute")
-    @by(system.parser)
     unquoted_attribute: error("syntax") {
       title = "the value of {name} needs quotes or braces"
       name: field(String)
       | An attribute written `name=value`; write `name="value"`, or `name={expr}` for an expression.
+      | Reported as [language.markup.tags.quoted_attributes] says.
     }
   }
 }

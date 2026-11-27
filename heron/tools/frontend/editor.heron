@@ -142,13 +142,12 @@ editor: section {
   }}
 
   errors: section {
-    @realizes(tools.frontend.editor.fix_a_diagnostic.1a)
     @display("Language server not connected")
-    @by(system.editor)
     lsp_disconnected: error("editor.LSP_DISCONNECTED") {
       title = "the language server isn't connected: {reason}"
       reason: field(String)
       | Shown in the status bar, with a retry action.
+      | Reported as [tools.frontend.editor.fix_a_diagnostic.1a] says.
     }
   }
 }

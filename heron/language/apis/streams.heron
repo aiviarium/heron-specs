@@ -40,14 +40,13 @@ streams: section {
   }
 
   errors: section {
-    @realizes(language.apis.streams.no_streamed_http_params)
     @display("Streamed parameter over HTTP")
-    @by(system.checker)
     streamed_http_param: error("stream") {
       title = "{op} is bound only to HTTP, which can't stream {param} from the client"
       op: field(String)
       param: field(String)
       | A `Stream(T)` parameter on an op with no binding that streams from the client.
+      | Reported as [language.apis.streams.no_streamed_http_params] says.
     }
   }
 }

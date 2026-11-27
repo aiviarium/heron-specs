@@ -1,13 +1,16 @@
 annotations: section {
   | A package declares an annotation with `annotation(on)`: its parameters are what the
   | annotation takes, and its body may `accept` children, as a kind's does. Like a flag, it
-  | names the kinds it attaches to from its own side.
+  | names the kinds it attaches to from its own side. A category in `on` keeps the set open: a
+  | kind of another package that joins the category takes the annotation too, so a core
+  | annotation such as `@serves`, `on = [rule, …, serving]`, reaches `std/project`'s `story`,
+  | declared `in = [block, serving]`, while the core never names `std/project`.
 
   @by(system.checker)
   @targets(language.core_format.nodes.annotations.annotation_term)
   declaring_annotations: rule {
     must {{ check an annotation's arguments against its declaration's parameters, as a call's are }}
-    example {{ `std/http` declares `status(code: Int): annotation(on = [types.type, spec.error])`, which takes `@status(404)` }}
+    example {{ the core declares `status(code: Int): annotation(on = [error, types.type])`, which takes `@status(404)` }}
   }
 
   @by(system.linter)
@@ -40,8 +43,6 @@ annotations: section {
   }
 
   errors: section {
-    @realizes(language.apis.params.location_placement, language.core_format.nodes.annotations.annotation_placement, language.schemas.annotations.annotation_on)
-    @by(system.linter)
     @severity(warning)
     annotation_misplaced: error("annotation-placement") {
       title = "@{annotation} doesn't attach to {kind}; it attaches to {kinds}"
@@ -49,23 +50,22 @@ annotations: section {
       kind: field(String)
       kinds: field(String)
       | On a node with no kind, the kind reads "this node".
+      | Reported as [language.apis.params.location_placement], [language.core_format.nodes.annotations.annotation_placement] and [language.schemas.annotations.annotation_on] say.
     }
 
-    @realizes(language.schemas.annotations.annotation_on_params)
-    @by(system.linter)
     @severity(warning)
     annotation_on_param: error("annotation-placement") {
       title = "@{annotation} doesn't attach to a parameter; it attaches to {kinds}"
       annotation: field(String)
       kinds: field(String)
+      | Reported as [language.schemas.annotations.annotation_on_params] says.
     }
 
-    @realizes(language.schemas.annotations.repeatable)
-    @by(system.linter)
     @severity(warning)
     annotation_repeated: error("annotation-placement") {
       title = "@{annotation} stands twice on one node, and it isn't <repeatable>"
       annotation: field(String)
+      | Reported as [language.schemas.annotations.repeatable] says.
     }
   }
 }

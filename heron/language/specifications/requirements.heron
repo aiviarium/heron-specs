@@ -228,47 +228,43 @@ requirements: section {
   }
 
   errors: section {
-    @realizes(instead_only_negative)
     @display("Instead under a positive strength")
-    @by(system.checker)
     instead_positive: error("instead") {
       title = "instead stands only under a negative strength, and {strength} is positive"
       strength: field(String)
       | An `instead` in a rule whose strength is `must`, `should` or `may`; with no strength, the title ends "`mustNot` or `shouldNot`".
+      | Reported as [instead_only_negative] says.
     }
 
-    @realizes(subject_actor_or_part)
     @display("Subject not an actor or a part")
-    @by(system.checker)
     not_a_subject: error("type") {
       title = "{name} is a {kind}; a rule's @by names an actor or a part"
       name: field(String)
       kind: field(String)
+      | Reported as [subject_actor_or_part] says.
     }
 
-    @realizes(constraint_reason)
     @display("Constraint without a reason")
-    @by(system.checker)
     constraint_without_reason: error("missing-argument") {
       title = "constraint {name} needs a reason from outside the solution"
       name: field(String)
+      | Reported as [constraint_reason] says.
     }
 
-    @realizes(scenario_one_form, outcome_illustrates_one, quality_scenario_measured)
     @display("Scenario of no form")
-    @by(system.checker)
     scenario_form: error("scenario") {
       title = "scenario {name} {problem}"
       name: field(String)
       problem: field(String)
       | "mixes outcome clauses and quality fields", "has neither outcome clauses nor quality fields", "illustrates nothing", "illustrates more than one rule or path", "has no measure" or "serves no quality".
+      | Reported as [scenario_one_form], [outcome_illustrates_one] and [quality_scenario_measured] say.
     }
   }
 
   @display("The refund window")
   specifications_example: example {
     | ```heron
-    | import = ["std/doc@1", "std/types@1", "std/spec@1", "std/apis@1", "std/http@1"]
+    | import = ["std/doc@1", "std/types@1", "std/apis@1", "std/http@1"]
     |
     | self_service: goal {{ Customers fix a wrong charge themselves. }}
     |

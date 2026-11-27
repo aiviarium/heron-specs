@@ -89,15 +89,14 @@ declaring: section {
   }
 
   errors: section {
-    @realizes(language.interop.declaring.binding.no_host)
     @display("No host")
-    @by(system.interpreter)
     no_host: error("fault") {
       title = "{func} is bound to {module}.{export}, but no host for {kind} modules is registered"
       func: field(String)
       module: field(String)
       export: field(String)
       kind: field(String)
+      | Reported as [language.interop.declaring.binding.no_host] says.
     }
   }
 

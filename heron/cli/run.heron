@@ -44,12 +44,10 @@ run: command("heron run") {
   }
 
   | Exits 0 when: the task and everything it needs succeeded.
-  @by(system.command_line)
   @exit(1)
   exit_1: error("heron run exit 1") {
     title = "the tree doesn't check, a task failed, a confirmation was declined, or an extension couldn't load"
   }
-  @by(system.command_line)
   @exit(2)
   exit_2: error("heron run exit 2") {
     title = "an unknown option, no task named, no such task, a parameter that's unknown, missing without a terminal or not of its type, an @needs cycle or a need that isn't a task, or a <confirm> task without a terminal or --yes"

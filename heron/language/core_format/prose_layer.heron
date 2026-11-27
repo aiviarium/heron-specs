@@ -79,32 +79,28 @@ prose_layer: section {
   }
 
   errors: section {
-    @realizes(language.core_format.prose_layer.links_resolve, language.markup.authored_pages.links.links_checked, language.markup.links.node_links_resolve)
-    @by(system.checker)
     broken_link: error("unresolved") {
       title = "the link to #{path} doesn't resolve"
       path: field(String)
+      | Reported as [language.core_format.prose_layer.links_resolve], [language.markup.authored_pages.links.links_checked] and [language.markup.links.node_links_resolve] say.
     }
 
-    @realizes(language.core_format.prose_layer.tags_name_kinds, language.markup.tags.tags_are_kinds)
-    @by(system.checker)
     unknown_tag: error("unresolved") {
       title = "unknown tag <{name}>: a tag names a kind in scope"
       name: field(String)
+      | Reported as [language.core_format.prose_layer.tags_name_kinds] and [language.markup.tags.tags_are_kinds] say.
     }
 
-    @realizes(language.core_format.prose_layer.tags_name_kinds, language.markup.tags.attributes_are_arguments)
-    @by(system.checker)
     unknown_attribute: error("unknown-argument") {
       title = "<{kind}> takes no attribute {name}"
       kind: field(String)
       name: field(String)
+      | Reported as [language.core_format.prose_layer.tags_name_kinds] and [language.markup.tags.attributes_are_arguments] say.
     }
 
-    @realizes(language.core_format.prose_layer.headings_need_a_kind)
-    @by(system.checker)
     heading_needs_kind: error("unresolved") {
       title = "a heading needs a kind with heading = true in scope, such as section from std/doc"
+      | Reported as [language.core_format.prose_layer.headings_need_a_kind] says.
     }
   }
 }

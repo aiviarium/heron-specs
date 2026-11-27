@@ -1,70 +1,70 @@
 // The errors the server's ops answer: each with its HTTP status, the
 // message its body carries as `error` and its id as `code`.
 
-@realizes(tools.server.ops.path_in_workspace)
 @status(400)
 not_in_workspace: error("server.NOT_IN_WORKSPACE") {
   title = "{path} is not a path in the workspace"
   path: field(String)
   | A path that is absolute or leaves the workspace's folder.
+  | Reported as [tools.server.ops.path_in_workspace] says.
 }
 
-@realizes(tools.server.ops.file_changes, tools.server.ops.agent_export_op)
 @status(404)
 no_such_file: error("server.NO_SUCH_FILE") {
   title = "{path}: no such file"
   path: field(String)
+  | Reported as [tools.server.ops.file_changes] and [tools.server.ops.agent_export_op] say.
 }
 
-@realizes(tools.server.ops.file_changes)
 @status(409)
 file_exists: error("server.FILE_EXISTS") {
   title = "{path} already exists"
   path: field(String)
+  | Reported as [tools.server.ops.file_changes] says.
 }
 
-@realizes(tools.server.ops.conditional_write)
 @status(412)
 file_changed: error("server.FILE_CHANGED") {
   title = "{path} changed since it was read"
   path: field(String)
   | The file's entity tag isn't the one `if_match` names: someone else wrote it. The client
   | reads it again and decides what to keep.
+  | Reported as [tools.server.ops.conditional_write] says.
 }
 
-@realizes(tools.server.ops.run_results)
 @status(404)
 no_record: error("server.NO_RECORD") {
   title = "no record {id}"
   id: field(String)
+  | Reported as [tools.server.ops.run_results] says.
 }
 
-@realizes(tools.server.ops.task_runs_otherwise)
 @status(409)
 already_running: error("server.ALREADY_RUNNING") {
   title = "{path} is already running"
   path: field(String)
+  | Reported as [tools.server.ops.task_runs_otherwise] says.
 }
 
-@realizes(tools.server.serving.lsp_socket_otherwise)
 @status(503)
 no_language_server: error("server.NO_LANGUAGE_SERVER") {
   title = "no language server is installed"
+  | Reported as [tools.server.serving.lsp_socket_otherwise] says.
 }
 
-@realizes(tools.server.serving.unknown_op)
 @status(404)
 no_op: error("server.NO_OP") {
   title = "no op at {method} {path}"
   method: field(String)
   path: field(String)
+  | Reported as [tools.server.serving.unknown_op] says.
 }
 
-@realizes(tools.server.serving.same_origin)
 @status(403)
 origin_not_allowed: error("server.ORIGIN_NOT_ALLOWED") {
   title = "{origin} may not call this server"
   origin: field(String)
   | A request from a page of another origin than the server's, which `--allow-origin`
   | doesn't name.
+  | Reported as [tools.server.serving.same_origin] says.
 }

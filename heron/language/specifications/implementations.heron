@@ -86,43 +86,39 @@ implementations: section {
   }
 
   errors: section {
-    @realizes(language.specifications.implementations.sealed.sealed_locked)
     @display("Sealed")
-    @by(system.checker)
     sealed_node: error("sealed") {
       title = "{path} is in the sealed package {package}: nothing outside it may amend, scope or set into its nodes; import it and refer to them instead"
       path: field(String)
       package: field(String)
+      | Reported as [language.specifications.implementations.sealed.sealed_locked] says.
     }
 
-    @realizes(language.specifications.implementations.sealed.spec_kinds_in_spec)
     @display("Spec content")
-    @by(system.checker)
     spec_content: error("project-mode") {
       title = "{name} is a {kind}, which is spec content: this tree implements {spec}, so the spec's kinds belong in the spec package, and the project only refers to them"
       name: field(String)
       kind: field(String)
       spec: field(String)
+      | Reported as [language.specifications.implementations.sealed.spec_kinds_in_spec] says.
     }
 
-    @realizes(language.specifications.implementations.versions.spec_version_form)
     @display("Spec version")
-    @by(system.checker)
     spec_version: error("version") {
       title = "implements {spec} at {at}, but the spec package is version {version}: at copies the spec version exactly"
       spec: field(String)
       at: field(String)
       version: field(String)
+      | Reported as [language.specifications.implementations.versions.spec_version_form] says.
     }
 
-    @realizes(language.specifications.implementations.versions.schemes, language.specifications.implementations.versions.version_starts_with_spec)
     @display("Project version")
-    @by(system.checker)
     project_version: error("version") {
       title = "the project version {version} {reason}"
       version: field(String)
       reason: field(String)
       | The version doesn't start with the implemented spec version, or doesn't have the form of the project's scheme.
+      | Reported as [language.specifications.implementations.versions.schemes] and [language.specifications.implementations.versions.version_starts_with_spec] say.
     }
   }
 
@@ -130,7 +126,7 @@ implementations: section {
   sealed_spec_example: example {
     | ```heron
     | // spec/index.heron, in the spec repository
-    | import = ["std/schema@1", "std/doc@1", "std/spec@1"]
+    | import = ["std/schema@1", "std/doc@1"]
     |
     | shop: package(version = "0.2.0", sealed = true) {
     |   shopper: actor {{ Someone who buys from the shop. }}

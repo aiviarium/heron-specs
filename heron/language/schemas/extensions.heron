@@ -149,49 +149,44 @@ extensions: section {
   }
 
   errors: section {
-    @realizes(language.interop.protocol.handshake.implements_answered, language.schemas.extensions.lifecycle.handshake)
-    @by(system.extension_host)
     not_implemented: error("extension") {
       title = "{declaration}: {extension} doesn't implement it"
       declaration: field(String)
       extension: field(String)
+      | Reported as [language.interop.protocol.handshake.implements_answered] and [language.schemas.extensions.lifecycle.handshake] say.
     }
 
-    @realizes(language.schemas.extensions.lifecycle.start_failure)
-    @by(system.extension_host)
     cant_start: error("extension") {
       title = "{declaration}: {extension} can't start: {error}"
       declaration: field(String)
       extension: field(String)
       error: field(String)
+      | Reported as [language.schemas.extensions.lifecycle.start_failure] says.
     }
 
-    @realizes(language.schemas.extensions.limits.hosts_not_filtered)
-    @by(system.extension_host)
     @severity(warning)
     any_host: error("extension") {
       title = "{extension}: it may reach any host: per-host network limits ({hosts}) aren't enforced yet"
       extension: field(String)
       hosts: field(String)
       | Printed on standard error each time the extension starts.
+      | Reported as [language.schemas.extensions.limits.hosts_not_filtered] says.
     }
 
-    @realizes(language.schemas.extensions.limits.unsandboxed)
-    @by(system.extension_host)
     @severity(warning)
     limits_not_enforced: error("extension") {
       title = "{extension}: its file and network limits aren't enforced: {why}"
       extension: field(String)
       why: field(String)
       | Printed on standard error each time the extension starts.
+      | Reported as [language.schemas.extensions.limits.unsandboxed] says.
     }
 
-    @realizes(language.schemas.extensions.limits.trust_first_run)
-    @by(system.extension_host)
     not_trusted: error("extension") {
       title = "{extension} hasn't run on this machine before: run it once from a terminal to approve it, or set HERON_TRUST_EXTENSIONS=1"
       extension: field(String)
       | Thrown as a `ForeignError` from the first call, where no terminal can ask.
+      | Reported as [language.schemas.extensions.limits.trust_first_run] says.
     }
   }
 

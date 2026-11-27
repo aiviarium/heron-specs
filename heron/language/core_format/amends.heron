@@ -48,14 +48,13 @@ amends: section {
   }
 
   errors: section {
-    @realizes(language.core_format.amends.set_declared_fields)
-    @by(system.checker)
     no_field: error("unknown-field") {
       title = "{node} (a {kind}) has no field {name}"
       node: field(String)
       kind: field(String)
       name: field(String)
       | ‹node› is the node's path, or "the root"; ‹kind› is its kind or type.
+      | Reported as [language.core_format.amends.set_declared_fields] says.
     }
   }
 }
