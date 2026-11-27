@@ -109,11 +109,11 @@ usecases: section {
   }
 
   no_diagram_exported: rule(usecase_kind, by = system.docs_generator) {
-    mustNot {{ put a use case's flow diagram in the agent export }}
+    mustNot {{ put a use case's flow diagram in the [agent export](#tools.docs.agents.agent_export) }}
   }
 
   usecase_export: rule(usecase_kind, by = system.docs_generator) {
-    must {{ write a use case into the agent export as one typed line per step and extension: its number, its `by`, the rules it uses, the use case it includes and, for an extension, its condition and outcome }}
+    must {{ write a use case into the [agent export](#tools.docs.agents.agent_export) as one typed line per step and extension: its number, its `by`, the rules it uses, the use case it includes and, for an extension, its condition and outcome }}
   }
 
   usecase_carries_sequence: rule(usecase_kind, by = actors.author) {

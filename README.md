@@ -18,7 +18,9 @@ HERON_BIN=/path/to/heron scripts/ci.sh
 
 It checks, lints (with the prose lints and Vale, configured by each package's `.vale.ini`)
 and format-checks the workspace and each package, and renders each package's docs under
-`<package>/.heron/docs/`. Vale is installed from the Go proxy when it isn't on `PATH`.
+`<package>/.heron/docs/`, its agent export (the package as Markdown files for agents, see
+`heron/tools/docs/agents.heron.md`) under `<package>/.heron/docs/agents/` with `llms.txt`
+at the site's root. Vale is installed from the Go proxy when it isn't on `PATH`.
 
 GitHub Actions runs the same script on every push and pull request to `main`
 (`.github/workflows/ci.yml`), with heron built from `aiviarium/heron`'s `main` checked out

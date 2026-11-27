@@ -135,6 +135,14 @@ spec_server: api {
     | The nodes a file declares, which of them run, and the lines they span.
   }
 
+  @realizes(tools.server.ops.agent_export_op)
+  @http<get>("/agents")
+  @throws(no_such_file)
+  agent_export(@query path?: String): op(GeneratedFiles) {
+    | The tree's [agent export](#tools.docs.agents.agent_export) as `heron generate agents` writes it: every file, or the one at
+    | `path`, as `INDEX.md`.
+  }
+
   @realizes(tools.server.ops.unsaved_texts)
   @http<post>("/generated")
   generated(@body request: TreeRequest): op(GeneratedFiles) {

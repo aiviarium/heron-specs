@@ -7,6 +7,7 @@ include = [
   "./run_a_task.heron.md",
   "./add_a_ts_extension.heron.md",
   "./use_the_editor.heron.md",
+  "./give_agents_the_spec.heron.md",
   "./split_spec_and_implementation.heron.md",
   "./version_a_product.heron.md",
 ]

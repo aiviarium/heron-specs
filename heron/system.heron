@@ -64,7 +64,7 @@ system: section {
 
   docs_generator: part {{
     Renders a tree as a static documentation site: a page per node, the API reference, search
-    and the interactive parts each page loads.
+    and the interactive parts each page loads; and as the Markdown files agents read.
   }}
 
   server: part {{

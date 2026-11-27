@@ -71,7 +71,7 @@ layers: section {
   }
 
   derived_lists_exported: rule(derived_list, by = system.docs_generator) {
-    must {{ write the [derived lists](#language.specifications.layers.derived_list) into the agent export of each node, marked as derived }}
+    must {{ write the [derived lists](#language.specifications.layers.derived_list) into the [agent export](#tools.docs.agents.agent_export) of each node, marked as derived }}
   }
 
   links: section {

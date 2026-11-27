@@ -13,7 +13,14 @@ lenses: section {
     in full; `summarize`, the kinds it renders as one line that expands; `hide`, the kinds
     it leaves out; `nav`, how its navigation is ordered; `entry`, the [authored pages](#language.markup.authored_pages.authored_page) it puts
     first; `depth`, how many levels of sections get pages of their own in it, in place of
-    the [docs block](#tools.docs.extending.docs_block)'s; and `prefix`, the folder of the site its pages are written in.
+    the [docs block](#tools.docs.extending.docs_block)'s; `prefix`, the folder of the site its pages are written in;
+    `format`, what it's written as; `marks`, whether it reads [lens marks](#tools.docs.lenses.lens_mark); and `budget`, the
+    [size budget](#tools.docs.agents.size_budget) of a file it writes in Markdown.
+  }}
+
+  lens_format: term {{
+    `std/docs`'s enum `LensFormat`, what a lens is written as: `HTML`, the default, as pages of
+    the site, or `MARKDOWN`, as the plain files of the [agent export](#tools.docs.agents.agent_export).
   }}
 
   lens_nav: term {{
@@ -33,7 +40,7 @@ lenses: section {
     | in scope shadows an imported one.
 
     lens_fields: rule(tools.docs.lenses.lens_kind, by = system.checker) {
-      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int` and `prefix` a `String` }}
+      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int`, `prefix` a `String`, `format` an optional `LensFormat`, `marks` an optional `Bool` and `budget` an optional `Int` }}
       example {{ `nav = LensNav.PAGES` reports "LensNav has no member PAGES" }}
     }
 
@@ -51,6 +58,12 @@ lenses: section {
       if {{ a lens's `prefix` is anything but `""` or one path segment of lower-case letters, digits and `-` }}
       must {{ report bad prefix at the prefix }}
       example {{ `"dev"` and `"explore"` are prefixes; `"/dev/"`, `"Dev"` and `"docs/dev"` aren't }}
+    }
+
+    budget_form: rule(tools.docs.lenses.lens_kind, by = system.checker) {
+      if {{ a lens's `budget` is below 500 }}
+      must {{ report bad budget at the budget }}
+      then {{ no [area file](#tools.docs.agents.area_file) is split into parts smaller than a page of text }}
     }
 
     lens_names_resolve: rule(tools.docs.lenses.lens_mark, by = system.checker) {
@@ -118,8 +131,14 @@ lenses: section {
     }
 
     distinct_prefixes: rule(tools.docs.lenses.choosing, by = system.checker) {
-      if {{ two lenses of a docs block's `lenses`, neither of them its default one, have the same `prefix` }}
+      if {{ two lenses of a docs block's `lenses`, neither of them its default one, have the same `prefix`, or one of them has the `prefix` of the `agent` lens in scope }}
       must {{ report prefix taken at the `lenses` list }}
+    }
+
+    html_lenses_only: rule(tools.docs.lenses.choosing, by = system.checker) {
+      if {{ a docs block's `lenses` lists a lens whose `format` is `MARKDOWN` }}
+      must {{ report not a site lens at the entry }}
+      then {{ the site's lenses are its pages, and the [agent export](#tools.docs.agents.agent_export) is written through the `agent` lens alone }}
     }
   }
 
@@ -168,7 +187,13 @@ lenses: section {
 
     marked_nodes: rule(tools.docs.lenses.lens_mark, by = system.docs_generator) {
       where {{ a node or a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark) }}
-      must {{ leave it, with its subtree, out of every lens the mark doesn't name, except `explore` }}
+      must {{ leave it, with its subtree, out of every lens the mark doesn't name, except `explore` and a lens whose `marks` is false }}
+    }
+
+    marks_unread: rule(tools.docs.lenses.lens_mark, by = system.docs_generator) {
+      where {{ a lens's `marks` is false }}
+      must {{ decide every node and [prose run](#language.markup.lens_marks.prose_run) by the lens's kind lists alone, whatever [lens marks](#tools.docs.lenses.lens_mark) it carries }}
+      then {{ a lens for every reader of the whole tree, as `agent` is, isn't narrowed by marks written for the site's audiences }}
     }
 
     mark_keeps_node: rule(tools.docs.lenses.lens_mark, by = system.docs_generator) {
@@ -239,6 +264,21 @@ lenses: section {
   }
 
   errors: section {
+    @realizes(tools.docs.lenses.declaring.budget_form)
+    @display("Bad budget")
+    bad_budget: error("lens", by = system.checker) {
+      title = "{lens}: a budget is at least 500 tokens, not {budget}"
+      lens: field(String)
+      budget: field(String)
+    }
+
+    @realizes(tools.docs.lenses.choosing.html_lenses_only)
+    @display("Not a site lens")
+    markdown_lens_listed: error("lens", by = system.checker) {
+      title = "{lens} is written as Markdown; a site's lenses are written as HTML, and heron generate agents writes the agent lens"
+      lens: field(String)
+    }
+
     @realizes(tools.docs.lenses.declaring.lens_names_resolve)
     @display("Unknown lens")
     unknown_lens: error("unresolved", by = system.checker) {

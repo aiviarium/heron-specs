@@ -1,6 +1,6 @@
 @realizes(cli.generate.block_only_for_all)
 generate: command("heron generate") {
-  usage = ["heron generate [--entry file] [targets…]"]
+  usage = ["heron generate [--entry file] [targets…]", "heron generate [--entry file] --pack id [agents]"]
 
   | Checks the tree, loads what its extensions implement, and runs the adapters of the
   | generation targets asked for, or of every registered target that isn't run on request
@@ -15,7 +15,8 @@ generate: command("heron generate") {
     | The targets to run. The built-in ones:
     |
     | - `ts` writes `.heron/types.ts` and `.heron/bindings.ts`, the TS types and `bind` of the tree's declarations.
-    | - `docs` writes the documentation site, under `.heron/docs/`.
+    | - `docs` writes the documentation site, under `.heron/docs/`, with the [agent export](#tools.docs.agents.agent_export) in it.
+    | - `agents` writes the [agent export](#tools.docs.agents.agent_export), the tree as Markdown files for agents, under `.heron/agents/`.
     |
     | And those run only when they're named, for outside tooling:
     |
@@ -31,12 +32,18 @@ generate: command("heron generate") {
     | folder. Files are still written under the working folder.
   }
 
+  pack: option("--pack", type = String) {
+    | The [stable id](#tools.docs.agents.stable_id) of a node, as `language.apis`: the `agents` target also writes that
+    | node's [context pack](#tools.docs.agents.context_pack), to `.heron/agents/packs/‹id›.md`. It runs the `agents` target
+    | alone.
+  }
+
   | Exits 0 when: every target ran; unchanged files aren't rewritten.
   exit_1: error("heron generate exit 1", exit = 1, by = system.command_line) {
     title = "the tree doesn't check, an extension couldn't load, a target has no adapter, or an adapter failed or returned a path outside the working folder"
   }
   exit_2: error("heron generate exit 2", exit = 2, by = system.command_line) {
-    title = "an unknown option, or an entry point whose path can't be resolved"
+    title = "an unknown option, an entry point whose path can't be resolved, or `--pack` with a target other than `agents`"
   }
 
   example {{ `heron generate --entry example ts` writes the TS types of the inventory sample, which its TS code imports, as CI runs it. }}
@@ -48,7 +55,13 @@ generate: command("heron generate") {
 
   on_request_targets: rule(by = system.generator) {
     mustNot {{ run a target that runs on request alone, as `asyncapi`, `proto` and `openrpc` do, unless it's named }}
-    example {{ `heron generate` writes the TS types and the docs, and `heron generate proto` the `.proto` files alone }}
+    example {{ `heron generate` writes the TS types, the docs and the [agent export](#tools.docs.agents.agent_export), and `heron generate proto` the `.proto` files alone }}
+  }
+
+  pack_runs_agents: rule(by = system.generator) {
+    when {{ `--pack` is given }}
+    must {{ run the `agents` target alone, writing the export and the [context pack](#tools.docs.agents.context_pack) of the node the id names, and fail naming the id, as `no node ‹id› in the tree`, when it names none }}
+    example {{ `heron generate --pack language.apis` writes `.heron/agents/packs/language.apis.md` beside the export }}
   }
 
   block_only_for_all: rule(by = system.generator) {

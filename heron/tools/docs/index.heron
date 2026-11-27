@@ -5,6 +5,7 @@ include = [
   "./lenses.heron",
   "./icons.heron",
   "./standard_lenses.heron.md",
+  "./agents.heron.md",
   "./explore.heron.md",
   "./page_layout.heron.md",
   "./rendering.heron.md",
@@ -19,7 +20,8 @@ include = [
 
 | What the docs generator makes of a checked tree: a documentation site of plain files that
 | work without a server, the same pages `heron serve` shows live as the spec browser, so
-| what people read and what they edit never look different.
+| what people read and what they edit never look different; and the [agent export](#tools.docs.agents.agent_export), the
+| same tree as Markdown files for agents.
 
 tasks_first: goal(source = "readers") {{ A [reader](#actors.reader) gets something done with the product without reading its spec: the docs open on the tasks they can do. }}
 
@@ -32,5 +34,7 @@ read_by_topic: goal(source = "authors") {{ An [author](#actors.author) finds the
 own_lenses: goal(source = "authors") {{ An organization's docs show each of its audiences what it needs, through lenses it declares or changes. }}
 
 full_view: goal(source = "implementers") {{ Nothing another lens leaves out is hidden from an [implementer](#actors.implementer): one view shows every node with its formal parts. }}
+
+agents_read_the_spec: goal(source = "implementers", measure = "An agent answers a question about a requirement from the index and one file.") {{ An [implementer](#actors.implementer) that's an agent reads the spec as plain files sized for it: an index first, then the one file its task needs. }}
 
 same_node_everywhere: goal(source = "implementers") {{ An [implementer](#actors.implementer) can send a reader of another lens to what they mean: a link leads to the same node in every lens. }}

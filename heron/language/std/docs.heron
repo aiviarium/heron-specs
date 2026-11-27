@@ -11,13 +11,13 @@ docs: part {
   | | Export                                                      | Specified in                                       |
   | | ----------------------------------------------------------- | -------------------------------------------------- |
   | | `site`, `docs`, `layout`, `slot`                            | [the docs generator](#tools.docs.extending)        |
-  | | `lens`, `LensNav`                                           | [lenses](#tools.docs.lenses)                       |
-  | | `user`, `developer`, `explore`                              | [the standard lenses](#tools.docs.standard_lenses) |
+  | | `lens`, `LensNav`, `LensFormat`                             | [lenses](#tools.docs.lenses)                       |
+  | | `user`, `developer`, `explore`, `agent`                     | [the standard lenses](#tools.docs.standard_lenses) |
   | | `authored`, `guide`, `howto`, `step`, `concept`, `tutorial` | [authored pages](#language.markup.authored_pages)  |
   | | `renderers` modules                                         | [renderers](#tools.docs.renderers)                 |
 
   standard_lenses_in_std: rule(language.std.docs, by = system.checker) {
-    must {{ resolve `user`, `developer` and `explore` in a tree that imports `std/docs` as the lens nodes `std/docs` declares, unless the tree declares its own of that name }}
+    must {{ resolve `user`, `developer`, `explore` and `agent` in a tree that imports `std/docs` as the lens nodes `std/docs` declares, unless the tree declares its own of that name }}
   }
 
   lens_mark_from_doc: rule(language.std.docs, by = system.checker) {

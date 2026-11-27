@@ -8,6 +8,7 @@ include = [
   "./lsp.heron",
   "./serve.heron",
   "./help.heron",
+  "./version.heron",
 ]
 
 @lens(user, developer)
