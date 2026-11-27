@@ -11,7 +11,7 @@ for. It's denser than the other lenses and follows the same
 </rule>
 
 <rule id="marks_shown" targets="tools.docs.lenses.lens_mark" by="system.docs_generator">
-<must>show, in the `explore` lens, beside each node and [prose run](#language.markup.lens_marks.prose_run) that carries a [lens mark](#tools.docs.lenses.lens_mark), the `title` of each lens the mark names</must>
+<must>show, in the `explore` lens, beside each node and [prose run](#language.markup.lens_marks.prose_run) that carries a [lens mark](#tools.docs.lenses.lens_mark), the `title` of each lens the mark names, as quiet tags in one row at the start of what's marked, in the mark's order</must>
 </rule>
 
 <rule id="kinds_shown" targets="tools.docs.explore" by="system.docs_generator">

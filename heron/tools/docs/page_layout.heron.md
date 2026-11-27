@@ -40,6 +40,11 @@ and a right [column](#heron.language.grammar.lexical.column).
 <must>apply the theme the reader chose, kept in `localStorage` as `heron-theme`, before the page paints, follow the system's light or dark preference until one is chosen, and declare the page's colour schemes and set the canvas to the theme's page colour in the page's head, so the canvas takes the theme before the stylesheet loads, in every browser</must>
 </rule>
 
+<rule id="frame_uses_window" targets="tools.docs.page_layout" by="system.docs_generator">
+<must>use the window's width: put the navigation at the window's left edge and the right [column](#heron.language.grammar.lexical.column) at its right edge, each with a modest margin, and give the page what lies between them; and on a window wider than the frame's maximum width, about 1920 px, centre the frame with equal room on both sides</must>
+<then>no window leaves a wide empty band on one side of the page</then>
+</rule>
+
 <rule id="stable_frame" targets="tools.docs.page_layout" by="system.docs_generator">
 <must>start the content at the same distance from the window's left edge on every page that has the navigation, whatever the right side of the page holds, and paint a page whole, never before its frame, the navigation, the page and what stands beside it, is parsed</must>
 <then>moving between pages never slides the content sideways or shows a half-built page</then>
@@ -58,6 +63,10 @@ and a right [column](#heron.language.grammar.lexical.column).
 
 <rule id="quiet_scrollers" targets="tools.docs.page_layout" by="system.docs_generator">
 <must>keep the scroll areas inside a page, the navigation, the right [column](#heron.language.grammar.lexical.column), code blocks and wide [tables](#heron.language.markup.components.table), quiet: a thin scrollbar that shows only while the pointer or focus is on its area, never a scrollbar at rest; and show a long example in a panel by its start with a button for the rest, rather than as a scroll area inside the scrolling [column](#heron.language.grammar.lexical.column)</must>
+</rule>
+
+<rule id="controls_look_like_controls" targets="tools.docs.page_layout" by="system.docs_generator">
+<must>make every control of the top bar read as one at rest, not only on hover: the [site areas](#tools.docs.site.site_area) as tabs with a mark in the [project colour](#tools.frontend.design_system.project_colour) under the current one, the lens switcher as a segmented control in a visible frame with the current lens raised, search as a field with a frame, a prompt and its shortcut in a key cap, the version switch as a select drawn in the theme that the keyboard opens and moves through, and the theme switch as a button with a visible edge; and give each a focus ring on keyboard focus</must>
 </rule>
 
 <rule id="steps_joined" targets="tools.docs.page_layout" by="system.docs_generator">
