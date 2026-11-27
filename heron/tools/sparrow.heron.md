@@ -1,6 +1,6 @@
 # Sparrow {#sparrow}
 
-An extra for outside tooling, like [Protobuf](#tools.proto): the tree's Sparrow RPC facets,
+An extra for outside tooling, like [Protobuf](#tools.proto): the tree's [Sparrow facets](#language.apis.sparrow.sparrow_facet),
 generated on demand, as the canonical CBOR a Sparrow peer publishes and hashes, so a server
 built on Sparrow's reference library serves a Heron api as it's described, and a client checks it
 against the facet hash the docs show. Every name, id and tag in them is the one

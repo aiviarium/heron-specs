@@ -47,7 +47,7 @@ back as the type.
 <section id="cbor">
 On the extension protocol's wire a value travels in Sparrow's schema-driven CBOR: a
 value of `Any` as the [Value](#language.interop.data_mapping.value_union) union, whose
-variant says its type, so Sparrow's two tags, 1 and 37, are the only ones on the wire.
+variant says its type, so Sparrow's two tags, 1 and 37 (core 3.5), are the only ones on the wire.
 
 | Heron value       | `Value` variant                                     |
 | ----------------- | --------------------------------------------------- |

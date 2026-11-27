@@ -6,7 +6,7 @@ written once, and the binding says only how a call travels. `std/proto` binds an
 gRPC service, served over gRPC, gRPC-Web or Connect, as [gRPC and Connect](#language.apis.grpc)
 specifies, `std/jsonrpc` binds an api or single ops to JSON-RPC 2.0 methods, as
 [JSON-RPC](#language.apis.jsonrpc) does, and `std/sparrow` binds an api to a service of a
-Sparrow RPC facet, as [Sparrow](#language.apis.sparrow) does. One op may carry an HTTP route,
+[Sparrow facet](#language.apis.sparrow.sparrow_facet), as [Sparrow](#language.apis.sparrow) does. One op may carry an HTTP route,
 a gRPC method, a method of JSON-RPC and a [Sparrow method](#language.apis.sparrow.sparrow_method) at once, and it's still one op with
 one page in the docs.
 

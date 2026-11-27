@@ -19,10 +19,10 @@ extensions: section {
   }
 
   extension_process: term {{
-    An external program that `heron` starts and talks to over the versioned extension protocol, a Sparrow RPC
-    session on stdio, the way editors talk to language servers. It can be written in any
-    language, with JS and TS supported first, and implements what a package declares with
-    `@extern(…)`.
+    An external program that `heron` starts and talks to over the versioned extension protocol,
+    a [Sparrow session](#language.interop.protocol.sparrow_session) on stdio, the way editors
+    talk to language servers. It can be written in any language, with JS and TS supported
+    first, and implements what a package declares with `@extern(…)`.
   }}
 
   manifest: section {
