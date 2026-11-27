@@ -52,7 +52,18 @@ icons: section {
     | reader looks for a node among others, small and in the text's colour.
 
     where_shown: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
-      must {{ show the icon a node's own [icon mark](#tools.docs.icons.icon_mark) names before its name in the navigation's group headings and entries, and the icon it shows, its own or its kind's, in its page's title and on the cards of a home or landing page }}
+      must {{ show the icon a node shows, its own or its kind's, before its name in the navigation's entries, in its page's title and on the cards of a home or landing page, and the icon its own [icon mark](#tools.docs.icons.icon_mark) names in the navigation's group headings }}
+    }
+
+    kinds_as_icons: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+      where {{ a lens's `kinds` is `ICON`, as it is unless set }}
+      must {{ name a node's kind by its icon before its name wherever the lens would name the kind in words, in titles, headings, list entries, cards, search results, lists of what names a node and the outline, the icon labelled with the kind's name for assistive technology and as a tooltip, and in words where the kind has no icon }}
+      then {{ a reader of the `user` lens tells a goal from a rule by its mark, without reading "goal" or "rule" }}
+    }
+
+    kinds_as_text: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+      where {{ a lens's `kinds` is `TEXT`, as `explore`'s is }}
+      must {{ name a node's kind in words beside its name, and show its icon, if any, as decoration }}
     }
 
     kind_icons_muted: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {

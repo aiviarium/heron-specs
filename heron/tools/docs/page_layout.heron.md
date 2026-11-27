@@ -16,8 +16,17 @@ and a right [column](#heron.language.grammar.lexical.column).
 <example>a page's outline lists its sections, and under each section the use cases and scenarios it holds</example>
 </rule>
 
+<rule id="nav_tree" targets="tools.docs.page_layout" by="system.docs_generator">
+<must>write the navigation of a [site area](#tools.docs.site.site_area) as a tree on every page: every page's entry, each branch a disclosure whose label links to its page and whose chevron opens and closes it in place without leaving the page, the current page's ancestors open, so that every entry is a link away without a script</must>
+<then>moving between pages never closes a branch, so an entry followed stays where it was</then>
+</rule>
+
+<rule id="nav_tree_keyboard" targets="tools.docs.page_layout" by="system.docs_generator">
+<must>let the keyboard move through the navigation's tree as the WAI-ARIA tree view pattern does: one tab stop, the up and down arrows between the entries in view, the right arrow to open a branch or enter it, the left arrow to close a branch or leave it, Home and End, and type-ahead by an entry's first letters</must>
+</rule>
+
 <rule id="nav_scroll_kept" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>keep the navigation's place from one page of a site to the next, for each lens's site and each of its areas apart, in `sessionStorage`, and restore it before the page paints: the entry the reader followed where it was on screen when the navigation can scroll that far, and otherwise the scroll position; where nothing is kept, scroll the current page's entry into view</must>
+<must>keep the navigation as the reader left it, from one page of a site to the next and across a reload, for each lens's site and [site area](#tools.docs.site.site_area) apart: the branches open again, kept in `localStorage`, and the entry the reader followed where it was on screen, or else the scroll position, kept in `sessionStorage`, restored before the page paints; where nothing is kept, scroll the current page's entry into view</must>
 <then>following a link far down the navigation leaves the navigation where it was</then>
 </rule>
 

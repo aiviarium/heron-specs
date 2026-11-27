@@ -14,8 +14,9 @@ lenses: section {
     it leaves out; `nav`, how its navigation is ordered; `entry`, the [authored pages](#language.markup.authored_pages.authored_page) it puts
     first; `depth`, how many levels of sections get pages of their own in it, in place of
     the [docs block](#tools.docs.extending.docs_block)'s; `prefix`, the folder of the site its pages are written in;
-    `format`, what it's written as; `marks`, whether it reads [lens marks](#tools.docs.lenses.lens_mark); and `budget`, the
-    [size budget](#tools.docs.agents.size_budget) of a file it writes in Markdown.
+    `format`, what it's written as; `marks`, whether it reads [lens marks](#tools.docs.lenses.lens_mark); `budget`, the
+    [size budget](#tools.docs.agents.size_budget) of a file it writes in Markdown; and `kinds`, a `KindLabels`, whether it
+    names a node's kind by the kind's icon, `ICON`, the default, or in words, `TEXT`.
   }}
 
   lens_format: term {{
@@ -40,7 +41,7 @@ lenses: section {
     | in scope shadows an imported one.
 
     lens_fields: rule(tools.docs.lenses.lens_kind, by = system.checker) {
-      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int`, `prefix` a `String`, `format` an optional `LensFormat`, `marks` an optional `Bool` and `budget` an optional `Int` }}
+      must {{ check a lens's fields against `lens`'s declaration in `std/docs`: `title` a `String`, `default` an optional `Bool`, `show`, `summarize`, `hide` and `entry` optional lists of references, `nav` a `LensNav`, `depth` an optional `Int`, `prefix` a `String`, `format` an optional `LensFormat`, `marks` an optional `Bool`, `budget` an optional `Int` and `kinds` an optional `KindLabels` }}
       example {{ `nav = LensNav.PAGES` reports "LensNav has no member PAGES" }}
     }
 
