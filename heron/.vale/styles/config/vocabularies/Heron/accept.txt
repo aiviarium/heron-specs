@@ -35,3 +35,5 @@ gRPC
 [Uu]ncoded
 [Bb]uf
 Lucide
+[Ss]igils?
+[Ss]tructs?

@@ -119,7 +119,7 @@ goals and actors, then what the product guarantees, then the exact surface.
 </rule>
 
 <rule id="contract_signatures" @targets="tools.docs.agents.area_file" @by="system.docs_generator">
-<must>write an op as its signature, its name with each parameter's name, type, place and whether it's optional, and its result; then each of its bindings, its HTTP method and path, its gRPC method and its JSON-RPC method; then each error it answers with every projection it has, its HTTP status, [gRPC code](#language.apis.grpc.status_codes.grpc_code), JSON-RPC code and exit status; write an error node the same way, with its id, severity, title and fields; and write a command as its usage, its arguments, its options with their defaults, and its exits with their statuses</must>
+<must>write an op as its signature, its name with each parameter's name, type, place and whether it's optional, and its result; then each of its bindings, its HTTP method and path, its gRPC method, its JSON-RPC method and its [Sparrow method](#language.apis.sparrow.sparrow_method) with its id, shape, input, output and flags; then each error it answers with every projection it has, its HTTP status, [gRPC code](#language.apis.grpc.status_codes.grpc_code), JSON-RPC code, [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) or sigil and exit status; write an api with its bindings, its [Sparrow service](#language.apis.sparrow.sparrow_service) and facet with their ids and the facet hash among them; write an error node the same way, with its id, severity, title and fields; and write a command as its usage, its arguments, its options with their defaults, and its exits with their statuses</must>
 <then>an agent reads the whole boundary of an op or a command from one place</then>
 </rule>
 

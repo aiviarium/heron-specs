@@ -1,78 +1,66 @@
 @display("The protocol")
 protocol: section {
   | heron speaks one protocol to the [JS host](#language.interop.host.js_host) and to every
-  | [extension process](#language.schemas.extensions.extension_process): JSON-RPC's
-  | requests, responses and notifications, sent as length-prefixed CBOR frames over the
-  | process's standard input and output. Either side may send requests, so foreign code
-  | calls back into Heron on the same connection. The messages are declared once, in
-  | Heron, and [included below](#language.interop.protocol.messages) as they stand; both
-  | sides' bindings are generated from them. A frame is a [Message](#language.interop.protocol.messages.Message); the methods each side
-  | serves are the apis [extension](#language.interop.protocol.messages.extension), [host](#language.interop.protocol.messages.host) and
-  | [notifications](#language.interop.protocol.messages.notifications), bound by `std/jsonrpc` with
-  | `length_prefixed` framing and `cbor` encoding, and each other type is the `params` or
-  | `result` of one of their methods.
+  | [extension process](#language.schemas.extensions.extension_process): a
+  | [Sparrow RPC](https://github.com/aiviarium/sparrow) session over the process's standard
+  | input and output, on which foreign code calls back into Heron too. Its messages are
+  | declared once and [included below](#language.interop.protocol.messages); both sides'
+  | bindings and both facets, the apis [extension](#language.interop.protocol.messages.extension)
+  | and [host](#language.interop.protocol.messages.host), are generated from them.
 
-  cbor_rpc: term(aliases = ["CBOR-RPC"]) {{
-    The protocol: a message is a map with `id`, `method`, `params`, `result`, `error` and
-    `run`, without JSON-RPC's `jsonrpc` member. A request has an `id` and a `method`, a
-    response the request's `id` and a `result` or an `error`, and a notification a `method`
-    and no `id`.
+  sparrow_session: term(aliases = ["extension session"]) {{
+    The protocol: a Sparrow session on the pipe binding, its `Hello` from the
+    [extension process](#language.schemas.extensions.extension_process) with the facet
+    `heron.extension`, its `Welcome` from heron with `heron.host`. Calls, streams,
+    cancellation, progress, time limits and errors are Sparrow's own messages.
   }}
 
   framing: section {
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     frames: rule {
-      must {{ send each message as one frame: its length as a 4-byte big-endian integer, then exactly that number of bytes of payload }}
+      must {{ run the session on Sparrow's pipe binding: each message one CBOR item behind its length as a QUIC variable-length integer, with no stream header, and every call on the shared lane }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
+    facets: rule {
+      must {{ publish each side's facet with facet ID 16 under its name, `heron.extension` in the process's `Hello` and `heron.host` in heron's `Welcome`, with the protocol's major version as the facet's, every type, field and method numbered in the order the messages declare them, and the [Value](#language.interop.data_mapping.value_union) union for every `Any` }}
+      then {{ a peer looks methods up by name in the other's facet, so either side can add methods in a minor version }}
+    }
+
+    @by(system.extension_host)
+    @targets(sparrow_session)
     frame_limit: rule {
-      if {{ a frame is longer than the connection's `max_frame` }}
-      must {{ refuse it without reading its payload: a request that would send one fails with the limit-exceeded code, a response is replaced by a limit-exceeded error, and a frame that arrives ends the connection }}
+      if {{ a message is longer than the session's `max_message` }}
+      must {{ refuse it as Sparrow's `maxMessageSize` says: a call that would send one fails with the limit-exceeded code, and a message that arrives ends the session with `GoAway(message_too_large)` }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     unreadable_message: rule {
-      if {{ a frame's payload isn't a message }}
-      must {{ answer it with a parse error, code `-32700`, and go on reading }}
-    }
-
-    @display("JSON wire")
-    @by(system.extension_host)
-    @targets(cbor_rpc)
-    json_wire: rule {
-      where {{ the [JS host](#language.interop.host.js_host) is started with `--wire json` }}
-      must {{ encode the same messages as JSON in the same frames, so traffic can be read while debugging }}
-    }
-
-    @display("JSON wire option")
-    @by(system.command_line)
-    @targets(cbor_rpc)
-    json_wire_option: rule {
-      where {{ heron is run with `--wire json` }}
-      must {{ speak the JSON wire to every process it starts, passing `--wire json` to the [JS host](#language.interop.host.js_host) }}
+      if {{ a message isn't a Sparrow message, or its payload doesn't match its method's types }}
+      must {{ end a call it belongs to with the invalid-params code, and otherwise close the session with `GoAway(protocol_error)` }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     ids_per_side: rule {
-      must {{ number each side's requests from 1 up, apart from the other side's }}
+      must {{ number calls as Sparrow does: the process's even, heron's odd, each side's strictly increasing }}
     }
   }
 
   handshake: section {
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     initialize_first: rule {
       when {{ a process starts }}
-      must {{ send `initialize` with the protocol version, heron's name and version, the project's root, the declarations the process serves, the limits, heron's capabilities and the folder for run-scoped files, and wait up to 30 seconds for the answer }}
+      must {{ answer its `Hello` with a `Welcome` within 30 seconds, then call `initialize` with the protocol version, heron's name and version, the project's root, the declarations the process serves, the limits and the folder for run-scoped files, and wait up to 30 seconds for the answer }}
+      then {{ a process whose `Hello` doesn't publish `heron.extension` is refused with `GoAway(schema_mismatch)` }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     version_match: rule {
       if {{ the protocol version the process answers with has another major number than heron's }}
       must {{ stop the process and fail with `‹process›: speaks protocol ‹version›, and heron speaks ‹version›` }}
@@ -80,121 +68,120 @@ protocol: section {
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     implements_answered: rule {
       must {{ read the answer's `implements` as what the process serves, by path and point, and report every declaration it leaves out as doesn't implement }}
     }
   }
 
   limits: section {
-    | | Limit           | Default    | Meaning                                       |
-    | | --------------- | ---------- | --------------------------------------------- |
-    | | `max_frame`     | 16 MiB     | the longest frame either side sends or reads  |
-    | | `max_in_flight` | 64         | the requests a side serves at once            |
-    | | `timeout_ms`    | 30 000     | how long a request waits for its response     |
+    | | Limit           | Default    | Sparrow                | Meaning                                       |
+    | | --------------- | ---------- | ---------------------- | --------------------------------------------- |
+    | | `max_message`   | 16 MiB     | `maxMessageSize`       | the longest message either side sends or reads |
+    | | `max_in_flight` | 64         | `maxConcurrentCalls`   | the calls a side serves at once               |
+    | | `timeout_ms`    | 30 000     | the `deadline` key     | how long a call waits for its answer          |
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     offered_limits: rule {
-      must {{ offer the limits of the [table](#heron.language.markup.components.table) in `initialize`, with an extension's `files`, `network` and `commands` beside them, and apply them on both sides }}
+      must {{ offer the limits of the [table](#heron.language.markup.components.table) in `initialize`, with an extension's `files`, `network` and `commands` beside them, and apply them on both sides as the session's params }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     in_flight_limit: rule {
-      if {{ a request arrives while `max_in_flight` requests are being served }}
-      must {{ answer it at once with the limit-exceeded code }}
-      then {{ a request stops counting once its response is ready, so the caller's next request is never refused for it }}
+      if {{ a call arrives while `max_in_flight` calls are being served }}
+      must {{ answer it at once with `Error(resource_exhausted)` and the limit-exceeded code }}
+      then {{ a call stops counting once its answer is sent, so the caller's next call is never refused for it }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     timeouts: rule {
-      where {{ a request is sent without a time limit of its own }}
-      must {{ give it `timeout_ms`, and when that passes, send `$/cancel` and fail it with the timeout code }}
+      where {{ a call is made without a time limit of its own }}
+      must {{ give it `timeout_ms` as its `deadline`, and when that passes, send `Cancel(deadline_exceeded)` and fail it with the timeout code }}
     }
   }
 
   methods: section {
-    | | From          | Methods                                                                                         |
-    | | ------------- | ----------------------------------------------------------------------------------------------- |
-    | | heron         | `initialize`, `call`, `lint`, `generate`, `render`, `resource/setup`, `resource/reset`, `resource/snapshot`, `resource/restore`, `resource/fork`, `resource/teardown`, `shutdown` |
-    | | the process   | `node`, `call`, `resource`, `secret`, `temp`                                                    |
-    | | either        | the notifications `$/cancel`, `$/stream`, `$/log` and `$/progress`                              |
+    | | Facet             | Methods                                                                                         |
+    | | ----------------- | ----------------------------------------------------------------------------------------------- |
+    | | `heron.extension` | `initialize`, `call`, `call_stream`, `lint`, `generate`, `render`, `resource_setup`, `resource_reset`, `resource_snapshot`, `resource_restore`, `resource_fork`, `resource_teardown`, `shutdown` |
+    | | `heron.host`      | `node`, `call`, `resource`, `secret`, `temp`, and the notification `log`                        |
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     calls_by_target: rule {
       must {{ send a call of a [foreign func](#language.interop.declaring.foreign_func), macro or member of an implemented interface as `call` with the declaration's path as `target`, the member, as `send` of a transport, and the arguments by parameter name }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     unknown_method: rule {
-      if {{ a request names a method the side doesn't serve }}
-      must {{ answer it with the method-not-found code, `-32601` }}
+      if {{ a call names a method the side doesn't serve }}
+      must {{ answer it with `Error(unimplemented)` and the method-not-found code, `-32601` }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     cancel: rule {
-      when {{ the caller cancels a request }}
-      must {{ send `$/cancel` with its id, fail it on the caller's side with the cancelled code, and abort its handler on the other side, which answers with the cancelled code if it finishes anyway }}
+      when {{ the caller cancels a call }}
+      must {{ send Sparrow's `Cancel`, fail it on the caller's side with the cancelled code, and abort its handler on the other side, which answers with `Error(cancelled)` if it finishes anyway }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     stream: rule {
       where {{ a handler streams its result }}
-      must {{ send each item as `$/stream` with the request's id before the response that ends the request }}
+      must {{ serve it through `call_stream`, each item a Sparrow `Item` and the stream ended with `End`, and answer a plain `call` of it with its items as a list }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     log_and_progress: rule {
-      must {{ accept `$/log` with a level and a message, and `$/progress` with the request's id, a message and counts done and total, at any time }}
+      must {{ accept the notification `log` with a level and a message, and Sparrow's `Progress` on a call with counts done and total and a note, at any time }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     run_ids: rule {
-      must {{ carry the [run](#language.interop.timing.run_scope)'s id as `run` on each request of a run, and hand it to the handler }}
+      must {{ carry the [run](#language.interop.timing.run_scope)'s id under the metadata key `heron.run` on each call of a run, and hand it to the handler }}
     }
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     closed_connection: rule {
-      when {{ the connection ends }}
-      must {{ fail every request in flight on both sides and cancel the handlers still running }}
+      when {{ the session ends }}
+      must {{ fail every call in flight on both sides and cancel the handlers still running }}
     }
   }
 
   errors: section {
-    | | Code      | Meaning                                                          |
-    | | --------- | ---------------------------------------------------------------- |
-    | | `-32700`  | a frame that isn't a message                                     |
-    | | `-32600`  | a message that isn't a valid request                             |
-    | | `-32601`  | a method the side doesn't serve                                  |
-    | | `-32602`  | parameters the method can't take                                |
-    | | `-32603`  | the handler failed                                               |
-    | | `-32800`  | the request was cancelled, as in LSP                             |
-    | | `-32000`  | foreign code broke: `ForeignError`                               |
-    | | `-32001`  | a declared error was thrown, its type in `type`, its fields in `data` |
-    | | `-32002`  | a limit was exceeded                                             |
-    | | `-32003`  | the request timed out                                            |
+    | | Code      | Sparrow status        | Meaning                                                          |
+    | | --------- | --------------------- | ---------------------------------------------------------------- |
+    | | `-32700`  | `protocol_error`      | a message that isn't a message                                   |
+    | | `-32600`  | `invalid_argument`    | a call that isn't valid                                          |
+    | | `-32601`  | `unimplemented`       | a method the side doesn't serve                                  |
+    | | `-32602`  | `invalid_argument`    | parameters the method can't take                                |
+    | | `-32603`  | `internal`            | the handler failed                                               |
+    | | `-32800`  | `cancelled`           | the call was cancelled                                           |
+    | | `-32000`  | `unknown`             | foreign code broke: `ForeignError`                               |
+    | | `-32001`  | `aborted`             | a declared error was thrown, its type in `type`, its fields in `data` |
+    | | `-32002`  | `resource_exhausted`  | a limit was exceeded                                             |
+    | | `-32003`  | `deadline_exceeded`   | the call timed out                                               |
 
     @by(system.extension_host)
-    @targets(cbor_rpc)
+    @targets(sparrow_session)
     handler_failures: rule {
-      if {{ a handler fails with anything but a protocol error }}
-      must {{ answer with `-32603` and the failure's message }}
+      must {{ end a failed call with Sparrow's `Error`: the status the [table](#heron.language.markup.components.table) gives its code, its message, and `ErrorDetails` with the code as details, `-32603` for a handler that fails with anything but a protocol error }}
+      then {{ a status without details, as from a peer that isn't heron's, reads as the code the [table](#heron.language.markup.components.table) gives the status first }}
     }
   }
 
   @by(system.extension_host)
-  @targets(cbor_rpc)
+  @targets(sparrow_session)
   generated_sides: rule {
-    must {{ generate the host's and the JS runtime's bindings from the messages, each api's ops as its methods, named on the wire by their `@jsonrpc` as `resource/setup`, an op without a result as a [notification](#language.apis.jsonrpc.jsonrpc_notification), and fail CI when either is stale }}
+    must {{ generate the host's and the JS runtime's bindings and both facets from the messages, each api's ops as its methods, named as written, an op without a result as a [Sparrow notification](#language.apis.sparrow.sparrow_notification) and an op whose result is a `Stream` as a server stream, and fail CI when either is stale }}
   }
 
 }

@@ -1,0 +1,590 @@
+@display("Sparrow")
+sparrow: section {
+  | `@sparrow("acme.parcels")` of `std/sparrow` on an api binds it to a service of a Sparrow
+  | RPC [facet](#language.apis.sparrow.sparrow_facet), each of its ops to a method, and every
+  | type the methods reach to a type definition of the facet. Sparrow is a CBOR protocol
+  | whose payloads are read by numbers alone: a call names its facet and method by id, a
+  | struct is an array by field tag, an enum value is a sigil. The projection is fixed by
+  | the rules below, so the docs, `heron generate sparrow` and a server built on Sparrow's
+  | reference library agree on every name, id and tag, and on the facet hash.
+
+  @display("Facet")
+  sparrow_facet: term {{
+    A self-contained unit of what a Sparrow peer publishes, with its own types, services, methods and
+    sigils: the apis whose `@sparrow` names it, as `acme.parcels`. A facet has a name, a
+    version, as `1.0.0`, and an id of 16 or more, and its hash is Sparrow's facet hash of
+    its canonical CBOR.
+  }}
+
+  @display("Sparrow service")
+  sparrow_service: term {{
+    An api bound by `@sparrow`: a service of its [facet](#language.apis.sparrow.sparrow_facet), with a name and an id.
+  }}
+
+  @display("Sparrow method")
+  sparrow_method: term {{
+    An op of a [Sparrow service](#language.apis.sparrow.sparrow_service): a method of the
+    facet, called by the facet's id and its method id, with one input, one output, the
+    error sigils it may return and its flags.
+  }}
+
+  @display("Input struct")
+  input_struct: term {{
+    The struct a [Sparrow method](#language.apis.sparrow.sparrow_method) takes, `<Op>Input`,
+    made from the op's parameters, as `GetParcelInput` for `get_parcel`.
+  }}
+
+  @display("Tag")
+  sparrow_tag: term {{
+    A struct field's slot, or a union variant's tag, on the Sparrow wire: `@tag(4)` of
+    `std/sparrow` on a member, a parameter or a variant, or the tag
+    [declaration order](#language.apis.sparrow.numbering.auto_tags) gives it.
+  }}
+
+  @display("TypeId")
+  type_id: term {{
+    A type definition's id in its facet: 0 to 31 are Sparrow's built-in types, and a facet's
+    own types are 64 and up, by `@id(64)` of `std/sparrow` or in the order the methods reach them.
+  }}
+
+  @display("Sigil")
+  sparrow_sigil: term {{
+    An enum value or an error code of a facet, by id: 0 to 31 are Sparrow's core status codes,
+    and a facet's own are 64 and up, by `@sigil(80)` of `std/sparrow` or in the order reached.
+  }}
+
+  @display("Sparrow notification")
+  sparrow_notification: term {{
+    A [Sparrow method](#language.apis.sparrow.sparrow_method) whose op has no [result type](#language.apis.responses.result_type) and no streamed parameter: flagged as a notification, sent with call id 0 and never answered.
+  }}
+
+  facets: section {
+    @by(system.checker)
+    @targets(sparrow_service)
+    facet_ops: rule {
+      must {{ bind every op of an api that carries `@sparrow` to a method of its [service](#language.apis.sparrow.sparrow_service), and report sparrow outside a facet at an op's `@sparrow` when its api carries none }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_service)
+    sparrow_arguments: rule {
+      must {{ report Sparrow argument misplaced at `facet`, `version`, `facet_id` or `service` in an op's `@sparrow`, and at `method`, `idempotent` or `shared` in an api's }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_facet)
+    facet_names: rule {
+      must {{ name the facet by `@sparrow`'s `facet`, or else by the api's name in lower case with hyphens for underscores, and report invalid facet name where it doesn't match `[a-z0-9-]+(\.[a-z0-9-]+)*` }}
+      example {{ `@sparrow("Acme_Parcels")` reports "Acme_Parcels isn't a valid facet name: write lower-case words, digits and hyphens joined by dots, as acme.parcels" }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_facet)
+    shared_facets: rule {
+      must {{ make the apis whose `@sparrow` names one facet services of that one facet, at the `version` they set, `1.0.0` where none sets one, and report invalid facet version at a `version` that isn't numbers joined by dots, and facet version conflict at one that differs from the facet's first api's }}
+      then {{ one plugin publishes all its services in one facet }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_facet)
+    facet_ids: rule {
+      must {{ give each facet the `facet_id` its apis set, or else the lowest id from 16 that no other facet has, in the order the facets are first declared, and report facet id reserved at one below 16, facet id conflict where two apis of one facet set different ids, and duplicate facet id where two facets have one }}
+    }
+
+    @targets(sparrow_service)
+    service_names: rule {
+      must {{ name a service by `@sparrow`'s `service`, or else by the api's name in upper camel case, and give it the `id` its api's `@sparrow` sets, or else the lowest free id from 0 in its facet }}
+      example {{ `parcels: api` is the service `Parcels` }}
+    }
+
+    @targets(sparrow_method)
+    method_names: rule {
+      must {{ name a method by its op's `@sparrow(method = …)`, or else by the op's name in lower camel case }}
+      example {{ `get_parcel` is `getParcel` }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_method)
+    method_ids: rule {
+      must {{ give a method the `id` its op's `@sparrow` sets, or else the lowest id from 0 that no method of the facet has or retires, in the order the ops are written, and report duplicate Sparrow id where two methods of a facet, or two of its services, have one id }}
+      then {{ a method id is unique in its facet, whichever service holds it }}
+    }
+
+    @targets(sparrow_facet)
+    valid_facets: rule {
+      must {{ build each facet as Sparrow's model lays it out, valid by its rules, with its canonical form and its facet hash, and the tree's facets together as one Sparrow `schema` document named after the first }}
+    }
+  }
+
+  calls: section {
+    @targets(sparrow_method)
+    call_shapes: rule {
+      must {{ give a method as its input `unit` for an op with no parameters, `[3, T]` for one streamed parameter, and else its [input struct](#language.apis.sparrow.input_struct), and as its output `[3, T]` for a streamed result, `unit` for no result or a `Null` one, and else the result's type, with the flags `0x8` and `0x10` for a streamed input and output }}
+      example {{ `navigate(positions: Stream(Position)): op(Stream(Instruction))` takes `stream<Position>`, returns `stream<Instruction>` and has both End flags }}
+    }
+
+    @targets(input_struct)
+    input_fields: rule {
+      must {{ make the [input struct](#language.apis.sparrow.input_struct) from the op's parameters in the order written, each a field named after its parameter, optional where the parameter is, tagged as a struct's fields are, and named with the service's name before it where a type the facet reaches already has the name }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_method)
+    client_stream_alone: rule {
+      if {{ an op takes a streamed parameter and another parameter }}
+      must {{ report Sparrow stream with fields at the other parameter }}
+    }
+
+    @targets(sparrow_notification)
+    notifications: rule {
+      must {{ flag a [notification](#language.apis.sparrow.sparrow_notification) `0x2`, with the output `unit`, and answer an op with a `Null` result with `unit` instead }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_notification)
+    notifications_throw_nothing: rule {
+      if {{ a [notification](#language.apis.sparrow.sparrow_notification) declares errors with `@throws`, its own or its api's }}
+      must {{ report throwing notification at the `@throws` }}
+    }
+
+    @targets(sparrow_method)
+    method_hints: rule {
+      where {{ an op's `@sparrow` sets `idempotent` or `shared` }}
+      must {{ flag its method `0x1`, safe to retry, or `0x4`, its result shareable between callers }}
+    }
+  }
+
+  types: section {
+    | | Heron                          | Sparrow                                   |
+    | | ------------------------------ | ----------------------------------------- |
+    | | `String`, `Prose`, `Decimal`   | `string`, a decimal as its text           |
+    | | `Bool`, `Bytes`                | `bool`, `bytes`                           |
+    | | `Int`, `u32`, `u64`            | `int`, `uint`                             |
+    | | `Float`, `f32`                 | `float64`, `float32`                      |
+    | | `Timestamp`, `Duration`        | `timestamp`, `int` milliseconds           |
+    | | `Any`, `Object`                | `Value`, `map<string, Value>`             |
+    | | `List(T)`, `Set(T)`            | `list<T>`                                 |
+    | | `Map(K, V)`                    | `map<K, V>`                               |
+    | | `x?: T`                        | an optional field                         |
+    | | `T \| Null`, `T?` in a type    | `optional<T>`                             |
+    | | a record, a union, an enum     | a struct, a union, an enum                |
+
+    @targets(type_id)
+    type_mapping: rule {
+      must {{ map each type a method reaches to Sparrow by the [table](#heron.language.markup.components.table), and every other type of `std/types`, such as `Money`, to a struct like the tree's own }}
+    }
+
+    @targets(type_id)
+    type_defs: rule {
+      must {{ define a record as a struct of its members, an [error type](#language.data.types.error_type) without its `message`, which the error carries itself, a union as a union of its variants, and an enum as an enum whose values are sigils named `<Enum>.<value>`, each named as the type, and an instance of a [generic type](#language.data.types.generic_type) or a `Patch(T)`, its fields all optional, named after the type and then its arguments }}
+      example {{ `Page(Parcel)` is the struct `PageParcel` }}
+    }
+
+    @targets(type_id)
+    any_values: rule {
+      where {{ a method of a facet reaches `Any` }}
+      must {{ define in the facet the union `Value`, whose variants by tag are `null`, `bool`, `int`, `uint`, `bigint`, `float`, `string`, `bytes`, `decimal`, `time`, `duration`, `list`, `set`, `map`, `variant`, `ref` and `prose`, and the struct `VariantValue` of a `name` and a `value`, with consecutive TypeIds, as the extension protocol defines them }}
+      then {{ a facet that reaches no `Any` defines neither }}
+    }
+
+    @targets(type_id)
+    sparse_structs: rule {
+      where {{ a record carries `@sparse` of `std/sparrow` }}
+      must {{ flag its struct sparse, so it's encoded as a map from tag to value }}
+    }
+
+    @by(system.checker)
+    @targets(type_id)
+    unmappable_types: rule {
+      if {{ a type a method reaches has no Sparrow form: a union expression other than `T | Null`, an interface, or a `Stream` other than an op's whole parameter or result }}
+      must {{ report no Sparrow mapping at the type, saying why }}
+    }
+  }
+
+  numbering: section {
+    | A struct's fields are tagged by their `@tag` or, where none has one, from 0 in the order
+    | written. A facet's types, sigils, services and methods take the ids their annotations
+    | give, and the rest the lowest free ids in the order they're reached, so a deployed facet
+    | writes its ids, and lists what it removed in `@retired`.
+
+    @targets(sparrow_tag)
+    auto_tags: rule {
+      must {{ tag a struct's fields or a union's variants by their `@tag(n)`, or, where none of them carries one, 0, 1, 2 and on in the order written, skipping the tags the type's `@reserved` of `std/sparrow` names }}
+      example {{ a type with `@reserved(1)` and the fields `id` and `status` tags them 0 and 2 }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_tag)
+    all_or_none_tags: rule {
+      if {{ some fields of a struct carry `@tag` and others don't }}
+      must {{ report mixed tags at the first field without one }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_tag)
+    unique_tags: rule {
+      if {{ two fields of a struct have one tag }}
+      must {{ report duplicate tag at the second }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_tag)
+    tag_range: rule {
+      if {{ a field's tag is below 0 }}
+      must {{ report tag out of range at it }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_tag)
+    reserved_tags: rule {
+      if {{ a field's tag is one its type's `@reserved` names }}
+      must {{ report reserved tag at it }}
+    }
+
+    @by(system.checker)
+    @targets(type_id)
+    type_ids: rule {
+      must {{ give a type the [TypeId](#language.apis.sparrow.type_id) its `@id` sets, or else the lowest one from 64 that no type of the facet has or retires, in the order the methods reach them, and report TypeId out of range at an `@id` below 64, duplicate Sparrow id where two types of a facet have one, and generic TypeId at an `@id` on a [generic type](#language.data.types.generic_type) }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_sigil)
+    sigil_ids: rule {
+      must {{ give an enum value or an error's [sigil](#language.apis.sparrow.sparrow_sigil) the id its `@sigil` sets, or else the lowest one from 64 that no sigil of the facet has or retires, in the order reached, and report sigil out of range at a `@sigil` below 64, mixed sigils where some values of an enum carry `@sigil` and others don't, and duplicate Sparrow id where two sigils have one }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_facet)
+    retired_ids: rule {
+      must {{ list the ids an api's `@retired` names, by space, in its facet's `retired`, never assign them, and report retired id at a type, sigil, service or method that has one }}
+    }
+
+    @by(system.linter)
+    @targets(type_id)
+    implicit_ids: rule {
+      if {{ a type of the tree or an op has no id of its own while other types or methods of its facet do }}
+      should {{ report implicit Sparrow id at it, with the id the order gives it }}
+      then {{ a facet's ids are written all or none, so a type reached earlier never shifts them }}
+    }
+  }
+
+  status_codes: section {
+    @display("Sparrow code")
+    sparrow_code: term {{
+      The [error code](#language.apis.rpc.rpc_code) of `std/sparrow`, `@code(not_found)`: one
+      of Sparrow's core status codes from `cancelled` to `unauthenticated`, its `Code` enum,
+      which are gRPC's with the same numbers. The protocol's own codes, from `protocol_error`
+      up, are the transport's to send.
+    }}
+
+    @targets(sparrow_code)
+    core_codes: rule {
+      where {{ an error has a [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) }}
+      must {{ leave it out of the `errors` of the methods that throw it, since a core code needs no entry in any method's `errors`, and define the error's struct, its fields without its `message`, for its details }}
+    }
+
+    @targets(sparrow_code)
+    error_answers: rule {
+      when {{ a method fails with an error it declares }}
+      must {{ answer with an `Error` of the error's [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) or its own [sigil](#language.apis.sparrow.sparrow_sigil), its message, and its fields as a `dynamic` value of its struct }}
+      then {{ a client reads which error it got from the status, never from the message }}
+    }
+
+    @targets(sparrow_sigil)
+    error_sigils: rule {
+      where {{ a method throws an error with no [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) }}
+      must {{ give the error a [sigil](#language.apis.sparrow.sparrow_sigil) of kind 1, an error code, named after it, and list it in the method's `errors` }}
+      then {{ a client tells an error of the api from every other by its sigil }}
+    }
+
+    @by(system.checker)
+    @targets(sparrow_code)
+    code_or_sigil: rule {
+      if {{ an error carries both `@code` and `@sigil` of `std/sparrow` }}
+      must {{ report code and sigil at the `@sigil` }}
+    }
+  }
+
+  @display("A facet with written ids")
+  sparrow_example: example {
+    | ```heron
+    | import = ["std/types@1", "std/sparrow@1"]
+    |
+    | // One facet, its ids written so they stay put as it grows.
+    | @sparrow("acme.charts", version = "1.2.0", facet_id = 40)
+    | @retired(methods = [2])
+    | charts: api {
+    |   @sparrow(id = 0, idempotent = true)
+    |   @throws(UnknownChart)
+    |   get_chart(id: String): op(Chart)
+    |
+    |   @sparrow(id = 1, shared = true)
+    |   watch(id: String): op(Stream(Chart))
+    | }
+    |
+    | @id(64)
+    | @reserved(2)
+    | Chart: type {
+    |   @tag(0)
+    |   id: String
+    |   @tag(1)
+    |   kind: ChartKind
+    |   @tag(3)
+    |   title?: String
+    | }
+    |
+    | @id(65)
+    | ChartKind: enum {
+    |   @sigil(64)
+    |   bar: Self
+    |   @sigil(65)
+    |   line: Self
+    | }
+    |
+    | // No core code: answered with a sigil of its own.
+    | @id(66)
+    | @sigil(80)
+    | UnknownChart: type(Error) {
+    |   message: String = "No chart has this id."
+    | }
+    | ```
+  }
+
+  errors: section {
+    @realizes(language.apis.sparrow.facets.facet_ops)
+    @display("Sparrow outside a facet")
+    @by(system.checker)
+    sparrow_outside_facet: error("sparrow") {
+      title = "{op} carries @sparrow, but its api isn't bound to a Sparrow facet"
+      op: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.sparrow_arguments)
+    @display("Sparrow argument misplaced")
+    @by(system.checker)
+    sparrow_argument_misplaced: error("sparrow") {
+      title = "@sparrow on {kind} doesn't take {argument}"
+      kind: field(String)
+      argument: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.facet_names)
+    @display("Invalid facet name")
+    @by(system.checker)
+    invalid_facet_name: error("sparrow") {
+      title = "{name} isn't a valid facet name: write lower-case words, digits and hyphens joined by dots, as acme.parcels"
+      name: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.shared_facets)
+    @display("Invalid facet version")
+    @by(system.checker)
+    invalid_facet_version: error("sparrow") {
+      title = "{version} isn't a version: write numbers joined by dots, as 1.2.0"
+      version: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.shared_facets)
+    @display("Facet version conflict")
+    @by(system.checker)
+    facet_version_conflict: error("sparrow") {
+      title = "{api} puts facet {facet} at version {version}, which {other} puts at {first}"
+      related = "the api that sets the facet's version first"
+      api: field(String)
+      facet: field(String)
+      version: field(String)
+      other: field(String)
+      first: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.facet_ids)
+    @display("Facet id reserved")
+    @by(system.checker)
+    facet_id_reserved: error("sparrow-id") {
+      title = "{id} can't be the id of facet {facet}: 0 to 15 are Sparrow's own"
+      id: field(String)
+      facet: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.facet_ids)
+    @display("Facet id conflict")
+    @by(system.checker)
+    facet_id_conflict: error("sparrow-id") {
+      title = "{api} gives facet {facet} the id {id}, which it already has as {first}"
+      api: field(String)
+      facet: field(String)
+      id: field(String)
+      first: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.facet_ids)
+    @display("Duplicate facet id")
+    @by(system.checker)
+    duplicate_facet_id: error("sparrow-id") {
+      title = "facet {facet} has id {id}, which facet {other} already has"
+      facet: field(String)
+      id: field(String)
+      other: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.method_ids, language.apis.sparrow.numbering.type_ids, language.apis.sparrow.numbering.sigil_ids)
+    @display("Duplicate Sparrow id")
+    @by(system.checker)
+    duplicate_sparrow_id: error("sparrow-id") {
+      title = "{name} has {space} {id}, which {other} already has in facet {facet}"
+      related = "the definition that has the id first"
+      name: field(String)
+      space: field(String)
+      id: field(String)
+      other: field(String)
+      facet: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.retired_ids)
+    @display("Retired id")
+    @by(system.checker)
+    retired_id: error("sparrow-id") {
+      title = "{name} has {space} {id}, which facet {facet} retires"
+      name: field(String)
+      space: field(String)
+      id: field(String)
+      facet: field(String)
+    }
+
+    @realizes(language.apis.sparrow.facets.method_ids)
+    @display("Negative Sparrow id")
+    @by(system.checker)
+    negative_sparrow_id: error("sparrow-id") {
+      title = "{id} can't be the id of {what} {name}: ids can't be negative"
+      id: field(String)
+      what: field(String)
+      name: field(String)
+    }
+
+    @realizes(language.apis.sparrow.calls.client_stream_alone)
+    @display("Sparrow stream with fields")
+    @by(system.checker)
+    sparrow_stream_with_fields: error("sparrow") {
+      title = "{op} streams from the client, so {param} has no place in its call"
+      op: field(String)
+      param: field(String)
+    }
+
+    @realizes(language.apis.sparrow.calls.notifications_throw_nothing)
+    @display("Throwing notification")
+    @by(system.checker)
+    sparrow_notification_throws: error("sparrow") {
+      title = "{op} is a notification, which is never answered, so it can't throw {error}"
+      op: field(String)
+      error: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.all_or_none_tags)
+    @display("Mixed tags")
+    @by(system.checker)
+    mixed_tags: error("sparrow-id") {
+      title = "{type} tags some fields with @tag and not {field}: tag all of them or none"
+      type: field(String)
+      field: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.unique_tags)
+    @display("Duplicate tag")
+    @by(system.checker)
+    duplicate_tag: error("sparrow-id") {
+      title = "{field} has tag {tag}, which {other} already has in {type}"
+      related = "the field that has the tag first"
+      type: field(String)
+      field: field(String)
+      other: field(String)
+      tag: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.tag_range)
+    @display("Tag out of range")
+    @by(system.checker)
+    tag_out_of_range: error("sparrow-id") {
+      title = "{tag} can't tag {field}: tags start at 0"
+      tag: field(String)
+      field: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.reserved_tags)
+    @display("Reserved tag")
+    @by(system.checker)
+    reserved_tag: error("sparrow-id") {
+      title = "{field} has tag {tag}, which {type} reserves"
+      type: field(String)
+      field: field(String)
+      tag: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.type_ids)
+    @display("TypeId out of range")
+    @by(system.checker)
+    type_id_out_of_range: error("sparrow-id") {
+      title = "{id} can't be the TypeId of {type}: a facet's own types start at 64"
+      id: field(String)
+      type: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.type_ids)
+    @display("Generic TypeId")
+    @by(system.checker)
+    generic_type_id: error("sparrow-id") {
+      title = "{type} is generic, and each of its instances is a type of its own: @sparrow.id can't number them"
+      type: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.sigil_ids)
+    @display("Sigil out of range")
+    @by(system.checker)
+    sigil_out_of_range: error("sparrow-id") {
+      title = "{id} can't be the sigil of {name}: a facet's own sigils start at 64"
+      id: field(String)
+      name: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.sigil_ids)
+    @display("Mixed sigils")
+    @by(system.checker)
+    mixed_sigils: error("sparrow-id") {
+      title = "{enum} gives some values a @sigil and not {value}: give all of them one or none"
+      enum: field(String)
+      value: field(String)
+    }
+
+    @realizes(language.apis.sparrow.types.unmappable_types)
+    @display("No Sparrow mapping")
+    @by(system.checker)
+    no_sparrow_mapping: error("sparrow") {
+      title = "{type} has no Sparrow form: {reason}"
+      type: field(String)
+      reason: field(String)
+    }
+
+    @realizes(language.apis.sparrow.status_codes.code_or_sigil)
+    @display("Code and sigil")
+    @by(system.checker)
+    code_and_sigil: error("sparrow") {
+      title = "{error} has a core code, @sparrow.code({code}), and a sigil of its own: give it one or the other"
+      error: field(String)
+      code: field(String)
+    }
+
+    @realizes(language.apis.sparrow.numbering.implicit_ids)
+    @display("Implicit Sparrow id")
+    @by(system.linter)
+    @severity(warning)
+    implicit_sparrow_id: error("sparrow-id") {
+      title = "{name} has no {annotation} while other {kind} of facet {facet} do: its {space}, {id}, follows the order {order}"
+      name: field(String)
+      annotation: field(String)
+      kind: field(String)
+      facet: field(String)
+      space: field(String)
+      id: field(String)
+      order: field(String)
+    }
+  }
+}

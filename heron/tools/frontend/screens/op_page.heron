@@ -59,13 +59,13 @@ op_page: screen(route = "/<api>.<op>.html") {
     @by(system.docs_generator)
     binding_switch: rule {
       where {{ an op has more than one binding }}
-      must {{ show a switch of its bindings, HTTP, gRPC, Connect and JSON-RPC in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, with the switch's selected binding always the one shown, and keep the reader's pick from page to page, applied before the page paints }}
+      must {{ show a switch of its bindings, HTTP, gRPC, Connect, JSON-RPC and Sparrow in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, with the switch's selected binding always the one shown, and keep the reader's pick from page to page, applied before the page paints }}
       then {{ an op bound to HTTP and gRPC has one page, never one per binding }}
     }
 
     @by(system.docs_generator)
     op_bindings: rule {
-      must {{ count as an op's bindings HTTP where it has a route or a socket, gRPC where its [service](#language.apis.grpc.proto_service) is served over gRPC or gRPC-Web, Connect where it's served over Connect, and JSON-RPC where it's a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method) }}
+      must {{ count as an op's bindings HTTP where it has a route or a socket, gRPC where its [service](#language.apis.grpc.proto_service) is served over gRPC or gRPC-Web, Connect where it's served over Connect, JSON-RPC where it's a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method), and Sparrow where it's a [Sparrow method](#language.apis.sparrow.sparrow_method) }}
     }
 
     @by(system.docs_generator)
@@ -78,6 +78,18 @@ op_page: screen(route = "/<api>.<op>.html") {
     jsonrpc_header: rule {
       where {{ the binding picked is JSON-RPC }}
       must {{ show the method's wire name with a copy button, and mark a [notification](#language.apis.jsonrpc.jsonrpc_notification) as one }}
+    }
+
+    @by(system.docs_generator)
+    sparrow_header: rule {
+      where {{ the binding picked is Sparrow }}
+      must {{ show the method as `<facet>/<method>` with a copy button, its signature with its method id, its input and its output linked to their parts of the page, and its [streaming kind](#language.apis.rpc.streaming_kind) or that it's a [notification](#language.apis.sparrow.sparrow_notification) as a badge }}
+    }
+
+    @by(system.docs_generator)
+    sparrow_facts: rule {
+      where {{ the binding picked is Sparrow }}
+      must {{ show the method's facet with its id, its method id and its flags as facts, and its input and output with their [TypeIds](#language.apis.sparrow.type_id), an [input struct](#language.apis.sparrow.input_struct)'s fields by [tag](#language.apis.sparrow.sparrow_tag) }}
     }
 
     @by(system.docs_generator)
@@ -180,8 +192,8 @@ op_page: screen(route = "/<api>.<op>.html") {
 
       @by(system.docs_generator)
       errors_by_code: rule {
-        where {{ the binding picked is gRPC, Connect or JSON-RPC }}
-        must {{ list the errors the op throws keyed by the binding's code, the gRPC code's name, the Connect code with its HTTP status, or the JSON-RPC integer, each with its title with every `{field}` marked, its fields and what causes it, as a list rather than a [table](#heron.language.markup.components.table) }}
+        where {{ the binding picked is gRPC, Connect, JSON-RPC or Sparrow }}
+        must {{ list the errors the op throws keyed by the binding's code, the gRPC code's name, the Connect code with its HTTP status, the JSON-RPC integer, or the Sparrow core code or sigil with its number, each with its title with every `{field}` marked, its fields and what causes it, as a list rather than a [table](#heron.language.markup.components.table) }}
       }
 
       @by(system.docs_generator)

@@ -1,6 +1,7 @@
 # scripts/ci.sh on GitHub: check, lint (with Vale), format-check and render
 # the docs of every package, with heron built from aiviarium/heron's main
-# checked out beside this repository, at ../heron, where ci.sh looks for it.
+# (or vars.HERON_REF) checked out beside this repository, at ../heron, where
+# ci.sh looks for it, and Sparrow RPC beside it, which heron builds against.
 name: CI
 
 on:
@@ -24,11 +25,22 @@ jobs:
       - uses: actions/checkout@v7
         with:
           path: heron-specs
+      # heron's main, or the ref the HERON_REF variable names, to check a
+      # spec change against the heron branch that implements it.
       - uses: actions/checkout@v7
         with:
           repository: aiviarium/heron
-          ref: main
+          ref: ${{ vars.HERON_REF || 'main' }}
           path: heron
+      # Sparrow RPC, which heron builds against from a checkout beside it
+      # until Sparrow is published (heron's scripts/sparrow-setup.sh). The
+      # repository is private: SPARROW_TOKEN is a token that can read it.
+      - uses: actions/checkout@v7
+        with:
+          repository: aiviarium/sparrow
+          ref: ${{ vars.SPARROW_REF || 'main' }}
+          token: ${{ secrets.SPARROW_TOKEN }}
+          path: sparrow
 
       # The Go version heron's go.mod names, with the module and build caches
       # keyed by its go.sum.

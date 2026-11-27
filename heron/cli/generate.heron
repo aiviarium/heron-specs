@@ -23,6 +23,7 @@ generate: command("heron generate") {
     | - `asyncapi` writes an [AsyncAPI](#tools.asyncapi) document of each api, under `.heron/asyncapi/`.
     | - `proto` writes the [`.proto` files](#tools.proto) of the tree's gRPC services, under `.heron/proto/`.
     | - `openrpc` writes an [OpenRPC](#tools.openrpc) document of each api with JSON-RPC methods, under `.heron/openrpc/`.
+    | - `sparrow` writes each [Sparrow facet](#tools.sparrow) of the tree as canonical CBOR with a JSON rendering, and all of them as one Sparrow `schema` document, under `.heron/sparrow/`.
     |
     | An extension's generators add their targets the same way.
   }
@@ -58,7 +59,7 @@ generate: command("heron generate") {
 
   @by(system.generator)
   on_request_targets: rule {
-    mustNot {{ run a target that runs on request alone, as `asyncapi`, `proto` and `openrpc` do, unless it's named }}
+    mustNot {{ run a target that runs on request alone, as `asyncapi`, `proto`, `openrpc` and `sparrow` do, unless it's named }}
     example {{ `heron generate` writes the TS types, the docs and the [agent export](#tools.docs.agents.agent_export), and `heron generate proto` the `.proto` files alone }}
   }
 
