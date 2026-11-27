@@ -84,8 +84,14 @@ in full and the surface of what it links, for a task that needs that part alone.
 ## Index {#index}
 
 <rule id="index_contents" targets="tools.docs.agents.agent_index" by="system.docs_generator">
-<must>write in the [agent index](#tools.docs.agents.agent_index), in this order: the site's title; what the product is, from its intent: the prose of the tree's top and each of its goals and of what it leaves out, one line each; how to read the files: the order of the [layers](#language.specifications.layers.layer) in a file, the form of a heading and its [stable id](#tools.docs.agents.stable_id), the strengths, the links and the mark on [derived lists](#language.specifications.layers.derived_list); and the map of the files, each as a link to its path with its title, the first sentence of its node's prose as plain text, cut at a word to 100 characters, and its size in [approximate tokens](#tools.docs.agents.approximate_tokens), in the order of the tree and nested as the tree nests its nodes</must>
-<then>an agent picks the one file a task needs from the index alone</then>
+<must>write in the [agent index](#tools.docs.agents.agent_index), in this order: the site's title; what the product is, from its intent: the prose of the tree's top and each of its goals and of what it leaves out, one line each; how to read the files: the order of the [layers](#language.specifications.layers.layer) in a file, the form of a heading and its [stable id](#tools.docs.agents.stable_id), the strengths, the links and the mark on [derived lists](#language.specifications.layers.derived_list); and the map of the top areas alone, the [area files](#tools.docs.agents.area_file) no other area file stands above, each as a link to its path with its title, the first sentence of its node's prose as plain text, cut at a word to 100 characters, and its size in [approximate tokens](#tools.docs.agents.approximate_tokens), in the order of the tree</must>
+<then>the index stays small however large the tree grows, and an agent goes down from it one area at a time</then>
+</rule>
+
+<rule id="child_maps" targets="tools.docs.agents.area_file" by="system.docs_generator">
+<where>area files stand directly below an area file</where>
+<must>end the first part of that area file with a Files below part mapping those files as the index maps the top areas, in the order of the tree</must>
+<then>any file is reached from the index through the maps of the areas above it</then>
 </rule>
 
 <rule id="llms_txt" targets="tools.docs.agents.agent_export" by="system.docs_generator">
