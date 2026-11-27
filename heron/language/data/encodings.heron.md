@@ -33,11 +33,6 @@ back as the type.
 <must>read JSON text as a value of the type given, building records of declared types inside lists and maps, with numbers kept exact, and throw `std/json`'s `DecodeError` with the parser's message where the text isn't JSON or a list is expected and something else is found</must>
 </rule>
 
-<rule id="json_wire" targets="language.data.encodings.json" by="system.extension_host">
-<where>the extension protocol runs with `--wire json`</where>
-<must>write a value with no JSON form as an object with one `$` key: `{"$decimal": "40.00"}`, `{"$set": […]}`, `{"$variant": name, "value": …}`, `{"$duration": ms}`, `{"$prose": mdast}` and `{"$ref": path}`</must>
-<then>a peer that reads them back gets plain maps, since JSON has no tags</then>
-</rule>
 
 <rule id="json_names" targets="language.data.encodings.json" by="system.interpreter">
 <must>write and read each field of a record by its name in JSON: a member's `@key(name)`, or else its name in the case its type's `@keys(case)` sets, `camel` for lower camel case, and its name as written for none</must>
@@ -50,23 +45,23 @@ back as the type.
 </section>
 
 <section id="cbor">
-On the CBOR wire a value is tagged by its type. The standard tags are used where they
-exist; the rest take [Heron tags](#language.interop.data_mapping.heron_tags) in the IANA registry's first-come range, not yet
-registered.
+On the extension protocol's wire a value travels in Sparrow's schema-driven CBOR: a
+value of `Any` as the [Value](#language.interop.data_mapping.value_union) union, whose
+variant says its type, so Sparrow's two tags, 1 and 37, are the only ones on the wire.
 
-| Heron value       | CBOR                                                |
+| Heron value       | `Value` variant                                     |
 | ----------------- | --------------------------------------------------- |
-| `Timestamp`       | tag 0, an RFC 3339 string with nanoseconds; tag 1 is read too |
-| `Int` beyond 64 bits | tag 2, or tag 3 for a negative one, a bignum      |
-| `Decimal`, `Money`'s amount | tag 4, a decimal fraction `[exponent, mantissa]` |
-| `Set(T)`          | tag 258, an array                                   |
-| a union's variant | tag 1214603777, `[name, value]`                     |
-| `Duration`        | tag 1214603778, whole milliseconds                  |
-| `Prose`           | tag 1214603779, an mdast root                       |
-| `Ref(K)`          | tag 1214603780, a [node path](#language.core_format.naming.node_path) as a string     |
+| `Timestamp`       | `time`, an RFC 3339 string with nanoseconds          |
+| `Int` beyond 64 bits | `bigint`, decimal text; `uint` above 64-bit signed |
+| `Decimal`, `Money`'s amount | `decimal`, its text with the exponent kept |
+| `Set(T)`          | `set`, a list                                       |
+| a union's variant | `variant`, `[name, value]`                          |
+| `Duration`        | `duration`, whole milliseconds                      |
+| `Prose`           | `prose`, an mdast root                              |
+| `Ref(K)`          | `ref`, a [node path](#language.core_format.naming.node_path) as a string     |
 
 <rule id="cbor_tags" targets="language.data.encodings.cbor" by="system.extension_host">
-<must>write each value under the tag the [table](#heron.language.markup.components.table) gives it, require the tag when reading one back, and write integers in their shortest form and map keys in canonical order</must>
+<must>write each value as the variant the [table](#heron.language.markup.components.table) gives it, require that variant when reading one back as its type, and write integers in their shortest form and a map's entries in the order of their keys</must>
 <then>a value crosses the wire with its type, and a Duration loses whatever is below a millisecond</then>
 </rule>
 </section>

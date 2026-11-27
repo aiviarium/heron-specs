@@ -14,6 +14,7 @@ params: section {
   | | `@field(n)`       | `std/proto` | as field `n` of the [request message](#language.apis.grpc.request_message) |
   | | `@metadata(name)` | `std/proto` | in the gRPC metadata `name`, or the parameter's own name |
   | | `@params`         | `std/jsonrpc` | as the whole of a JSON-RPC request's `params`      |
+  | | `@tag(n)`         | `std/sparrow` | as the field tagged `n` of the [input struct](#language.apis.sparrow.input_struct) |
 
   param_location: term {{
     Where a transport puts a parameter's value in a request: in the path, the query, a

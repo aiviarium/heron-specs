@@ -1,50 +1,39 @@
-// The extension protocol's messages: JSON-RPC's requests, responses and
-// notifications, sent as length-prefixed CBOR frames over stdio. This file is
-// the one description of them; every side's bindings are generated from it,
-// so another runtime's SDK can be generated the same way. Each side's
-// methods are an api bound by std/jsonrpc.
-import = ["std/types@1", "std/jsonrpc@1"]
+// The extension protocol's messages: the methods of two Sparrow facets,
+// heron.extension and heron.host, called over a Sparrow session on the pipe
+// binding (the process's standard input and output). This file is the one
+// description of them; every side's bindings and both facets are generated
+// from it, so another runtime's SDK can be generated the same way. Each
+// api is one facet; its ops are the facet's methods, in the order written,
+// and each type is a facet type, its members the fields in the order
+// written.
+import = ["std/types@1"]
 
 /// The protocol version both sides send in initialize.
-version: String = "1.0"
+version: String = "2.0"
 
-/// One frame: a request when it has an id and a method, a response when it
-/// has an id and a result or an error, a notification when it has a method
-/// and no id.
-Message: type {
-  id?: Int
-  method?: String
-  params?: Any
-  result?: Any
-  error?: ErrorObject
-  /// The run a request belongs to, so the audit record links what an
-  /// extension did to the run that asked for it.
-  run?: String
-}
-
-/// An error response. A value the declaration throws travels in `data`,
-/// with its Heron type in `type`.
-ErrorObject: type {
+/// The details of a Sparrow `Error` that ends a call: the protocol's code,
+/// and for a value the declaration throws, its Heron type in `type` and the
+/// value in `data`. The Sparrow status beside it follows from the code.
+ErrorDetails: type {
   code: Int
-  message: String
   type?: String
   data?: Any
 }
 
-/// JSON-RPC's error codes, and the protocol's own in its server range.
+/// The protocol's error codes, kept from JSON-RPC's, each answered with
+/// the Sparrow status the protocol's errors give it.
 code_parse_error: Int = -32700
 code_invalid_request: Int = -32600
 code_method_not_found: Int = -32601
 code_invalid_params: Int = -32602
 code_internal_error: Int = -32603
-/// The request was cancelled with `$/cancel`, as in the language server
-/// protocol.
+/// The call was cancelled with a Sparrow `Cancel`.
 code_cancelled: Int = -32800
 /// The foreign code failed with something its declaration doesn't throw.
 code_foreign_error: Int = -32000
 /// The foreign code threw a value of a type its declaration throws.
 code_thrown: Int = -32001
-/// A declared limit was exceeded, such as the frame size.
+/// A declared limit was exceeded, such as the message size.
 code_limit_exceeded: Int = -32002
 code_timeout: Int = -32003
 
@@ -107,23 +96,16 @@ Implemented: type {
   kinds?: List(String)
 }
 
-/// The limits a host applies. Frame and concurrency limits bind both sides;
+/// The limits a host applies. The message size and concurrency limits bind
+/// both sides, as the session's `maxMessageSize` and `maxConcurrentCalls`;
 /// files, network and commands are what the extension declared it needs.
 Limits: type {
-  max_frame: Int
+  max_message: Int
   max_in_flight: Int
   timeout_ms: Int
   files?: List(String)
   network?: List(String)
   commands?: List(String)
-}
-
-/// What a side offers the other beyond the methods every peer serves.
-Capabilities: type {
-  /// Methods the side serves, by wire name.
-  methods: List(String)
-  streaming?: Bool
-  cancellation?: Bool
 }
 
 InitializeParams: type {
@@ -132,7 +114,6 @@ InitializeParams: type {
   root: String
   declarations: List(Declaration)
   limits: Limits
-  capabilities: Capabilities
   /// The directory run-scoped files go under, as `<temp>/<run>/<name>`.
   temp?: String
 }
@@ -141,7 +122,6 @@ InitializeResult: type {
   protocol: String
   extension: PeerInfo
   implements: List(Implemented)
-  capabilities: Capabilities
 }
 
 /// A call of a func or macro bound to foreign code, or of a member of an implemented
@@ -279,27 +259,9 @@ RenderResult: type {
   islands?: List(String)
 }
 
-CancelParams: type {
-  id: Int
-}
-
 LogParams: type {
   level: Severity
   message: String
-}
-
-ProgressParams: type {
-  id: Int
-  message?: String
-  done?: Int
-  total?: Int
-}
-
-/// One item of a streamed result; the response that ends the request
-/// follows the last item.
-StreamParams: type {
-  id: Int
-  item: Any
 }
 
 NodeParams: type {
@@ -313,73 +275,55 @@ NameParams: type {
 
 Empty: type
 
-/// What heron sends an extension.
+/// What heron calls an extension on: the facet `heron.extension`, which the
+/// extension publishes in its `Hello`.
 @display("Extension protocol: extension")
-@jsonrpc(framing = length_prefixed, encoding = cbor)
 extension: api {
   @realizes(language.interop.protocol.handshake.initialize_first)
-  initialize(@params params: InitializeParams): op(InitializeResult)
+  initialize(params: InitializeParams): op(InitializeResult)
   @realizes(language.interop.protocol.methods.calls_by_target)
-  call(@params params: CallParams): op(Any)
+  call(params: CallParams): op(Any)
+  /// A call whose result streams: each item as a Sparrow `Item`.
+  @realizes(language.interop.protocol.methods.stream)
+  call_stream(params: CallParams): op(Stream(Any))
   @realizes(language.interop.declaring.registered_by_path)
-  lint(@params params: LintParams): op(LintResult)
+  lint(params: LintParams): op(LintResult)
   @realizes(language.interop.declaring.registered_by_path)
-  generate(@params params: GenerateParams): op(GenerateResult)
+  generate(params: GenerateParams): op(GenerateResult)
   @realizes(language.interop.declaring.registered_by_path)
-  render(@params params: RenderParams): op(RenderResult)
+  render(params: RenderParams): op(RenderResult)
   @realizes(language.interop.timing.instance_per_run)
-  @jsonrpc("resource/setup")
-  resource_setup(@params params: ResourceParams): op(ResourceResult)
+  resource_setup(params: ResourceParams): op(ResourceResult)
   @realizes(language.interop.timing.instance_per_run)
-  @jsonrpc("resource/reset")
-  resource_reset(@params params: ResourceParams): op(ResourceResult)
+  resource_reset(params: ResourceParams): op(ResourceResult)
   @realizes(language.interop.timing.instance_per_run)
-  @jsonrpc("resource/snapshot")
-  resource_snapshot(@params params: ResourceParams): op(ResourceResult)
+  resource_snapshot(params: ResourceParams): op(ResourceResult)
   @realizes(language.interop.timing.instance_per_run)
-  @jsonrpc("resource/restore")
-  resource_restore(@params params: ResourceParams): op(ResourceResult)
+  resource_restore(params: ResourceParams): op(ResourceResult)
   @realizes(language.interop.timing.instance_per_run)
-  @jsonrpc("resource/fork")
-  resource_fork(@params params: ResourceParams): op(ResourceResult)
+  resource_fork(params: ResourceParams): op(ResourceResult)
   @realizes(language.interop.timing.teardown_at_end)
-  @jsonrpc("resource/teardown")
-  resource_teardown(@params params: ResourceParams): op(ResourceResult)
+  resource_teardown(params: ResourceParams): op(ResourceResult)
   @realizes(language.interop.host.supervising.shutdown)
-  shutdown(@params params: Empty): op(Empty)
+  shutdown(params: Empty): op(Empty)
 }
 
-/// What an extension sends heron: the way back into Heron, `ctx`.
+/// What an extension calls heron on, the way back into Heron, `ctx`: the
+/// facet `heron.host`, which heron publishes in its `Welcome`.
 @display("Extension protocol: heron")
-@jsonrpc(framing = length_prefixed, encoding = cbor)
 host: api {
   /// The node at a path, or null when nothing is there.
   @realizes(language.interop.host.services.ctx_node)
-  node(@params params: NodeParams): op(Node)
+  node(params: NodeParams): op(Node)
   @realizes(language.interop.host.services.ctx_call_in_run)
-  call(@params params: CallParams): op(Any)
+  call(params: CallParams): op(Any)
   @realizes(language.interop.timing.run_id_travels)
-  resource(@params params: NameParams): op(Any)
+  resource(params: NameParams): op(Any)
   @realizes(language.interop.host.services.ctx_secret)
-  secret(@params params: NameParams): op(String)
+  secret(params: NameParams): op(String)
   @realizes(language.interop.host.services.ctx_temp)
-  temp(@params params: NameParams): op(String)
-}
-
-/// The notifications either side may send.
-@display("Extension protocol: notifications")
-@jsonrpc(framing = length_prefixed, encoding = cbor)
-notifications: api {
-  @realizes(language.interop.protocol.methods.cancel)
-  @jsonrpc("$/cancel")
-  cancel(@params params: CancelParams): op
+  temp(params: NameParams): op(String)
+  /// A line for heron's log, sent without an answer.
   @realizes(language.interop.protocol.methods.log_and_progress)
-  @jsonrpc("$/log")
-  log(@params params: LogParams): op
-  @realizes(language.interop.protocol.methods.log_and_progress)
-  @jsonrpc("$/progress")
-  progress(@params params: ProgressParams): op
-  @realizes(language.interop.protocol.methods.stream)
-  @jsonrpc("$/stream")
-  stream(@params params: StreamParams): op
+  log(params: LogParams): op
 }

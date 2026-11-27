@@ -42,7 +42,7 @@ bound to a module, typed with its arguments, result and instance types.
 </rule>
 
 <rule id="async_results" targets="define_functions" by="system.extension_host">
-<must>accept a result returned, as a promise, or for a func as an `AsyncIterable` whose items are sent as `$/stream`</must>
+<must>accept a result returned, as a promise, or for a func as an `AsyncIterable` whose items are sent as Sparrow `Item`s of `call_stream`, or as a list to a plain `call`</must>
 </rule>
 
 <rule id="ctx_signal" targets="define_functions" by="system.extension_host">
