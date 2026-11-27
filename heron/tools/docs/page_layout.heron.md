@@ -12,7 +12,7 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="outline_nested" targets="tools.docs.page_layout" by="system.docs_generator">
-<must>show in a page's outline its headings and, under a heading of a node with no subheadings of its own, the nodes the page shows inside that node with an anchor, or on a page without headings the nodes it shows with an anchor and theirs, two levels deep in all, and mark the entry of what's in view as the page scrolls</must>
+<must>show in a page's outline its headings and, under a heading of a node with no subheadings of its own, the nodes the page shows inside that node with an anchor, or on a page without headings the nodes it shows with an anchor and theirs, two levels deep in all, in the order the page shows them, and mark the entry of what's in view as the page scrolls, its marker drawn on the outline's rail</must>
 <example>a page's outline lists its sections, and under each section the use cases and scenarios it holds</example>
 </rule>
 

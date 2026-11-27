@@ -24,21 +24,32 @@ its header.
 
 <rule id="target_chip" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
 <where>a target of a rule is the node the rule stands in, the section that holds it, or a node shown on the same page</where>
-<mustNot>show that target as a chip beside the rule</mustNot>
-<then>a chip shows only the targets a reader couldn't tell from where the rule is</then>
+<mustNot>name that target beside the rule</mustNot>
+<then>a rule names only the targets a reader couldn't tell from where it is</then>
 </rule>
 
 <rule id="chip_leads" targets="language.specifications.requirements.rule_kind" by="system.docs_generator">
-<must>show a rule's target chips before its sentence, as a tag in the label size on the line above it, never after the sentence's last word</must>
+<must>name the other targets of a rule after its sentence, as a quiet line in the label size that reads "about" and a link to each, and never as a tag standing alone above the sentence</must>
+</rule>
+
+<rule id="term_definition" targets="tools.docs.rendering" by="system.docs_generator">
+<must>render a term, outside the glossary, as a definition: the defined word in strong type as a `<dfn>` opening its first sentence, followed by a dash and the definition, at the term's anchor, with the term's icon in the gutter</must>
+<then>a reader sees that a paragraph defines a word, never a word in a code pill above a paragraph</then>
+</rule>
+
+<rule id="gutter_marks" targets="tools.docs.rendering" by="system.docs_generator">
+<where>the lens's `kinds` is `ICON`, as it is unless set</where>
+<must>show beside each node a page renders inline as a block of its own, a rule, a goal, a term, a scenario, a use case or a diagnostic, the icon it shows in the left gutter, level with its first line: muted, in the [project colour](#tools.frontend.design_system.project_colour) on hover, with the node's kind and name as its tooltip and label, and as the link to the node's anchor; and on a narrow screen, before its text</must>
+<then>a reader tells the nodes a page defines from its descriptive prose at a glance, and the text never moves for the mark</then>
 </rule>
 
 <rule id="content_order" targets="tools.docs.rendering" by="system.docs_generator">
-<must>render a node's children, outside the `explore` lens, in this order: the nodes rendered in full that are none of the others, such as examples, APIs and diagrams; then its rules, qualities and guidance; then its terms; then its sections; then its diagnostics, and a section that holds only diagnostics; each group in the order the tree writes it</must>
-<then>a language page reads as its prose, its rules, the words they use, the concerns below it and, last, the errors it reports, and `explore` keeps the tree's order</then>
+<must>render a node's children, outside the `explore` lens, in this order: its terms; then its rules, qualities and guidance; then the nodes rendered in full that are none of the others, such as examples, APIs and diagrams; then its sections; then its diagnostics, and a section that holds only diagnostics; each group in the order the tree writes it</must>
+<then>a language page reads as its prose, the words it defines, the rules that use them, its contract, the concerns below it and, last, the errors it reports, as the intent, specification and contract [layers](#language.specifications.layers.layer) do, and `explore` keeps the tree's order</then>
 </rule>
 
 <rule id="intent_first" targets="tools.docs.rendering" by="system.docs_generator">
-<must>render a node's goals and its other intent-layer children, outside the `explore` lens, right after its lead prose and before the groups of [the content order](#tools.docs.rendering.content_order), each as a block labelled with its kind, such as "Goal", holding its text and its measure</must>
+<must>render a node's goals and its other intent-layer children, outside the `explore` lens, right after its lead prose and before the groups of [the content order](#tools.docs.rendering.content_order), each as a block marked with its kind's icon, holding its text and its measure</must>
 <then>an area reads from its goals down to its rules and then its contract, and a goal never reads as another child page</then>
 </rule>
 

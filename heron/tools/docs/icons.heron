@@ -56,6 +56,7 @@ icons: section {
     }
 
     kinds_as_icons: rule(tools.docs.icons.icon_mark, by = system.docs_generator) {
+      where {{ the lens's `kinds` is `ICON`, as it is unless set }}
       must {{ name a node's kind, on the pages of every lens written in HTML, only by its icon before its name, in titles, headings, list entries, cards, search results, lists of what names a node and the outline, the icon labelled with the kind's name for assistive technology and as a tooltip, and never in words beside the name }}
       then {{ a reader tells a goal from a rule by its mark, and no page spells out "section" or "rule" beside a name }}
     }
