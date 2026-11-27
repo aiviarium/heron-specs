@@ -2,21 +2,17 @@
 protocol: section {
   | heron speaks one protocol to the [JS host](#language.interop.host.js_host) and to every
   | [extension process](#language.schemas.extensions.extension_process): a
-  | [Sparrow RPC](https://github.com/aiviarium/sparrow) session on Sparrow's pipe binding,
-  | over the process's standard input and output. Each side publishes one facet and calls the
-  | other's, so foreign code calls back into Heron on the same session. The messages are
-  | declared once, in Heron, and [included below](#language.interop.protocol.messages) as
-  | they stand; both sides' bindings and both facets are generated from them. The facets are
-  | the apis [extension](#language.interop.protocol.messages.extension) and
-  | [host](#language.interop.protocol.messages.host), each op one of the facet's methods, and
-  | each other type is a facet type reached by the `params` or result of one of them.
+  | [Sparrow RPC](https://github.com/aiviarium/sparrow) session over the process's standard
+  | input and output, on which foreign code calls back into Heron too. Its messages are
+  | declared once and [included below](#language.interop.protocol.messages); both sides'
+  | bindings and both facets, the apis [extension](#language.interop.protocol.messages.extension)
+  | and [host](#language.interop.protocol.messages.host), are generated from them.
 
   sparrow_session: term(aliases = ["extension session"]) {{
     The protocol: a Sparrow session on the pipe binding, its `Hello` from the
-    [extension process](#language.schemas.extensions.extension_process), which publishes
-    the facet `heron.extension` beside it, and its `Welcome` from heron, which publishes
-    the facet `heron.host`. Calls, streams, cancellation, progress, time limits and
-    errors are Sparrow's own messages.
+    [extension process](#language.schemas.extensions.extension_process) with the facet
+    `heron.extension`, its `Welcome` from heron with `heron.host`. Calls, streams,
+    cancellation, progress, time limits and errors are Sparrow's own messages.
   }}
 
   framing: section {
