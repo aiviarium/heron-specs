@@ -28,7 +28,8 @@ came from. A segment is exact where characters map one to one.
 </term>
 
 <term id="prose_lint_provider">
-An [extension point](#language.interop.declaring.extension_point) that takes [regions](#language.markup.prose_view.prose_region) and returns findings and fixes against
+A linter built into `heron`, such as Vale or the spec-aware lints, that takes
+[regions](#language.markup.prose_view.prose_region) and returns findings and fixes against
 their text, which the core maps back onto the source.
 </term>
 

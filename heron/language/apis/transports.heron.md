@@ -2,8 +2,7 @@
 
 A transport carries an api's ops over a protocol. It's declared with the
 `transport` kind of `std/apis` in a package, beside the annotations that bind ops to it, and
-implemented by code the run registers: built into `heron`, or a TS package through a
-binding of [Interop](#language.interop), so a new protocol never needs a new build of `heron`.
+implemented by code built into `heron`, which the run registers.
 The annotation is the binding: an op is carried by the transport of the package
 whose annotation stands on it or on its api.
 
@@ -17,14 +16,14 @@ whose annotation stands on it or on its api.
 
 <term id="transport_kind">
 A protocol that carries ops, declared as `carrier: transport` in a package and
-implemented through the `Transport` interface of `std/apis`: `send(op, request)` sends one
+implemented in `heron` through the `Transport` interface of `std/apis`: `send(op, request)` sends one
 request of an op and returns its response.
 </term>
 
 <term id="transport_binding">
 An annotation on an op or its api, from a package that declares a transport, that sends
-the op's calls through that transport, as `@inventory.in_memory` sends
-`shelf.find` through `inventory.memory`.
+the op's calls through that transport, as `@wire.carried` on `shelf.find` sends
+its calls through `wire.carrier`.
 </term>
 
 <rule id="binding_by_package" refs="system.interpreter">
@@ -59,6 +58,6 @@ the op's calls through that transport, as `@inventory.in_memory` sends
 <must>fail the call with "op ‹op› is carried by transport ‹transport›, but nothing implements it"</must>
 </rule>
 
-<rule id="std_transports" refs="system.extension_host">
+<rule id="std_transports" refs="system.interpreter">
 <must>implement transports for `std/http`, `std/proto`, `std/jsonrpc` and `std/ws` in `heron`, so the standard protocols work without a third-party package</must>
 </rule>

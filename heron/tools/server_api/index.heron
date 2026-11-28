@@ -1,7 +1,6 @@
 // The server's API: `spec_server`, its types and its errors. An
 // implementation generates its handlers and its client from this folder,
 // and every client, the frontend among them, reads the same description.
-// Extensions add their ops by entering `spec_server` from their own files.
 import = ["std/types@1", "std/http@1", "std/ws@1"]
 
 include = ["./types.heron", "./errors.heron"]
@@ -13,7 +12,7 @@ include = ["./types.heron", "./errors.heron"]
 @display("Heron server API")
 @http(base_path = "/api/v1")
 spec_server: api {
-  | Every op of the server, beside the ops the mounted extensions add.
+  | Every op of the server.
 
   @http<post>("/preview")
   @throws(not_in_workspace)

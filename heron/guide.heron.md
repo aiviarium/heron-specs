@@ -12,7 +12,7 @@ is a folder again.
 | Folder       | Holds                                                                                      |
 | ------------ | ------------------------------------------------------------------------------------------ |
 | the top      | The vision and the package's goals, its actors and its parts, in `index.heron`, `actors.heron` and `system.heron` |
-| `language/`  | The core format, the grammar, [schemas](#language.schemas.kinds.schema), markup, data, APIs, specifications, scripting, interop and the standard packages |
+| `language/`  | The core format, the grammar, [schemas](#language.schemas.kinds.schema), markup, data, APIs, specifications, scripting and the standard packages |
 | `cli/`       | One command reference per subcommand of the `heron` command                                |
 | `tools/`     | What the language server, prose linting, the docs, the server and the frontend do          |
 | `learn/`     | The pages for people who use Heron: getting started, the how-tos and the concepts           |

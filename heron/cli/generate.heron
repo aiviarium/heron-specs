@@ -1,18 +1,17 @@
 generate: command("heron generate", cli.generate.block_only_for_all) {
   usage = ["heron generate [--entry file] [targets…]", "heron generate [--entry file] --pack id [agents]"]
 
-  | Checks the tree, loads what its extensions implement, and runs the adapters of the
-  | generation targets asked for, or of every registered target that isn't run on request
-  | alone for none, writing their
-  | files under the working folder and printing `wrote ‹path›` for each file it changed.
-  | Run with no targets, it also writes its section of the managed ignore block in the
-  | working folder's `.gitignore`: `/.heron/` and every file an adapter marks as a build
-  | output. Options come before the targets.
+  | Checks the tree and runs the adapters of the generation targets asked for, or of every
+  | registered target that isn't run on request alone for none, writing their files under
+  | the working folder and printing `wrote ‹path›` for each file it changed. Run with no
+  | targets, it also writes its section of the managed ignore block in the working folder's
+  | `.gitignore`: `/.heron/` and every file an adapter marks as a build output. Options
+  | come before the targets.
 
   targets: argument("targets", cli.generate.unknown_target, type = String, optional = true, variadic = true) {
     | The targets to run. The built-in ones:
     |
-    | - `ts` writes `.heron/types.ts` and `.heron/bindings.ts`, the TS types and `bind` of the tree's declarations.
+    | - `ts` writes `.heron/types.ts`, the TS types of the tree's declarations.
     | - `docs` writes the documentation site, under `.heron/docs/`, with the [agent export](#tools.docs.agents.agent_export) in it.
     | - `agents` writes the [agent export](#tools.docs.agents.agent_export), the tree as Markdown files for agents, under `.heron/agents/`.
     |
@@ -22,8 +21,6 @@ generate: command("heron generate", cli.generate.block_only_for_all) {
     | - `proto` writes the [`.proto` files](#tools.proto) of the tree's gRPC services, under `.heron/proto/`.
     | - `openrpc` writes an [OpenRPC](#tools.openrpc) document of each api with JSON-RPC methods, under `.heron/openrpc/`.
     | - `sparrow` writes each [Sparrow facet](#tools.sparrow) of the tree as canonical CBOR with a JSON rendering, and all of them as one Sparrow `schema` document, under `.heron/sparrow/`.
-    |
-    | An extension's generators add their targets the same way.
   }
 
   entry: option("--entry", type = String, default = ".") {
@@ -40,14 +37,14 @@ generate: command("heron generate", cli.generate.block_only_for_all) {
   | Exits 0 when: every target ran; unchanged files aren't rewritten.
   @exit(1)
   exit_1: error("heron generate exit 1") {
-    title = "the tree doesn't check, an extension couldn't load, a target has no adapter, or an adapter failed or returned a path outside the working folder"
+    title = "the tree doesn't check, a target has no adapter, or an adapter failed or returned a path outside the working folder"
   }
   @exit(2)
   exit_2: error("heron generate exit 2") {
     title = "an unknown option, an entry point whose path can't be resolved, or `--pack` with a target other than `agents`"
   }
 
-  example {{ `heron generate --entry example ts` writes the TS types of the inventory sample, which its TS code imports, as CI runs it. }}
+  example {{ `heron generate ts` writes the TS types of the tree's types and enums, for TS code to import. }}
 
   unknown_target: rule(system.generator) {
     when {{ a target has no adapter }}

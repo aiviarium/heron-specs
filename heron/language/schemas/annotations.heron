@@ -27,11 +27,6 @@ annotations: section {
     should {{ report annotation repeated at the second }}
   }
 
-  extern: rule(system.extension_host) {
-    must {{ bind a declaration annotated `@extern(e)` to the [extension](#language.schemas.extensions.extension_process) `e`, which implements it }}
-    example {{ `@extern(compliance) redact(text: String): func(String)` }}
-  }
-
   errors: section {
     @severity(warning)
     annotation_misplaced: error("annotation-placement") {

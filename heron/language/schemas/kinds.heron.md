@@ -4,9 +4,7 @@ A [schema](#language.schemas.kinds.schema) says which kinds, categories, flags,
 annotations and embedded languages a package adds, and where each is valid. [Schemas](#language.schemas.kinds.schema) are
 [Heron files](#language.core_format.files.heron_file) that import `std/schema`, so the
 format describes its own packages, and they're how the system is extended: everything a
-package adds is declared in one, and what needs code is implemented by an
-[extension](#language.schemas.extensions.extension_process), so nothing needs a new
-build of the `heron` binary.
+package adds is declared in one, so nothing needs a new build of the `heron` binary.
 
 | Kind         | Declares                                                       | Example                                               |
 | ------------ | -------------------------------------------------------------- | ----------------------------------------------------- |
@@ -17,10 +15,6 @@ build of the `heron` binary.
 | `flag`       | A flag and the kinds it attaches to                            | `slow: flag(on = [case])`                             |
 | `annotation` | An annotation, its parameters and what it attaches to          | `status(code: Int): annotation(on = [types.variant])` |
 | `language`   | An embedded language and the grammar to inject                 | `sh: language(grammar = "source.shell")`              |
-| `extension`  | An external program that implements `@extern(…)` declarations  | `compliance: extension(command = […])`                |
-| `lint`       | A check over the tree that `heron lint` runs                   | `no_plain_secrets: lint`                              |
-| `resource`   | A resource whose instances a driver provides                   | `vault: resource(Secrets)`                            |
-| `generator`  | A generation adapter for a target of `heron generate`          | `ts: generator(target = "ts")`                        |
 
 <term id="schema">
 A [Heron file](#language.core_format.files.heron_file) that imports `std/schema` and

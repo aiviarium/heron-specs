@@ -67,7 +67,7 @@ imports: section {
     }
 
     lock_pins: rule(system.interpreter) {
-      must {{ write `heron.lock` with the exact version and checksum of every package and extension `heron run setup` installs }}
+      must {{ write `heron.lock` with the exact version and checksum of every package `heron run setup` installs }}
     }
 
     branch_pins: rule(system.interpreter) {

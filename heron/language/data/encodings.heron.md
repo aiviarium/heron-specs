@@ -1,10 +1,8 @@
 # Encodings {#encodings}
 
-A value has one model and several encodings. JSON is what `std/json` reads and writes
-and what the extension protocol's debugging wire carries; CBOR is the protocol's default
-wire, where every Heron type keeps its identity under a tag. Further wire formats are
-packages of their own, whose annotations add what the format needs without changing
-the types.
+A value has one model and several encodings. JSON is what `std/json` reads and writes.
+Further wire formats are packages of their own, whose annotations add what the format
+needs without changing the types.
 
 | Package     | Annotations and rules                                                                                     |
 | ----------- | --------------------------------------------------------------------------------------------------------- |
@@ -41,28 +39,6 @@ back as the type.
 
 <rule id="json_annotations" refs="system.interpreter">
 <must>apply the rest of `std/json`'s annotations when a value is written or read: a union's discriminator field, and 64-bit integers as strings</must>
-</rule>
-</section>
-
-<section id="cbor">
-On the extension protocol's wire a value travels in Sparrow's schema-driven CBOR: a
-value of `Any` as the [Value](#language.interop.data_mapping.value_union) union, whose
-variant says its type, so Sparrow's two tags, 1 and 37 (core 3.5), are the only ones on the wire.
-
-| Heron value       | `Value` variant                                     |
-| ----------------- | --------------------------------------------------- |
-| `Timestamp`       | `time`, an RFC 3339 string with nanoseconds          |
-| `Int` beyond 64 bits | `bigint`, decimal text; `uint` above 64-bit signed |
-| `Decimal`, `Money`'s amount | `decimal`, its text with the exponent kept |
-| `Set(T)`          | `set`, a list                                       |
-| a union's variant | `variant`, `[name, value]`                          |
-| `Duration`        | `duration`, whole milliseconds                      |
-| `Prose`           | `prose`, an mdast root                              |
-| `Ref(K)`          | `ref`, a [node path](#language.core_format.naming.node_path) as a string     |
-
-<rule id="cbor_tags" refs="system.extension_host">
-<must>write each value as the variant the [table](#heron.language.markup.components.table) gives it, require that variant when reading one back as its type, and write integers in their shortest form and a map's entries in the order of their keys</must>
-<then>a value crosses the wire with its type, and a Duration loses whatever is below a millisecond</then>
 </rule>
 </section>
 

@@ -4,7 +4,7 @@ The generator is a set of parts a package can restyle, replace or add to, config
 once per tree by `std/docs`.
 
 <term id="docs_block">
-A tree's `docs { … }` block from `std/docs`: its [theme package](#tools.docs.extending.theme_package), its renderer modules, its
+A tree's `docs { … }` block from `std/docs`: its [theme package](#tools.docs.extending.theme_package), its
 `depth`, the `lenses` its site builds, a `layout` per group of sections and its `slot`
 nodes.
 </term>
@@ -48,7 +48,6 @@ docs {
     sections = [store_api]
   }
 
-  renderers = [js("./docs/renderers.ts")]
   lenses = [user, developer, explore]
 }
 ```

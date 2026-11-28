@@ -114,7 +114,7 @@ jsonrpc: section {
   wire: section {
     framed_messages: rule {
       must {{ frame an api's messages by its `@jsonrpc(framing)`, `http` where it sets none, and encode them as its `encoding` says: JSON, or, for `cbor`, CBOR maps without the `jsonrpc` member }}
-      then {{ the extension protocol is this binding, `length_prefixed` and `cbor` }}
+      then {{ the language server's api is this binding, `content_length` and JSON }}
     }
   }
 

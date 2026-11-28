@@ -2,7 +2,7 @@
 editor_screen: screen(route = "/") {
   | The editor `heron serve` opens on: the source, the problems in it, and beside it what
   | the docs make of it and what running it produced. [The code editor](#tools.frontend.editor) gives its behaviour,
-  | and [the shell](#tools.frontend.shell) the slots extensions fill.
+  | and [the shell](#tools.frontend.shell) the slots its parts fill.
 
   title_bar: region(tools.frontend.screens.editor_screen.title_bar.tabs_follow_files) {
     | The workspace's name, the open files as tabs with an unsaved mark and a close

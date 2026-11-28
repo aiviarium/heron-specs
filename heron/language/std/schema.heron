@@ -16,7 +16,6 @@ schema: part {
   | | `<overload>`                                                  | [Overloads](#language.schemas.overloads)                                                                                   |
   | | `Ref`                                                         | [Refs](#language.schemas.kinds.refs)                                                                                       |
   | | `language`, `Env`, `@insert`, `Insert`, `<raw>`, `@highlight` | [Highlighting](#language.schemas.highlighting), [quoting](#language.scripting.processes_and_files.quoting)                 |
-  | | `extension`, `@extern`, `resource`, `generator`, `lint`       | [Extensions](#language.schemas.extensions)                                                                                 |
   | | `Verbatim`                                                    | [a component's `exports`](#language.specifications.delivery.component_kind)                                                   |
 
   language_env: rule(system.interpreter) {

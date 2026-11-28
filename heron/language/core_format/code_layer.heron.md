@@ -1,9 +1,8 @@
 # Code {#code_layer}
 
 Code runs only inside `do { … }`, and nothing outside `do` ever runs. The surface is
-deliberately small: code decides, combines and calls. Real work runs in the language a
-system is built in, through foreign functions; the [Scripting](#language.scripting) and
-[Interop](#language.interop) sections cover both.
+deliberately small: code decides, combines and calls. Real work runs in the programs
+`std/process` launches; the [Scripting](#language.scripting) section covers both.
 
 <rule id="nothing_runs_outside_do" refs="system.interpreter">
 <mustNot>run anything outside a `do` block, except the calls in a body that yield its members at check time</mustNot>

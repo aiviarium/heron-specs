@@ -3,10 +3,9 @@ run: command("heron run", cli.run.every_run_recorded, cli.run.failure_stops, cli
 
   | Runs a task of the tree by its path, with its parameters as options. It checks the tree,
   | finds the task, reads its parameters, orders what it `@needs`, asks before a task marked
-  | `<confirm>`, loads the tree's extensions, runs each task in order with the real
-  | capabilities, and writes a `run` record. Its options are read by hand, not as
-  | the other commands' are: they take two dashes, come before the task, and everything after the
-  | task is the task's parameters.
+  | `<confirm>`, runs each task in order with the real capabilities, and writes a `run`
+  | record. Its options are read by hand, not as the other commands' are: they take two
+  | dashes, come before the task, and everything after the task is the task's parameters.
 
   task: argument("task", type = String) {
     | The task's path from the tree's root, such as `seed_local` or `db.migrate`. A path
@@ -44,7 +43,7 @@ run: command("heron run", cli.run.every_run_recorded, cli.run.failure_stops, cli
   | Exits 0 when: the task and everything it needs succeeded.
   @exit(1)
   exit_1: error("heron run exit 1") {
-    title = "the tree doesn't check, a task failed, a confirmation was declined, or an extension couldn't load"
+    title = "the tree doesn't check, a task failed, or a confirmation was declined"
   }
   @exit(2)
   exit_2: error("heron run exit 2") {
@@ -78,7 +77,7 @@ run: command("heron run", cli.run.every_run_recorded, cli.run.failure_stops, cli
   }
 
   every_run_recorded: rule(system.command_line) {
-    must {{ write a `run` record for every run that started its first task, succeeded or not, with its task, entry, arguments, the tasks it ran with their roles, its steps, processes, logs, calls and resources, and its result or error and exit status }}
+    must {{ write a `run` record for every run that started its first task, succeeded or not, with its task, entry, arguments, the tasks it ran with their roles, its steps, processes, logs and calls, and its result or error and exit status }}
   }
 
 }

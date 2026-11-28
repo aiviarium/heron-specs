@@ -1,10 +1,8 @@
 # Shell {#shell}
 
-The app shell's [extension points](#language.interop.declaring.extension_point): the slots extensions hang their views on, and
-the commands of the palette. Built-in parts register through the same calls an
-extension's frontend package uses, so the shell never knows which extensions exist: a test
-dashboard or a prompt workbench is a panel, and test and prompt results are gutter
-providers.
+The app shell's slots, which the editor's parts hang their views on, and the commands of
+the palette. Every part registers through the same calls, so the shell never knows which
+parts exist: the problems view is a panel, and run results are a gutter provider.
 
 | Slot              | Registered with          | Shows                                                          |
 | ----------------- | ------------------------ | -------------------------------------------------------------- |

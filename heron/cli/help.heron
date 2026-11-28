@@ -3,7 +3,7 @@ help: command("heron help", cli.help.prints_usage) {
 
   | Lists the registered commands, or shows one command's usage line and summary. It isn't
   | a registered command: the [command line](#system.command_line) answers it before looking a
-  | command up, so it lists whatever commands the installed parts and extensions registered.
+  | command up, so it lists whatever commands the installed parts registered.
   |
   | Each command's own `-h` prints its options in the standard flag listing and exits
   | with status 2; `heron run`, which reads its options by hand, treats `-h` as an unknown

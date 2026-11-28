@@ -8,15 +8,8 @@ funcs_and_templates: section {
     A logical function, the prelude's `func`, with the same signature shape as an op:
     parameters for its inputs and its [result type](#language.apis.responses.result_type)
     as the first argument, `func(Order)`. One expression is written with `=`; one that
-    needs steps takes a `do` body, where `return` gives the result. It can also be bound to
-    a [foreign func](#language.interop.declaring.foreign_func) with `= module.export`, or
-    declared with no body for `heron` itself or an extension to implement by its path.
-  }}
-
-  pure_func: term(aliases = ["pure func"]) {{
-    A func marked `<pure>`, as `shout(text: String): func<pure>(String)`: one whose result
-    depends on its arguments alone, so it may run while the tree is evaluated and its
-    results can be kept.
+    needs steps takes a `do` body, where `return` gives the result. It can also be
+    declared with no body for `heron` itself to implement by its path.
   }}
 
   macro_kind: term {{
@@ -42,36 +35,20 @@ funcs_and_templates: section {
 
     bodiless_registered: rule(system.interpreter) {
       where {{ a func has no body and no value }}
-      must {{ call what `heron` itself or an extension registered under its path in the declaring package, such as `process.run` or `repo.ensure_toolchain` }}
+      must {{ call what `heron` itself registered under its path in the declaring package, such as `process.run` or `repo.ensure_toolchain` }}
     }
 
     values_once: rule(system.interpreter) {
       must {{ evaluate a node's value the first time code reads it, and keep it for the rest of the run }}
     }
 
-    pure_only_while_evaluating: rule(system.interpreter) {
-      if {{ a [foreign func](#language.interop.declaring.foreign_func) that isn't `<pure>` is called during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
-      must {{ fail with isn't pure }}
+    no_effects_while_evaluating: rule(system.interpreter) {
+      mustNot {{ start a process, write a file or make a temporary one during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
       then {{ a value of the tree never depends on a side effect }}
     }
 
-    pure_cache: rule(system.interpreter) {
-      must {{ keep each result of a pure [foreign func](#language.interop.declaring.foreign_func) for the run, by a hash of its path and its arguments as plain data, and answer a call with equal arguments from it without calling the foreign code }}
-      then {{ a value read twice, or by two nodes, costs one call }}
-    }
-
-    pure_cache_misses: rule(system.interpreter) {
-      mustNot {{ keep the outcome of a call that threw or failed, or of one that took a trailing block }}
-      then {{ the next call with those arguments calls the foreign code again }}
-    }
-
-    no_effects_while_evaluating: rule(system.interpreter) {
-      mustNot {{ start a process, write a file or make a temporary one during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
-      then {{ a value that `run(…)` or `write(…)` would compute fails as a [foreign func](#language.interop.declaring.foreign_func) that isn't pure does }}
-    }
-
-    func_macro_foreign: rule(actors.author) {
-      should {{ use a func for a value, a macro for repeated source, and a [foreign func](#language.interop.declaring.foreign_func) for anything that needs a real language }}
+    func_macro_process: rule(actors.author) {
+      should {{ use a func for a value, a macro for repeated source, and a program that [`std/process`](#language.scripting.processes_and_files) runs for anything that needs a real language }}
     }
   }
 
@@ -91,7 +68,7 @@ funcs_and_templates: section {
     }
 
     expansion_is_evaluation: rule(system.interpreter) {
-      must {{ expand a macro as [evaluation](#language.scripting.funcs_and_templates.evaluation), so only pure [foreign funcs](#language.interop.declaring.foreign_func) run in it }}
+      must {{ expand a macro as [evaluation](#language.scripting.funcs_and_templates.evaluation), so it starts no process and writes no file }}
     }
 
     macro_expansion: rule(system.checker) {
@@ -107,13 +84,6 @@ funcs_and_templates: section {
   }
 
   errors: section {
-    @display("Isn't pure")
-    not_pure: error("fault") {
-      title = "{path} is a foreign func that isn't <pure>, so it can't run while the tree is evaluated"
-      path: field(String)
-      | Reported as [language.scripting.funcs_and_templates.funcs.pure_only_while_evaluating] says.
-    }
-
     @display("Emit outside a macro")
     emit_outside: error("fault") {
       title = "emit(…) adds source only inside a macro"

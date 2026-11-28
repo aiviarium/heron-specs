@@ -1,9 +1,9 @@
 lint: command("heron lint", cli.lint.any_finding_fails) {
   usage = ["heron lint [--json] [--fix] [entry points…]"]
 
-  | Checks each [entry point](#language.core_format.files.entry_point), loads what its extensions implement, and runs every
-  | registered lint and [prose lint provider](#language.markup.prose_view.prose_lint_provider) over it: the core lints, those packages and
-  | extensions add, and the prose providers, such as Vale. It prints the check's
+  | Checks each [entry point](#language.core_format.files.entry_point) and runs every
+  | registered lint and [prose lint provider](#language.markup.prose_view.prose_lint_provider) over it: the core lints and the prose
+  | providers, such as Vale and the spec-aware lints of `std/lint`. It prints the check's
   | diagnostics and the findings together, sorted, as `heron check` prints them.
   | Options come before the [entry points](#language.core_format.files.entry_point).
 

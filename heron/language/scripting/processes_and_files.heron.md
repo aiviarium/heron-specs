@@ -104,7 +104,7 @@ says how a value is made safe there.
 </section>
 
 <rule id="short_code" refs="actors.author">
-<should>keep a block to calls, with parsing, data processing and real control flow in a [foreign func](#language.interop.declaring.foreign_func), long pipelines in a script that `run` calls, and system behaviour in an op</should>
+<should>keep a block to calls, with parsing, data processing, real control flow and long pipelines in a program or script that `run` calls, and system behaviour in an op</should>
 </rule>
 
 <example id="scripting_processes" @display="Seeding and exporting">

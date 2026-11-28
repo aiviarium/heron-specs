@@ -1,14 +1,13 @@
 # Server {#server}
 
 What `heron serve` serves on one address: the frontend, the spec browser, the editor's
-language server socket and the API, with the ops extensions declare mounted beside the
-base ones.
+language server socket and the API.
 
 ## Serving {#serving}
 
 | Path              | Serves                                                                   |
 | ----------------- | ------------------------------------------------------------------------ |
-| `/api/v1/…`       | [the server API](#tools.server_api.spec_server) and every mounted extension's ops |
+| `/api/v1/…`       | [the server API](#tools.server_api.spec_server)                         |
 | `/api/v1/lsp`     | the language server, over a websocket                                    |
 | `/docs/…`         | the spec browser: the docs site of the tree, rendered live               |
 | `/docs/_assets/…` | the docs' stylesheet and script, which style a preview in any client     |
@@ -17,8 +16,7 @@ base ones.
 
 The API is JSON over HTTP: each request and response body is one JSON object, a stream is
 server-sent events with one JSON object per `data:` line, and the language server speaks
-JSON-RPC over the websocket. CBOR is the [extension protocol](#language.interop.protocol)'s
-alone; no op of the server reads or writes it.
+JSON-RPC over the websocket; no op of the server reads or writes CBOR.
 
 <rule id="address" refs="system.server">
 <must>listen on `--addr`, `127.0.0.1:7340` unless given, where port 0 picks a free one, serve the tree of the [entry point](#language.core_format.files.entry_point) given as the argument, a file or a folder with an index.heron (`.` unless given), and print the address as `http://<addr>/`</must>
@@ -96,22 +94,6 @@ alone; no op of the server reads or writes it.
 <mustNot>share a session's documents between two sockets</mustNot>
 </rule>
 
-## Extension point {#extension_point}
-
-Server routes are an [extension point](#language.interop.declaring.extension_point): an extension declares its ops on `spec_server` in its
-own [Heron files](#language.core_format.files.heron_file), their routes and client are generated from them, and the
-extension [mounts](#language.core_format.mounts.mount) them. The shell itself doesn't change.
-
-<rule id="mount_routes" refs="system.server">
-<when>a tree [mounts](#language.core_format.mounts.mount) an extension with its generated routes and result providers</when>
-<must>serve its routes beside the base API's, and add its providers' results to `results`</must>
-</rule>
-
-<rule id="route_clash" refs="system.server">
-<if>two extensions, or an extension and the base API, [mount](#language.core_format.mounts.mount) one method and path</if>
-<must>fail the [mount](#language.core_format.mounts.mount) with `server: ‹name› mounts ‹pattern›, which is already mounted`</must>
-</rule>
-
 ## Ops {#ops}
 
 What the ops of [the server API](#tools.server_api.spec_server) do beyond what their pages say.
@@ -187,14 +169,14 @@ What the ops of [the server API](#tools.server_api.spec_server) do beyond what t
 </rule>
 
 <rule id="run_results" refs="system.server">
-<must>answer `results` with each task's last run under the path, from the run records, and every mounted provider's results</must>
+<must>answer `results` with each task's last run under the path, from the run records</must>
 </rule>
 
 ## API {#api}
 
 The server's API is a spec like any other: [`spec_server`](#tools.server_api.spec_server), with its types and its
 errors beside it, in a folder that checks on its own. The server's handlers and every client
-are generated from it; an extension adds its ops by entering `spec_server` from its own files.
+are generated from it.
 
 <rule id="api_only" refs="system.frontend">
 <must>send every request the frontend makes to the server through the client generated from `spec_server`, the language server's socket included, with no request to a path the API doesn't declare</must>

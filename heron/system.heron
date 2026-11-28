@@ -47,11 +47,6 @@ system: section {
     file is stale.
   }}
 
-  extension_host: part {{
-    Starts the extensions a tree declares, speaks the extension protocol with them and lets
-    what they implement take part in checking, linting, running and generating.
-  }}
-
   language_server: part {{
     Answers an editor over the Language Server Protocol from the checked tree: diagnostics,
     completion, hover, navigation, renames, formatting and fixes.
@@ -68,12 +63,12 @@ system: section {
   }}
 
   server: part {{
-    Serves a workspace over HTTP: the base API, the routes extensions add, the spec browser
+    Serves a workspace over HTTP: the API, the spec browser
     and the language server's socket.
   }}
 
   editor: part {{
     The browser editor and its app shell: files, live preview, diagnostics in place and the
-    panels and commands later parts hang on it.
+    panels and commands its parts hang on it.
   }}
 }
