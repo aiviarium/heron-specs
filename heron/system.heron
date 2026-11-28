@@ -63,8 +63,8 @@ system: section {
   }}
 
   server: part {{
-    Serves a workspace over HTTP: the spec browser, the same tree as Markdown files for agents,
-    and the API's preview.
+    Serves a workspace over HTTP: the spec browser and the same tree as Markdown files for
+    agents.
   }}
 
   @display("VS Code extension")

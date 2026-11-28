@@ -1,7 +1,7 @@
 # Server {#server}
 
 What `heron serve` serves on one address: the spec browser, the [agent export](#tools.docs.agents.agent_export) and the API,
-whose `preview` renders a node of the tree as its docs page shows it.
+whose one op returns that export as JSON.
 
 ## Serving {#serving}
 
@@ -9,7 +9,7 @@ whose `preview` renders a node of the tree as its docs page shows it.
 | ----------------- | ------------------------------------------------------------------------ |
 | `/api/v1/…`       | [the server API](#tools.server_api.spec_server)                         |
 | `/docs/…`         | the spec browser: the docs site of the tree, rendered live               |
-| `/docs/_assets/…` | the docs' stylesheet and script, which style a preview in any client     |
+| `/docs/_assets/…` | the docs' stylesheet and script                                          |
 | `/agents/…`       | the [agent export](#tools.docs.agents.agent_export) of the tree, rendered live                  |
 | `/`               | a redirect to `/docs/`                                                   |
 
@@ -74,29 +74,11 @@ server reads or writes CBOR.
 
 ## Ops {#ops}
 
-What the ops of [the server API](#tools.server_api.spec_server) do beyond what their pages say.
-
-<rule id="path_in_workspace" refs="system.server">
-<must>take every file path as relative to the workspace's folder, with slashes, and refuse a path that is absolute or leaves it with not in workspace</must>
-</rule>
-
-<rule id="preview_position" refs="system.server">
-<must>read a `preview`'s cursor from its `position`, a 0-based line and a 0-based character offset in UTF-16 code units as the language server protocol counts, and from its `offset`, a 0-based offset in bytes of the UTF-8 text, only when it has no position</must>
-</rule>
-
-<rule id="preview_styling" refs="system.server">
-<must>render a `preview`'s HTML with the markup of the docs' pages, styled by the docs' stylesheet, which the server serves at `/docs/_assets/docs.css`</must>
-<then>any client styles a preview by loading that stylesheet beside it</then>
-</rule>
+What the server does for the op of [the server API](#tools.server_api.spec_server) beyond what its page says.
 
 <rule id="client_state" refs="system.server">
 <mustNot>keep a client's settings or state, such as its open files, its layout or its theme</mustNot>
 <instead>leave them to the client, which keeps them where it runs, because one server serves every client of the workspace and each person's state belongs to them and their device</instead>
-</rule>
-
-<rule id="unsaved_texts" refs="system.server">
-<must>check a `preview` with the request's unsaved texts as overlays, through the workspace's one check session</must>
-<then>a client previews its unsaved state, and unchanged files and nodes are served from the memo</then>
 </rule>
 
 <rule id="agent_export_op" refs="system.server">

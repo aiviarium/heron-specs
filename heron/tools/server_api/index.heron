@@ -5,20 +5,13 @@ import = ["std/types@1", "std/http@1"]
 
 include = ["./types.heron", "./errors.heron"]
 
-| The API `heron serve` publishes beside the spec browser: JSON over HTTP. Every client uses it
-| the same way, through this description.
+| The API `heron serve` publishes beside the spec browser: one op, JSON over HTTP, that returns
+| the tree's [agent export](#tools.docs.agents.agent_export).
 
 @display("Heron server API")
 @http(base_path = "/api/v1")
 spec_server: api {
-  | Every op of the server.
-
-  @http<post>("/preview")
-  @throws(not_in_workspace)
-  preview(@body request: PreviewRequest): op(Preview, tools.server.ops.unsaved_texts, tools.server.ops.preview_position, tools.server.ops.preview_styling) {
-    | The node at a position of a file rendered as the docs render it, with the files being
-    | edited as typed.
-  }
+  | The server's one op.
 
   @http<get>("/agents")
   @throws(no_such_file)

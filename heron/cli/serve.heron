@@ -1,7 +1,7 @@
 serve: command("heron serve", cli.serve.serves_workspace) {
   usage = ["heron serve [--addr host:port] [entry point]"]
 
-  | Serves the spec browser of one tree, rendered live, and the API's preview, and prints the URL
+  | Serves the spec browser of one tree, rendered live, and its [agent export](#tools.docs.agents.agent_export), and prints the URL
   | it listens on, as `http://127.0.0.1:7340/`, on standard output. What it serves is [the server](#system.server). It runs until it's stopped.
 
   entry: argument("entry point", type = String, optional = true) {

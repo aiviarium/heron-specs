@@ -1,13 +1,5 @@
-// The errors the server's ops answer: each with its HTTP status, the
+// The errors the server's API answers: each with its HTTP status, the
 // message its body carries as `error` and its id as `code`.
-
-@status(400)
-not_in_workspace: error("server.NOT_IN_WORKSPACE") {
-  title = "{path} is not a path in the workspace"
-  path: field(String)
-  | A path that is absolute or leaves the workspace's folder.
-  | Reported as [tools.server.ops.path_in_workspace] says.
-}
 
 @status(404)
 no_such_file: error("server.NO_SUCH_FILE") {

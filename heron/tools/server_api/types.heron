@@ -1,37 +1,4 @@
-// The types the server's ops name, each one JSON object on the wire.
-
-/// What the preview renders: the files being edited, as typed, and where
-/// the cursor is, as a position or as an offset.
-PreviewRequest: type {
-  /// The file the cursor is in, relative to the workspace.
-  file: String
-  /// The cursor as the language server protocol counts: a 0-based line and
-  /// a 0-based character offset in UTF-16 code units. It wins over `offset`.
-  position?: Position
-  /// The cursor as a 0-based offset in bytes of the file's UTF-8 text.
-  offset?: Int
-  /// Unsaved text of open files, by path relative to the workspace.
-  overlays: Map(String, String)
-}
-
-/// A place in a text as the language server protocol counts it.
-Position: type {
-  /// 0-based.
-  line: Int
-  /// 0-based, in UTF-16 code units.
-  character: Int
-}
-
-/// The current node as the docs render it.
-Preview: type {
-  /// The node's path in the tree; empty for the file itself.
-  path: String
-  /// Its kind, which picks the renderer.
-  kind: String
-  html: String
-  /// The error that stopped the render, shown in place.
-  error?: String
-}
+// The types the server's op names, each one JSON object on the wire.
 
 /// A generated file as it would be written.
 GeneratedFile: type {
