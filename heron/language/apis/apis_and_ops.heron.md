@@ -31,7 +31,7 @@ its inputs and its first argument is its [result type](#language.apis.responses.
 </rule>
 
 <rule id="op_prose_value" refs="system.checker">
-<where>an op has only documentation</where>
+<while>an op has only documentation</while>
 <may>take it as a prose value</may>
 <example>`get_refund(@path id: String): op(Refund) =| Returns one refund.`</example>
 </rule>
@@ -46,7 +46,7 @@ its inputs and its first argument is its [result type](#language.apis.responses.
 </rule>
 
 <rule id="ops_as_methods" refs="system.generator">
-<where>an api has no [transport binding](#language.apis.transports.transport_binding)</where>
+<while>an api has no [transport binding](#language.apis.transports.transport_binding)</while>
 <must>generate it as an interface whose methods are its ops, with their parameters and [result types](#language.apis.responses.result_type)</must>
 </rule>
 

@@ -1,0 +1,49 @@
+release: command("heron release") {
+  | Computes and checks the versions of a project that [implements](#language.specifications.implementations) a spec, from the
+  | tree of its [entry point](#language.core_format.files.entry_point): its `implements`, its version and its `release`
+  | records. It takes one of two subcommands, and an [entry point](#language.core_format.files.entry_point) whose root
+  | implements no spec is a failure.
+
+  next(
+    /// The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
+    /// folder.
+    @option(value = "file")
+    entry: String = ".",
+    /// The label of the next version's build metadata, as `build`, `rc` or `beta`.
+    @option(value = "label")
+    tag?: String,
+  ): command("heron release next", language.specifications.implementations.versions.build_order) {
+    | Prints the project's next version on standard output: the version that follows its
+    | latest release of the spec version it implements, in its version scheme, or the first one
+    | of that spec version.
+
+    example {{ `heron release next --tag rc` prints `2.1.3+rc3` after the releases `2.1.3+build1` and `2.1.3+build2` }}
+  }
+
+  check(
+    /// The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
+    /// folder.
+    @option(value = "file")
+    entry: String = ".",
+    /// Also requires the git tag `v‹version›` of every release, in the repository of the
+    /// [entry point](#language.core_format.files.entry_point).
+    @option
+    git: Bool = false,
+  ): command("heron release check", language.specifications.implementations.versions.release_tags) {
+    | Reports the errors of the project's versions, its own and its releases', and with
+    | `--git` each release without its tag; with none, prints which spec the project
+    | implements, at which version, and its own version and scheme.
+
+    example {{ `heron release check` prints `app implements shop at 2.1.3, version 2.1.3+build2 (SM.Sm.Sp)` }}
+  }
+
+  | Exits 0 when: the version was printed, or the versions check.
+  @status(500)
+  exit_1: error("heron release exit 1") {
+    title = "the tree doesn't check, implements no spec, or a version or a release tag is wrong"
+  }
+  @status(400)
+  exit_2: error("heron release exit 2") {
+    title = "no subcommand or an unknown one, or an unknown option"
+  }
+}

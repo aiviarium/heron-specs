@@ -37,7 +37,7 @@ server reads or writes CBOR.
 </rule>
 
 <rule id="compressed_assets" refs="system.server">
-<where>a request for a file of `/docs/_assets/` accepts gzip</where>
+<while>a request for a file of `/docs/_assets/` accepts gzip</while>
 <must>answer it gzip-compressed, with `Content-Encoding: gzip` and `Vary: Accept-Encoding`</must>
 </rule>
 
@@ -77,7 +77,7 @@ server reads or writes CBOR.
 What the server does for the op of [the server API](#tools.server_api.spec_server) beyond what its page says.
 
 <rule id="client_state" refs="system.server">
-<mustNot>keep a client's settings or state, such as its open files, its layout or its theme</mustNot>
+<must_not>keep a client's settings or state, such as its open files, its layout or its theme</must_not>
 <instead>leave them to the client, which keeps them where it runs, because one server serves every client of the workspace and each person's state belongs to them and their device</instead>
 </rule>
 

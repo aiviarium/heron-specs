@@ -14,7 +14,7 @@ user: lens {
   title = "User"
   default = true
   nav = LensNav.TASK
-  show = [docs.authored, docs.step, spec.goal, spec.nongoal, spec.example, doc.term, spec.command, spec.argument, spec.option, spec.error]
+  show = [docs.authored, docs.step, spec.goal, spec.nongoal, spec.example, spec.term, spec.command, spec.error]
   hide = [spec.rule, spec.condition, production]
   depth = 2
   prefix = ""
@@ -62,7 +62,7 @@ terms, examples and errors of the concerns below it.
 </rule>
 
 <rule id="user_hides" refs="system.docs_generator">
-<mustNot>render, in the `user` lens, a rule, a rule's conditions, a production, or the prose of a section of the tree that no [lens mark](#tools.docs.lenses.lens_mark) keeps for `user`</mustNot>
+<must_not>render, in the `user` lens, a rule, a rule's conditions, a production, or the prose of a section of the tree that no [lens mark](#tools.docs.lenses.lens_mark) keeps for `user`</must_not>
 </rule>
 
 <rule id="diagnostics_as_errors" refs="system.docs_generator">
@@ -75,7 +75,7 @@ terms, examples and errors of the concerns below it.
 </rule>
 
 <rule id="user_first" refs="system.docs_generator">
-<where>a site's `lenses` lists `user`</where>
+<while>a site's `lenses` lists `user`</while>
 <must>serve `user` at the site's root, as its `default` says</must>
 </rule>
 
@@ -121,6 +121,6 @@ audiences, and it leaves out the [authored pages](#language.markup.authored_page
 </rule>
 
 <rule id="agent_not_switched" refs="system.docs_generator">
-<mustNot>list the `agent` lens in the lens switcher, or link a page of the site to it</mustNot>
+<must_not>list the `agent` lens in the lens switcher, or link a page of the site to it</must_not>
 <instead>reach it from `llms.txt` at the site's root, where agents look</instead>
 </rule>

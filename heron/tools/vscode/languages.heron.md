@@ -15,6 +15,6 @@
 </rule>
 
 <rule id="web_highlighting" refs="system.editor_extension">
-<where>the editor runs in a browser, as VS Code for the Web does, where no process can be started</where>
+<while>the editor runs in a browser, as VS Code for the Web does, where no process can be started</while>
 <must>still contribute the languages and their grammars, and answer the commands that need `heron` with a message that they need the desktop editor</must>
 </rule>

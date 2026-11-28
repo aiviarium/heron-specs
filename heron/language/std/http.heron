@@ -1,5 +1,5 @@
 @display("std/http")
-http: part {
+http: feature {
   | Binds apis and ops to HTTP, with server-sent events for streamed results.
   |
   | Its surface is declared in `std/http/package.heron`, whose types the API

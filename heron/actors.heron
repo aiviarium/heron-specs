@@ -8,7 +8,7 @@ actors: section {
     own authors are authors too.
   }}
 
-  implementer: actor(kind = ActorKind.AGENT) {{
+  implementer: actor(role = ActorRole.AGENT) {{
     An agent, or a person working the same way, that builds or changes part of the system
     from its spec alone: it loads one subtree and the surface of what it targets, and builds
     until the tests that prove the rules and scenarios of that subtree pass.

@@ -62,7 +62,7 @@ includes the document, or the document itself when none does.
 </rule>
 
 <rule id="watched_files" refs="system.language_server">
-<where>the client registers file watchers dynamically</where>
+<while>the client registers file watchers dynamically</while>
 <must>register watchers for `**/*.heron`, `**/*.heron.md`, `**/.vale.ini`, `**/*.txt` and `**/*.yml` once initialized, and on a change reread every file that isn't open and find every [owner entry](#tools.lsp.session.owner_entry) again</must>
 <then>a vocabulary or a Vale style edited outside the editor re-lints</then>
 </rule>
@@ -93,7 +93,7 @@ editor's hover can say whether the checker, a lint or Vale found it.
 </rule>
 
 <rule id="no_std_diagnostics" refs="system.language_server">
-<mustNot>publish a diagnostic in a standard package's file</mustNot>
+<must_not>publish a diagnostic in a standard package's file</must_not>
 </rule>
 
 <rule id="diagnostic_source" refs="system.language_server">
@@ -126,34 +126,34 @@ never completes.
 </rule>
 
 <rule id="completion_list" refs="system.language_server">
-<mustNot>offer an item with an empty label, or two with one label</mustNot>
+<must_not>offer an item with an empty label, or two with one label</must_not>
 <instead>keep the first, and sort the fields of the enclosing kind before the names in scope</instead>
 </rule>
 
 <rule id="prose_word_quiet" refs="system.language_server">
-<where>the cursor is in prose, outside a link target, a [short_link], an insert and a tag</where>
-<mustNot>offer any item</mustNot>
+<while>the cursor is in prose, outside a link target, a [short_link], an insert and a tag</while>
+<must_not>offer any item</must_not>
 </rule>
 
 ## Hover {#hover}
 
 <rule id="hover_node" refs="system.language_server">
-<where>the word under the cursor names a node</where>
+<while>the word under the cursor names a node</while>
 <must>show the node's declaration as a Heron signature without its docs and body, then its `///` docs from every site as Markdown, then its kind, its path and the file it's declared in</must>
 </rule>
 
 <rule id="hover_references" refs="system.language_server">
-<where>the node the word names has references</where>
+<while>the node the word names has references</while>
 <must>show after its facts each node it references, with what the reference means by the kind it names: its subject, what it serves or measures, what it relies on, who asked for it, or the case it illustrates or refines</must>
 </rule>
 
 <rule id="hover_local" refs="system.language_server">
-<where>the word names a `let` or a parameter</where>
+<while>the word names a `let` or a parameter</while>
 <must>show its declaration and whether it's a let or a parameter</must>
 </rule>
 
 <rule id="hover_file" refs="system.language_server">
-<where>the cursor is on an `import` or `include` string</where>
+<while>the cursor is on an `import` or `include` string</while>
 <must>show the file it names, a standard file as `std/<path>`</must>
 </rule>
 
@@ -164,17 +164,17 @@ never completes.
 </rule>
 
 <rule id="definition_short_link" refs="system.language_server">
-<where>the cursor is on a [short link](#language.markup.links.short_link)'s path</where>
+<while>the cursor is on a [short link](#language.markup.links.short_link)'s path</while>
 <must>answer definition and hover as on any path, for the node the link resolves to</must>
 </rule>
 
 <rule id="definition_element" refs="system.language_server">
-<where>the cursor is on a [kind element](#language.markup.tags.component_tag)'s name, or on the target of a `<ref to="…">`</where>
+<while>the cursor is on a [kind element](#language.markup.tags.component_tag)'s name, or on the target of a `<ref to="…">`</while>
 <must>answer definition and hover for the kind the element names, or the node the reference resolves to</must>
 </rule>
 
 <rule id="definition_into_std" refs="system.language_server">
-<where>the target is declared in a standard package</where>
+<while>the target is declared in a standard package</while>
 <must>answer with its `heron:/std/<path>` URI, whose text the client reads with the [heron/source](#tools.lsp.extensions) request</must>
 <example>go to definition on `"std/doc@1"`, or on `section`, opens heron:/std/doc/package.heron</example>
 </rule>
@@ -244,7 +244,7 @@ The legend's token types are `namespace`, `type`, `class`, `enum`, `interface`, 
 </rule>
 
 <rule id="vocabulary_actions" refs="system.language_server">
-<where>a diagnostic is a Vale alert on a single word</where>
+<while>a diagnostic is a Vale alert on a single word</while>
 <must>also offer, per vocabulary the .vale.ini names, to accept the word or reject it, as the commands `heron.vale.accept` and `heron.vale.reject`</must>
 </rule>
 

@@ -29,11 +29,11 @@ modes: section {
 
   prose_tags: rule(system.checker) {
     must {{ read a tag in a node's prose as an instance of the kind it names, valid where the node's kind accepts that kind or its category, as a child would be }}
-    example {{ `<note kind="tip">Text</note>` in a section's prose is a `note`, since sections accept `block` }}
+    example {{ `<tip>Text</tip>` in a section's prose is a `tip`, since sections accept `block` }}
   }
 
   structure_only: rule(system.linter) {
-    where {{ a kind is declared with `modes = [structure]` }}
+    while {{ a kind is declared with `modes = [structure]` }}
     should {{ report a tag that names it as structure-only tag }}
     example {{ `std/types` declares `example: kind(fields_from = op, modes = [structure])`, so `<example>` in prose is reported }}
   }
@@ -44,34 +44,37 @@ modes: section {
   }
 
   inline_only_as_tags: rule(system.checker) {
-    where {{ a kind is only in the `inline` category of `std/doc` }}
+    while {{ a kind is only in the `inline` category of `std/doc` }}
     must {{ admit it only as a tag in prose, since no body accepts `inline` children }}
     example {{ `<link>` and `<code>` stand in a sentence, never on a line of their own in structure }}
   }
 
   errors: section {
+    @status(422)
     @severity(warning)
     wrong_mode_name: error("wrong-mode") {
       title = "{name} isn't declared in {here}; it's declared in {mode}"
-      name: field(String)
-      here: field(String)
-      mode: field(String)
+      name: String
+      here: String
+      mode: String
       | A name used in prose that only code declares, or the other way round.
       | Reported as [language.schemas.modes.wrong_mode] says.
     }
 
+    @status(422)
     @severity(warning)
     structure_only_tag: error("tag-kind") {
       title = "<{kind}> is a kind that stands only in structure, not as a tag"
-      kind: field(String)
+      kind: String
       | Reported as [language.markup.tags.tag_names_a_kind] and [language.schemas.modes.structure_only] say.
     }
 
+    @status(422)
     @severity(warning)
     tag_not_a_kind: error("tag-kind") {
       title = "<{path}> names {name}, which isn't a kind; a tag must name a kind in scope"
-      path: field(String)
-      name: field(String)
+      path: String
+      name: String
       | Reported as [language.markup.tags.tag_names_a_kind] and [language.schemas.modes.tag_names_kind] say.
     }
   }

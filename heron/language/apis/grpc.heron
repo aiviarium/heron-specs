@@ -1,5 +1,5 @@
 @display("gRPC and Connect")
-grpc: section {
+grpc: feature {
   | `@proto("acme.parcels.v1")` of `std/proto` on an api binds each of its ops to a method
   | of one gRPC service, and every type the methods reach to a protobuf message. The
   | projection is fixed by the rules below, so the docs, `heron generate proto` and a
@@ -94,7 +94,7 @@ grpc: section {
     }
 
     message_names_taken: rule {
-      where {{ a type the service reaches already has the name `<Method>Request` or `<Method>Response` }}
+      while {{ a type the service reaches already has the name `<Method>Request` or `<Method>Response` }}
       must {{ name the method's message with the service's name before it, as `<Service><Method>Request` }}
     }
 
@@ -164,7 +164,7 @@ grpc: section {
     }
 
     int_encodings: rule {
-      where {{ an integer field's `@field` is flagged `<sint>` or `<fixed>` }}
+      while {{ an integer field's `@field` is flagged `<sint>` or `<fixed>` }}
       must {{ encode it as `sint32` or `sint64`, or as `fixed32`, `fixed64`, `sfixed32` or `sfixed64` by its size and sign }}
     }
 
@@ -188,7 +188,7 @@ grpc: section {
   }
 
   status_codes: section {
-    | | `@code`               | Connect code          | HTTP status |
+    | | [gRPC code](#heron.language.apis.grpc.status_codes.grpc_code)             | Connect code          | HTTP status |
     | | --------------------- | --------------------- | ----------- |
     | | `CANCELLED`           | `canceled`            | 499         |
     | | `INVALID_ARGUMENT`, `FAILED_PRECONDITION`, `OUT_OF_RANGE` | `invalid_argument`, `failed_precondition`, `out_of_range` | 400 |
@@ -204,8 +204,10 @@ grpc: section {
 
     @display("gRPC code")
     grpc_code: term {{
-      The [error code](#language.apis.rpc.rpc_code) of `std/proto`, `@code(NOT_FOUND)`: one of
-      gRPC's canonical status codes but `OK`, from its `Code` enum.
+      The [error code](#language.apis.rpc.rpc_code) of an error over gRPC and Connect: one of
+      gRPC's canonical status codes but `OK`, from `std/proto`'s `Code` enum, the one its
+      `@status` [derives](#language.specifications.contract.codes.grpc_derived) or the one
+      `@status(NOT_FOUND)` of `std/proto` sets.
     }}
 
     error_status: rule {
@@ -215,12 +217,12 @@ grpc: section {
     }
 
     connect_errors: rule {
-      where {{ a service is served over Connect }}
+      while {{ a service is served over Connect }}
       must {{ answer an error with the HTTP status of the [table](#heron.language.markup.components.table) and a JSON body of its Connect `code`, its `message` and its `details`, each with its `type`, its `value` and its fields as `debug` }}
     }
 
     uncoded_errors: rule(system.linter) {
-      if {{ an op bound to a [service](#language.apis.grpc.proto_service) throws an error with no `@code` of `std/proto` }}
+      if {{ an op bound to a [service](#language.apis.grpc.proto_service) throws a type that implements `Error` with neither `@status` nor a `@status` of `std/proto` }}
       should {{ report uncoded gRPC error at the error }}
       then {{ the docs show the error as `UNKNOWN`, the code a server sends for a failure it doesn't name }}
     }
@@ -233,109 +235,119 @@ grpc: section {
     }
 
     idempotency_level: rule {
-      where {{ an op's `@proto` sets `idempotency`, `no_side_effects` or `idempotent` }}
+      while {{ an op's `@proto` sets `idempotency`, `no_side_effects` or `idempotent` }}
       must {{ give its method that idempotency level, which marks it safe to retry, and serve a `no_side_effects` method over Connect with GET as well as POST }}
     }
 
     default_deadline: rule {
-      where {{ an op's `@proto` sets `timeout` }}
+      while {{ an op's `@proto` sets `timeout` }}
       must {{ end each of its calls after that time unless the caller sets another }}
     }
 
     connect_unary: rule {
-      where {{ a unary method is served over Connect }}
+      while {{ a unary method is served over Connect }}
       must {{ take it as POST to `/<package>.<Service>/<Method>` with the [request message](#language.apis.grpc.request_message)'s JSON as the body and `application/json` as its type, and, for a `no_side_effects` method, as GET with the query `encoding=json`, `message` and `connect=v1` }}
     }
 
     connect_streams: rule {
-      where {{ a streaming method is served over Connect }}
+      while {{ a streaming method is served over Connect }}
       must {{ frame each message as `application/connect+json`: a flags byte, a 4-byte big-endian length and the message's JSON, with an end-of-stream message flagged `2` last, holding the error, if any }}
       then {{ a browser can call unary and server-streaming methods, and only gRPC and Connect over HTTP/2 carry client and bidirectional streams }}
     }
   }
 
   errors: section {
+    @status(422)
     @display("Proto outside a service")
     proto_outside_service: error("proto") {
       title = "{op} carries @proto, but its api names no protobuf package"
-      op: field(String)
+      op: String
       | An op's `@proto` sets its method's options, which need the service its api's `@proto(package)` declares.
       | Reported as [language.apis.grpc.service.proto_ops] says.
     }
 
+    @status(422)
     @display("Proto argument misplaced")
     proto_argument_misplaced: error("proto") {
       title = "@proto on {kind} doesn't take {argument}"
-      kind: field(String)
-      argument: field(String)
+      kind: String
+      argument: String
       | Reported as [language.apis.grpc.service.proto_arguments] says.
     }
 
+    @status(422)
     @display("Invalid proto package")
     invalid_proto_package: error("proto") {
       title = "{package} isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1"
-      package: field(String)
+      package: String
       | Reported as [language.apis.grpc.service.package_names] says.
     }
 
+    @status(422)
     @display("Stream with fields")
     stream_with_fields: error("proto") {
       title = "{op} streams from the client, so {param} can only travel as @metadata"
-      op: field(String)
-      param: field(String)
+      op: String
+      param: String
       | Reported as [language.apis.grpc.messages.client_stream_alone] says.
     }
 
+    @status(422)
     @display("Mixed numbering")
     mixed_numbering: error("field-number") {
       title = "{message} numbers some fields with @field and not {field}: number all of them or none"
-      message: field(String)
-      field: field(String)
+      message: String
+      field: String
       | Reported as [language.apis.grpc.numbering.all_or_none] says.
     }
 
+    @status(422)
     @display("Number used twice")
     duplicate_field_number: error("field-number") {
       title = "{field} has number {number}, which {other} already has in {message}"
       related = "the field that has it first"
-      message: field(String)
-      field: field(String)
-      other: field(String)
-      number: field(String)
+      message: String
+      field: String
+      other: String
+      number: String
       | Reported as [language.apis.grpc.numbering.unique_numbers] says.
     }
 
+    @status(422)
     @display("Number out of range")
     field_number_out_of_range: error("field-number") {
       title = "{number} can't number {field}: use 1 to 536870911, outside 19000 to 19999"
-      field: field(String)
-      number: field(String)
+      field: String
+      number: String
       | Reported as [language.apis.grpc.numbering.number_range] says.
     }
 
+    @status(422)
     @display("Reserved number")
     reserved_field_number: error("field-number") {
       title = "{field} has number {number}, which {message} reserves"
-      message: field(String)
-      field: field(String)
-      number: field(String)
+      message: String
+      field: String
+      number: String
       | Reported as [language.apis.grpc.numbering.reserved_numbers] says.
     }
 
+    @status(422)
     @display("No protobuf mapping")
     no_proto_mapping: error("proto") {
       title = "{type} has no protobuf form: {reason}"
-      type: field(String)
-      reason: field(String)
+      type: String
+      reason: String
       | Reported as [language.apis.grpc.types.unmappable_types] says.
     }
 
+    @status(422)
     @display("Uncoded gRPC error")
     @severity(warning)
     uncoded_grpc_error: error("rpc-code") {
-      title = "{error} is thrown by {op}, a gRPC method, and has no @code: it's answered as UNKNOWN"
-      error: field(String)
-      op: field(String)
+      title = "{error} is thrown by {op}, a gRPC method, and has neither @status nor @proto.status: it's answered as UNKNOWN"
+      error: String
+      op: String
       | Reported as [language.apis.grpc.status_codes.uncoded_errors] says.
     }
   }

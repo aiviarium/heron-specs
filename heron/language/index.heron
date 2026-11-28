@@ -11,11 +11,26 @@ include = [
   "./std/",
 ]
 
+// Each area of the language is a feature, with the goal its index declares.
+core_format: feature(core_format.readable_tree) {}
+
+grammar: feature(grammar.forgiving_syntax) {}
+
+schemas: feature(schemas.packages_extend) {}
+
+markup: feature(markup.prose_stays_true) {}
+
+data: feature(data.typed_data) {}
+
 @display("APIs")
-apis {}
+apis: feature(apis.apis_described) {}
+
+specifications: feature(specifications.specs_traceable) {}
+
+scripting: feature(scripting.tasks_in_tree) {}
 
 @display("Standard packages")
-std {}
+std: feature(std.batteries) {}
 
 @lens(user, developer)
 | The Heron language: the core format and its grammar, the packages that give it kinds, and the standard packages.

@@ -5,6 +5,6 @@
 </rule>
 
 <rule id="not_published" refs="actors.implementer">
-<mustNot>publish the extension to a marketplace from the build</mustNot>
+<must_not>publish the extension to a marketplace from the build</must_not>
 <instead>leave the `.vsix` as the build's output, and publishing to whoever owns the product</instead>
 </rule>

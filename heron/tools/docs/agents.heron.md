@@ -18,7 +18,7 @@ the [context packs](#tools.docs.agents.context_pack) asked for.
 </term>
 
 <term id="area_file" aliases={["area file"]}>
-One Markdown file of the [agent export](#tools.docs.agents.agent_export): the nodes of one section, [folder scope](#guide.layout.folder_scope), command or api, or one part
+One Markdown file of the [agent export](#tools.docs.agents.agent_export): the nodes of one feature, section, [folder scope](#guide.layout.folder_scope), command or api, or one part
 of them, ordered by [layer](#language.specifications.layers.layer).
 </term>
 
@@ -56,12 +56,12 @@ in full and the surface of what it links, for a task that needs that part alone.
 </rule>
 
 <rule id="export_files" refs="system.docs_generator">
-<must>write the [agent index](#tools.docs.agents.agent_index), an `llms.txt` and an [area file](#tools.docs.agents.area_file) for each section and [folder scope](#guide.layout.folder_scope) less than the lens's `depth` levels down, the docs block's `depth` where the lens sets none, and for each command and api at any depth, that the lens keeps something of, named by its [stable id](#tools.docs.agents.stable_id) and `.md`, as `language.apis.grpc.md`, all in one folder; and write the nodes at the top of the tree, outside every such section, in `_root.md`</must>
+<must>write the [agent index](#tools.docs.agents.agent_index), an `llms.txt` and an [area file](#tools.docs.agents.area_file) for each section and [folder scope](#guide.layout.folder_scope) less than the lens's `depth` levels down, the docs block's `depth` where the lens sets none, and for each feature, command and api at any depth, that the lens keeps something of, named by its [stable id](#tools.docs.agents.stable_id) and `.md`, as `language.apis.grpc.md`, all in one folder; and write the nodes at the top of the tree, outside every such section, in `_root.md`</must>
 <then>a file's path is its node's id, so an agent and a link can rely on it from one version to the next</then>
 </rule>
 
 <rule id="budget_split" refs="system.docs_generator">
-<where>an [area file](#tools.docs.agents.area_file) would hold more [approximate tokens](#tools.docs.agents.approximate_tokens) than the lens's [size budget](#tools.docs.agents.size_budget)</where>
+<while>an [area file](#tools.docs.agents.area_file) would hold more [approximate tokens](#tools.docs.agents.approximate_tokens) than the lens's [size budget](#tools.docs.agents.size_budget)</while>
 <must>give each section and [folder scope](#guide.layout.folder_scope) it holds a file of its own; and where it's still over the budget and holds no section, split it into parts at the boundaries between its nodes, in order, each within the budget, the first named by the id and the others by the id, a dot and the part's number from 2, as `language.apis.grpc.2.md`</must>
 <then>only a file of one node larger than the budget is over it, and the same tree always splits the same way</then>
 </rule>
@@ -72,7 +72,7 @@ in full and the surface of what it links, for a task that needs that part alone.
 </rule>
 
 <rule id="plain_markdown" refs="system.docs_generator">
-<mustNot>write HTML, a diagram, an image, a script or the site's navigation into a file of the [agent export](#tools.docs.agents.agent_export)</mustNot>
+<must_not>write HTML, a diagram, an image, a script or the site's navigation into a file of the [agent export](#tools.docs.agents.agent_export)</must_not>
 <instead>write headings, paragraphs, lists, code blocks and links alone, the prose of each node as Markdown with its links resolved</instead>
 </rule>
 
@@ -84,12 +84,12 @@ in full and the surface of what it links, for a task that needs that part alone.
 ## Index {#index}
 
 <rule id="index_contents" refs="system.docs_generator">
-<must>write in the [agent index](#tools.docs.agents.agent_index), in this order: the site's title; what the product is, from its intent: the prose of the tree's top and each of its goals and of what it leaves out, one line each; how to read the files: the order of the [layers](#language.specifications.layers.layer) in a file, the form of a heading and its [stable id](#tools.docs.agents.stable_id), the strengths, the links and the mark on [derived lists](#language.specifications.layers.derived_list); and the map of the top areas alone, the [area files](#tools.docs.agents.area_file) with no other [area file](#tools.docs.agents.area_file) above them, each as a link to its path with its title, the first sentence of its node's prose as plain text, cut at a word to 100 characters, and its size in [approximate tokens](#tools.docs.agents.approximate_tokens), in the order of the tree</must>
-<then>the index grows with the number of top areas, not with the number of files, and an agent goes down from it one area at a time</then>
+<must>write in the [agent index](#tools.docs.agents.agent_index), in this order: the site's title; what the product is, from its intent: the prose of the tree's top and each of its goals and of what it leaves out, one line each; how to read the files: the order of the [layers](#language.specifications.layers.layer) in a file, the form of a heading and its [stable id](#tools.docs.agents.stable_id), the strengths, the links and the mark on [derived lists](#language.specifications.layers.derived_list); and the map of the top areas alone, the [area files](#tools.docs.agents.area_file) with no other [area file](#tools.docs.agents.area_file) above them, each as a link to its path with its title, the first sentence of its node's prose as plain text, cut at a word to 100 characters, and its size in [approximate tokens](#tools.docs.agents.approximate_tokens), in the order of the tree; and last a part `Features` that groups the tree by [feature](#language.specifications.context.feature_kind): each feature, nested as they nest, as a link to the file that holds it with its title and the number of its requirements, those it holds and those that reference it</must>
+<then>the index grows with the number of top areas and features, not with the number of files, and an agent goes down from it one area or one feature at a time</then>
 </rule>
 
 <rule id="child_maps" refs="system.docs_generator">
-<where>other [area files](#tools.docs.agents.area_file) stand directly below an [area file](#tools.docs.agents.area_file)</where>
+<while>other [area files](#tools.docs.agents.area_file) stand directly below an [area file](#tools.docs.agents.area_file)</while>
 <must>end the first part of that [area file](#tools.docs.agents.area_file) with a Files below part mapping those files as the index maps the top areas, in the order of the tree</must>
 <then>any file is reached from the index through the maps of the areas above it</then>
 </rule>
@@ -114,12 +114,12 @@ goals and actors, then what the product guarantees, then the exact surface.
 </rule>
 
 <rule id="requirement_form" refs="system.docs_generator">
-<must>write a rule, a constraint or a quality as its strength's keyword first, then its sentence with its conditions in the order `where`, `while`, `when` and `if`, its subject and its behaviour, as the docs' sentence reads; then each `then`, `instead` and example as a line of its own after its kind's name; then a line of its references, each a link after the word its kind gives it: `by` its subject, `serves` its goals and qualities, `relies on` its assumptions and `asked by` its actors</must>
+<must>write a rule, a constraint or a quality as its strength's keyword first, then its sentence with its conditions in the order `where`, `while`, `when` and `if`, its subject and its behaviour, as the docs' sentence reads; then each `then`, `instead` and example as a line of its own after its kind's name; then a line of its references, each a link after the word its kind gives it: `by` its subject, `serves` its goals and qualities, `relies on` its assumptions, `asked by` its actors and `joins` the features it references</must>
 <example>`must: If two fields of a message, or two values of an enum, have one number, the checker must report number used twice at the second.`</example>
 </rule>
 
 <rule id="contract_signatures" refs="system.docs_generator">
-<must>write an op as its signature, its name with each parameter's name, type, place and whether it's optional, and its result; then each of its bindings, its HTTP method and path, its gRPC method, its JSON-RPC method and its [Sparrow method](#language.apis.sparrow.sparrow_method) with its id, shape, input, output and flags; then each error it answers with every projection it has, its HTTP status, [gRPC code](#language.apis.grpc.status_codes.grpc_code), JSON-RPC code, [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) or sigil and exit status; write an api with its bindings, its [Sparrow service](#language.apis.sparrow.sparrow_service) and facet with their ids and the facet hash among them; write an error node the same way, with its id, severity, title and fields; and write a command as its usage, its arguments, its options with their defaults, and its exits with their statuses</must>
+<must>write an op as its signature, its name with each parameter's name, type, place and whether it's optional, and its result; then each of its bindings, its HTTP method and path, its gRPC method, its JSON-RPC method and its [Sparrow method](#language.apis.sparrow.sparrow_method) with its id, shape, input, output and flags; then each error it answers with the effective code of each binding, its HTTP status, [gRPC code](#language.apis.grpc.status_codes.grpc_code), JSON-RPC code, [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) or sigil, each marked derived or explicit; write an api with its bindings, its [Sparrow service](#language.apis.sparrow.sparrow_service) and facet with their ids and the facet hash among them; write an error node the same way, with its id, status, severity, title and members; and write a command as its usage line, its arguments, its options with their defaults, and its exits with their statuses</must>
 <then>an agent reads the whole boundary of an op or a command from one place</then>
 </rule>
 
@@ -132,12 +132,12 @@ goals and actors, then what the product guarantees, then the exact surface.
 </rule>
 
 <rule id="summarized_nodes" refs="system.docs_generator">
-<where>the lens sums a node up</where>
+<while>the lens sums a node up</while>
 <must>write its heading and one line: a rule's sentence, or else the first sentence of its prose</must>
 </rule>
 
 <rule id="other_kinds" refs="system.docs_generator">
-<where>a node's kind has no form this section gives, as a kind a package declares</where>
+<while>a node's kind has no form this section gives, as a kind a package declares</while>
 <must>write its heading, its prose and each field and argument it sets as a line, `name: value`, written in the form of the core kind it extends where it extends one</must>
 </rule>
 

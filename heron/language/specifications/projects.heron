@@ -59,7 +59,7 @@ projects: section {
   }
 
   external_read_only: rule(actors.implementer) {
-    mustNot {{ change the code of an [external project](#language.specifications.projects.external_project) }}
+    must_not {{ change the code of an [external project](#language.specifications.projects.external_project) }}
     while {{ the scope of the work at hand leaves the [external project](#heron.language.specifications.projects.external_project) out }}
   }
 
@@ -87,21 +87,23 @@ projects: section {
   }
 
   errors: section {
+    @status(422)
     @display("Undeclared dependency")
     @severity(warning)
     undeclared_dependency: error("project-dependency") {
       title = "{project} uses {other} without naming it in depends_on"
-      project: field(String)
-      other: field(String)
+      project: String
+      other: String
       | A dependency between projects that the project graph doesn't show.
       | Reported as [language.specifications.projects.undeclared_dependency] says.
     }
 
+    @status(422)
     @display("Unversioned change")
     @severity(warning)
     unversioned_change: error("project-version") {
       title = "the public surface of {project} changed without a version change"
-      project: field(String)
+      project: String
       | A change to what callers rely on that no release records.
       | Reported as [language.specifications.projects.unversioned_change] says.
     }

@@ -20,13 +20,13 @@ belongs to the run.
 <section id="processes">
 
 <rule id="argv_only" refs="system.interpreter">
-<mustNot>pass a command or its arguments through a shell</mustNot>
+<must_not>pass a command or its arguments through a shell</must_not>
 <instead>start the program with the list as its arguments, each value in its string form, and look the program up on `PATH` when it has no slash</instead>
 <example>`run("./scripts/seed-pets", args = ["--count", count])` with `count = 2` starts the program with the two arguments `--count` and `2`</example>
 </rule>
 
 <rule id="scripts_run_by_language" refs="system.interpreter">
-<where>the command is a [typed string](#language.data.typed_strings.typed_string)</where>
+<while>the command is a [typed string](#language.data.typed_strings.typed_string)</while>
 <must>run the program named by its language with `-c` and the text, and with the language's name and then `args` after it when `args` are given</must>
 <then>inside the script, `$1` is the first of `args`, as `sh -c` passes them</then>
 <example>`run((sh)"echo $name | tr a-z A-Z")` starts `sh` with `-c` and `echo 'a b' | tr a-z A-Z` for `name = "a b"`</example>
@@ -63,13 +63,13 @@ A value inserted into a script is the one place code meets a shell, so the langu
 says how a value is made safe there.
 
 <rule id="sh_quoting" refs="system.interpreter">
-<where>a language is declared with `@insert(Insert.QUOTE)` and is `sh`, `bash` or `zsh`, as `std/process`'s `sh` is</where>
+<while>a language is declared with `@insert(Insert.QUOTE)` and is `sh`, `bash` or `zsh`, as `std/process`'s `sh` is</while>
 <must>quote each value inserted into its embeds as one shell word: as written when it's non-empty and holds only letters, digits and `-_./:=@%+,`, and otherwise in single quotes, with each `'` written as `'\''`</must>
 <example>`(sh)"rm $path"` with `path = "a b; rm -rf"` is `rm 'a b; rm -rf'`</example>
 </rule>
 
 <rule id="raw_inserts" refs="system.interpreter">
-<where>`@insert<raw>` stands above the node whose code inserts the value, or above any node that encloses it</where>
+<while>`@insert<raw>` stands above the node whose code inserts the value, or above any node that encloses it</while>
 <must>insert values into the embed as written</must>
 <then>a script that builds its own command line opts out on purpose, where a reviewer sees it</then>
 </rule>

@@ -62,7 +62,7 @@ strings: section {
     }
 
     nothing_follows_a_call: rule(system.parser) {
-      mustNot {{ read a field access or a further call after an insert's argument list }}
+      must_not {{ read a field access or a further call after an insert's argument list }}
       instead {{ write anything longer as an expression insert, as `${f(x).name}` }}
     }
   }

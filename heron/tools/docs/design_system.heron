@@ -78,7 +78,7 @@ design_system: section {
     }
 
     small_text_for_facts: rule(system.docs_generator) {
-      mustNot {{ set a sentence from the spec in `text-faint`, in `text-decor` or below the docs prose size }}
+      must_not {{ set a sentence from the spec in `text-faint`, in `text-decor` or below the docs prose size }}
       instead {{ keep `text-secondary` and the smaller sizes for labels, breadcrumbs, facts lines and captions }}
     }
   }
@@ -91,17 +91,17 @@ design_system: section {
     }
 
     hairlines_not_shadows: rule(actors.implementer) {
-      mustNot {{ separate things with shadows }}
+      must_not {{ separate things with shadows }}
       instead {{ separate them with hairline borders in three strengths, `border-faint`, `border` and `border-strong` }}
     }
 
     flows_without_hairlines: rule(actors.implementer) {
-      mustNot {{ draw a hairline between consecutive items of one flow, such as rules, terms, steps or diagnostics }}
+      must_not {{ draw a hairline between consecutive items of one flow, such as rules, terms, steps or diagnostics }}
       instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of [tables](#heron.language.markup.components.table) and code blocks; the line that joins the numbers of a stepper's steps is part of its marks, not a separator }}
     }
 
     one_level_of_indent: rule(actors.implementer) {
-      mustNot {{ nest a bordered box inside another, or indent content more than one level from its [column](#heron.language.grammar.lexical.column) }}
+      must_not {{ nest a bordered box inside another, or indent content more than one level from its [column](#heron.language.grammar.lexical.column) }}
       instead {{ show hierarchy with headings, their levels and the navigation }}
     }
 
@@ -110,15 +110,15 @@ design_system: section {
     }
 
     project_colour_never_fills: rule(actors.implementer) {
-      mustNot {{ fill a button, card, callout, code block or cell with the [project colour](#tools.docs.design_system.project_colour) }}
+      must_not {{ fill a button, card, callout, code block or cell with the [project colour](#tools.docs.design_system.project_colour) }}
     }
 
     status_colours_mean: rule(actors.implementer) {
-      mustNot {{ use a [status colour](#tools.docs.design_system.status_colours) for anything but what it means }}
+      must_not {{ use a [status colour](#tools.docs.design_system.status_colours) for anything but what it means }}
     }
 
     no_filled_pills: rule(actors.implementer) {
-      mustNot {{ show a status or kind colour as a filled pill }}
+      must_not {{ show a status or kind colour as a filled pill }}
       instead {{ show it as coloured text or a 1 px outline }}
     }
 
@@ -131,7 +131,7 @@ design_system: section {
     }
 
     polish_from_detail: rule(actors.implementer) {
-      mustNot {{ use gradients on text or [surfaces](#tools.docs.design_system.surfaces), glow, emoji or illustrations }}
+      must_not {{ use gradients on text or [surfaces](#tools.docs.design_system.surfaces), glow, emoji or illustrations }}
       instead {{ polish through detail: a translucent top bar with backdrop blur, a faint dot grid behind diagrams, focus rings on keyboard focus only, syntax colours from the same tokens, and code blocks with a title bar and a copy button }}
     }
 

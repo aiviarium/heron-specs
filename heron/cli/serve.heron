@@ -1,25 +1,21 @@
-serve: command("heron serve", cli.serve.serves_workspace) {
-  usage = ["heron serve [--addr host:port] [entry point]"]
-
+serve(
+  /// The address to listen on, as `host:port`; port 0 picks a free one, which the printed
+  /// URL shows.
+  @option(value = "host:port")
+  addr: String = "127.0.0.1:7340",
+  /// The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
+  /// folder. With none, `.`.
+  entry_point?: String,
+): command("heron serve", cli.serve.serves_workspace) {
   | Serves the spec browser of one tree, rendered live, and its [agent export](#tools.docs.agents.agent_export), and prints the URL
   | it listens on, as `http://127.0.0.1:7340/`, on standard output. What it serves is [the server](#system.server). It runs until it's stopped.
 
-  entry: argument("entry point", type = String, optional = true) {
-    | The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
-    | folder. With none, `.`.
-  }
-
-  addr: option("--addr", type = String, default = "127.0.0.1:7340") {
-    | The address to listen on, as `host:port`; port 0 picks a free one, which the printed
-    | URL shows.
-  }
-
   | Exits 0 when: the server was closed.
-  @exit(1)
+  @status(500)
   exit_1: error("heron serve exit 1") {
     title = "the address can't be listened on, or the server failed"
   }
-  @exit(2)
+  @status(400)
   exit_2: error("heron serve exit 2") {
     title = "an unknown option, or a workspace that can't be opened at the entry point"
   }

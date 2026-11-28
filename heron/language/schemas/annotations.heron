@@ -12,13 +12,13 @@ annotations: section {
   }
 
   annotation_on: rule(system.linter) {
-    where {{ an annotation is declared with `on`, a list of kinds and categories }}
+    while {{ an annotation is declared with `on`, a list of kinds and categories }}
     should {{ report annotation placement where it stands on a node whose kind fits none of them }}
     while {{ the annotation's `on` lists kinds or categories }}
   }
 
   annotation_on_params: rule(system.linter) {
-    where {{ an annotation stands on a parameter, as `get_one(@path id: String): op` }}
+    while {{ an annotation stands on a parameter, as `get_one(@path id: String): op` }}
     should {{ report annotation on a parameter unless its `on` names a kind of typed members that parameters are, such as `types.param` }}
   }
 
@@ -28,28 +28,31 @@ annotations: section {
   }
 
   errors: section {
+    @status(422)
     @severity(warning)
     annotation_misplaced: error("annotation-placement") {
       title = "@{annotation} doesn't attach to {kind}; it attaches to {kinds}"
-      annotation: field(String)
-      kind: field(String)
-      kinds: field(String)
+      annotation: String
+      kind: String
+      kinds: String
       | On a node with no kind, the kind reads "this node".
       | Reported as [language.apis.params.location_placement], [language.core_format.nodes.annotations.annotation_placement] and [language.schemas.annotations.annotation_on] say.
     }
 
+    @status(422)
     @severity(warning)
     annotation_on_param: error("annotation-placement") {
       title = "@{annotation} doesn't attach to a parameter; it attaches to {kinds}"
-      annotation: field(String)
-      kinds: field(String)
+      annotation: String
+      kinds: String
       | Reported as [language.schemas.annotations.annotation_on_params] says.
     }
 
+    @status(422)
     @severity(warning)
     annotation_repeated: error("annotation-placement") {
       title = "@{annotation} stands twice on one node, and it isn't <repeatable>"
-      annotation: field(String)
+      annotation: String
       | Reported as [language.schemas.annotations.repeatable] says.
     }
   }

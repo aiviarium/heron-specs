@@ -19,7 +19,7 @@ typed_strings: section {
   }}
 
   parsed_where_expected: rule(system.checker) {
-    where {{ a string literal with no inserts, or a [cast](#language.grammar.code.expressions.cast) `(Duration)"30d"`, is written where `Duration`, `Money` or `Timestamp` is expected }}
+    while {{ a string literal with no inserts, or a [cast](#language.grammar.code.expressions.cast) `(Duration)"30d"`, is written where `Duration`, `Money` or `Timestamp` is expected }}
     must {{ parse it by the expected type's form, and report the type's diagnostic, coded `typed-string`, at the string where it doesn't parse }}
   }
 
@@ -58,27 +58,31 @@ typed_strings: section {
   }
 
   errors: section {
+    @status(422)
     not_a_duration: error("typed-string") {
       title = "\"{text}\" is not a duration; write a number and a unit, as in \"30d\", \"20m\" or \"200ms\""
-      text: field(String)
+      text: String
       | Reported as [language.core_format.values.strings_parsed_by_type] says.
     }
 
+    @status(422)
     not_money: error("typed-string") {
       title = "\"{text}\" is not an amount of money; write the amount and an ISO 4217 currency, as in \"40.00 EUR\""
-      text: field(String)
+      text: String
       | Reported as [language.data.typed_strings.currency_codes] says.
     }
 
+    @status(422)
     not_a_timestamp: error("typed-string") {
       title = "\"{text}\" is not a timestamp; write an RFC 3339 time or a date, as in \"2026-03-01\""
-      text: field(String)
+      text: String
       | Reported as [language.data.typed_strings.timestamp_form] says.
     }
 
+    @status(422)
     not_a_version: error("typed-string") {
       title = "\"{text}\" is not a version; write two or three numbers, as in \"1.0\" or \"2.1.4\""
-      text: field(String)
+      text: String
       | Reported as [language.data.typed_strings.version_form] says.
     }
   }

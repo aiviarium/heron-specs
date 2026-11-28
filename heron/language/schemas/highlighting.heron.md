@@ -45,23 +45,23 @@ injection.
 </rule>
 
 <rule id="token_override" refs="system.language_server">
-<where>a kind, flag, annotation or language is declared with `@highlight(token = t)`</where>
+<while>a kind, flag, annotation or language is declared with `@highlight(token = t)`</while>
 <should>give the names that resolve to it the token type `t` instead of the table's</should>
 </rule>
 
 <rule id="injection" refs="system.language_server">
-<where>an [embedded string](#language.grammar.strings.embedded.embedded_string) or a raw body is [cast](#language.grammar.code.expressions.cast) to a `language` declared with `grammar = g`</where>
+<while>an [embedded string](#language.grammar.strings.embedded.embedded_string) or a raw body is [cast](#language.grammar.code.expressions.cast) to a `language` declared with `grammar = g`</while>
 <should>inject the grammar `g` into its text, as `sh: language(grammar = "source.shell")` colours `(sh)"ls -la"` as shell</should>
 </rule>
 
 <rule id="insert_safety" refs="system.interpreter">
-<where>`@insert(mode)` stands above a `language`</where>
+<while>`@insert(mode)` stands above a `language`</while>
 <must>make values inserted into its embeds safe the way the mode says: `QUOTE` quotes each value for the language, `LITERAL` inserts it as written</must>
 <while>the node that inserts keeps the language's insert mode</while>
 <example>`@insert(QUOTE) sh: language(grammar = "source.shell")` makes `(sh)"rm ${path}"` safe for a path with spaces</example>
 </rule>
 
 <rule id="insert_safety_otherwise" refs="system.interpreter">
-<where>`@insert<raw>` stands above the node that inserts</where>
+<while>`@insert<raw>` stands above the node that inserts</while>
 <must>insert its values as written</must>
 </rule>

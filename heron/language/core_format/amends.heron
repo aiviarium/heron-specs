@@ -22,13 +22,13 @@ amends: section {
   }
 
   flag_as_boolean: rule(system.checker) {
-    where {{ the node has no field of that name but its kind declares the flag }}
+    while {{ the node has no field of that name but its kind declares the flag }}
     must {{ read `name = true` as setting the flag and `name = false` as clearing it }}
     example {{ `development.work.selection.speculative = true`: the same as `selection<speculative>` }}
   }
 
   lists_change_by_calls: rule(system.interpreter) {
-    mustNot {{ concatenate or merge a list implicitly }}
+    must_not {{ concatenate or merge a list implicitly }}
     instead {{ replace it on assignment, and change it in place only through calls such as `requires.add(checks.e2e)`, `steps.remove(test_first)` and `types.insert(after = "fix", "perf")` }}
   }
 
@@ -38,11 +38,12 @@ amends: section {
   }
 
   errors: section {
+    @status(422)
     no_field: error("unknown-field") {
       title = "{node} (a {kind}) has no field {name}"
-      node: field(String)
-      kind: field(String)
-      name: field(String)
+      node: String
+      kind: String
+      name: String
       | ‹node› is the node's path, or "the root"; ‹kind› is its kind or type.
       | Reported as [language.core_format.amends.set_declared_fields] says.
     }

@@ -5,7 +5,7 @@
 </rule>
 
 <rule id="version_switch" refs="system.docs_generator">
-<where>`versions.json` lists a released build</where>
+<while>`versions.json` lists a released build</while>
 <must>offer it in the top bar's version switch, which opens the same page in that build</must>
 </rule>
 

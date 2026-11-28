@@ -1,5 +1,5 @@
 @display("Sparrow")
-sparrow: section {
+sparrow: feature {
   | `@sparrow("acme.parcels")` of `std/sparrow` on an api binds it to a service of a Sparrow
   | RPC [facet](#language.apis.sparrow.sparrow_facet), each of its ops to a method, and every
   | type the methods reach to a type definition of the facet. Sparrow is a CBOR protocol
@@ -126,7 +126,7 @@ sparrow: section {
     }
 
     method_hints: rule {
-      where {{ an op's `@sparrow` sets `idempotent` or `shared` }}
+      while {{ an op's `@sparrow` sets `idempotent` or `shared` }}
       must {{ flag its method `0x1`, safe to retry, or `0x4`, its result shareable between callers }}
     }
   }
@@ -156,13 +156,13 @@ sparrow: section {
     }
 
     any_values: rule {
-      where {{ a method of a facet reaches `Any` }}
+      while {{ a method of a facet reaches `Any` }}
       must {{ define in the facet the union `Value`, whose variants by tag are `null`, `bool`, `int`, `uint`, `bigint`, `float`, `string`, `bytes`, `decimal`, `time`, `duration`, `list`, `set`, `map`, `variant`, `ref` and `prose`, and the struct `VariantValue` of a `name` and a `value`, with consecutive TypeIds, as the extension protocol defines them }}
       then {{ a facet that reaches no `Any` defines neither }}
     }
 
     sparse_structs: rule {
-      where {{ a record carries `@sparse` of `std/sparrow` }}
+      while {{ a record carries `@sparse` of `std/sparrow` }}
       must {{ flag its struct sparse, so it's encoded as a map from tag to value }}
     }
 
@@ -231,14 +231,16 @@ sparrow: section {
   status_codes: section {
     @display("Sparrow code")
     sparrow_code: term {{
-      The [error code](#language.apis.rpc.rpc_code) of `std/sparrow`, `@code(not_found)`: one
-      of Sparrow's core status codes from `cancelled` to `unauthenticated`, its `Code` enum,
-      which are gRPC's with the same numbers. The protocol's own codes, from `protocol_error`
-      up, are the transport's to send.
+      The [error code](#language.apis.rpc.rpc_code) of an error over Sparrow: one of Sparrow's
+      core status codes from `cancelled` to `unauthenticated`, `std/sparrow`'s `Code` enum,
+      which are gRPC's with the same numbers, the one its `@status`
+      [derives](#language.specifications.contract.codes.grpc_derived) or the one
+      `@status(not_found)` of `std/sparrow` sets. The protocol's own codes, from
+      `protocol_error` up, are the transport's to send.
     }}
 
     core_codes: rule {
-      where {{ an error has a [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) }}
+      while {{ an error has a [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) and no `@sigil` }}
       must {{ leave it out of the `errors` of the methods that throw it, since a core code needs no entry in any method's `errors`, and define the error's struct, its fields without its `message`, for its details }}
     }
 
@@ -249,13 +251,13 @@ sparrow: section {
     }
 
     error_sigils: rule {
-      where {{ a method throws an error with no [Sparrow code](#language.apis.sparrow.status_codes.sparrow_code) }}
+      while {{ a method throws an error that carries `@sigil`, or a type that implements `Error` with neither `@status` nor a `@status` of `std/sparrow` }}
       must {{ give the error a [sigil](#language.apis.sparrow.sparrow_sigil) of kind 1, an error code, named after it, and list it in the method's `errors` }}
       then {{ a client tells an error of the api from every other by its sigil }}
     }
 
     code_or_sigil: rule(system.checker) {
-      if {{ an error carries both `@code` and `@sigil` of `std/sparrow` }}
+      if {{ an error carries both `@status` and `@sigil` of `std/sparrow` }}
       must {{ report code and sigil at the `@sigil` }}
     }
   }
@@ -296,7 +298,7 @@ sparrow: section {
     |   line: Self
     | }
     |
-    | // No core code: answered with a sigil of its own.
+    | // No @status: answered with a sigil of its own.
     | @id(66)
     | @sigil(80)
     | UnknownChart: type(Error) {
@@ -306,224 +308,249 @@ sparrow: section {
   }
 
   errors: section {
+    @status(422)
     @display("Sparrow outside a facet")
     sparrow_outside_facet: error("sparrow") {
       title = "{op} carries @sparrow, but its api isn't bound to a Sparrow facet"
-      op: field(String)
+      op: String
       | Reported as [language.apis.sparrow.facets.facet_ops] says.
     }
 
+    @status(422)
     @display("Sparrow argument misplaced")
     sparrow_argument_misplaced: error("sparrow") {
       title = "@sparrow on {kind} doesn't take {argument}"
-      kind: field(String)
-      argument: field(String)
+      kind: String
+      argument: String
       | Reported as [language.apis.sparrow.facets.sparrow_arguments] says.
     }
 
+    @status(422)
     @display("Invalid facet name")
     invalid_facet_name: error("sparrow") {
       title = "{name} isn't a valid facet name: write lower-case words, digits and hyphens joined by dots, as acme.parcels"
-      name: field(String)
+      name: String
       | Reported as [language.apis.sparrow.facets.facet_names] says.
     }
 
+    @status(422)
     @display("Invalid facet version")
     invalid_facet_version: error("sparrow") {
       title = "{version} isn't a version: write numbers joined by dots, as 1.2.0"
-      version: field(String)
+      version: String
       | Reported as [language.apis.sparrow.facets.shared_facets] says.
     }
 
+    @status(422)
     @display("Facet version conflict")
     facet_version_conflict: error("sparrow") {
       title = "{api} puts facet {facet} at version {version}, which {other} puts at {first}"
       related = "the api that sets the facet's version first"
-      api: field(String)
-      facet: field(String)
-      version: field(String)
-      other: field(String)
-      first: field(String)
+      api: String
+      facet: String
+      version: String
+      other: String
+      first: String
       | Reported as [language.apis.sparrow.facets.shared_facets] says.
     }
 
+    @status(422)
     @display("Facet id reserved")
     facet_id_reserved: error("sparrow-id") {
       title = "{id} can't be the id of facet {facet}: 0 to 15 are Sparrow's own"
-      id: field(String)
-      facet: field(String)
+      id: String
+      facet: String
       | Reported as [language.apis.sparrow.facets.facet_ids] says.
     }
 
+    @status(422)
     @display("Facet id conflict")
     facet_id_conflict: error("sparrow-id") {
       title = "{api} gives facet {facet} the id {id}, which it already has as {first}"
-      api: field(String)
-      facet: field(String)
-      id: field(String)
-      first: field(String)
+      api: String
+      facet: String
+      id: String
+      first: String
       | Reported as [language.apis.sparrow.facets.facet_ids] says.
     }
 
+    @status(422)
     @display("Duplicate facet id")
     duplicate_facet_id: error("sparrow-id") {
       title = "facet {facet} has id {id}, which facet {other} already has"
-      facet: field(String)
-      id: field(String)
-      other: field(String)
+      facet: String
+      id: String
+      other: String
       | Reported as [language.apis.sparrow.facets.facet_ids] says.
     }
 
+    @status(422)
     @display("Duplicate Sparrow id")
     duplicate_sparrow_id: error("sparrow-id") {
       title = "{name} has {space} {id}, which {other} already has in facet {facet}"
       related = "the definition that has the id first"
-      name: field(String)
-      space: field(String)
-      id: field(String)
-      other: field(String)
-      facet: field(String)
+      name: String
+      space: String
+      id: String
+      other: String
+      facet: String
       | Reported as [language.apis.sparrow.facets.method_ids], [language.apis.sparrow.numbering.type_ids] and [language.apis.sparrow.numbering.sigil_ids] say.
     }
 
+    @status(422)
     @display("Retired id")
     retired_id: error("sparrow-id") {
       title = "{name} has {space} {id}, which facet {facet} retires"
-      name: field(String)
-      space: field(String)
-      id: field(String)
-      facet: field(String)
+      name: String
+      space: String
+      id: String
+      facet: String
       | Reported as [language.apis.sparrow.numbering.retired_ids] says.
     }
 
+    @status(422)
     @display("Negative Sparrow id")
     negative_sparrow_id: error("sparrow-id") {
       title = "{id} can't be the id of {what} {name}: ids can't be negative"
-      id: field(String)
-      what: field(String)
-      name: field(String)
+      id: String
+      what: String
+      name: String
       | Reported as [language.apis.sparrow.facets.method_ids] says.
     }
 
+    @status(422)
     @display("Sparrow stream with fields")
     sparrow_stream_with_fields: error("sparrow") {
       title = "{op} streams from the client, so {param} has no place in its call"
-      op: field(String)
-      param: field(String)
+      op: String
+      param: String
       | Reported as [language.apis.sparrow.calls.client_stream_alone] says.
     }
 
+    @status(422)
     @display("Throwing notification")
     sparrow_notification_throws: error("sparrow") {
       title = "{op} is a notification, which is never answered, so it can't throw {error}"
-      op: field(String)
-      error: field(String)
+      op: String
+      error: String
       | Reported as [language.apis.sparrow.calls.notifications_throw_nothing] says.
     }
 
+    @status(422)
     @display("Mixed tags")
     mixed_tags: error("sparrow-id") {
       title = "{type} tags some fields with @tag and not {field}: tag all of them or none"
-      type: field(String)
-      field: field(String)
+      type: String
+      field: String
       | Reported as [language.apis.sparrow.numbering.all_or_none_tags] says.
     }
 
+    @status(422)
     @display("Duplicate tag")
     duplicate_tag: error("sparrow-id") {
       title = "{field} has tag {tag}, which {other} already has in {type}"
       related = "the field that has the tag first"
-      type: field(String)
-      field: field(String)
-      other: field(String)
-      tag: field(String)
+      type: String
+      field: String
+      other: String
+      tag: String
       | Reported as [language.apis.sparrow.numbering.unique_tags] says.
     }
 
+    @status(422)
     @display("Tag out of range")
     tag_out_of_range: error("sparrow-id") {
       title = "{tag} can't tag {field}: tags start at 0"
-      tag: field(String)
-      field: field(String)
+      tag: String
+      field: String
       | Reported as [language.apis.sparrow.numbering.tag_range] says.
     }
 
+    @status(422)
     @display("Reserved tag")
     reserved_tag: error("sparrow-id") {
       title = "{field} has tag {tag}, which {type} reserves"
-      type: field(String)
-      field: field(String)
-      tag: field(String)
+      type: String
+      field: String
+      tag: String
       | Reported as [language.apis.sparrow.numbering.reserved_tags] says.
     }
 
+    @status(422)
     @display("TypeId out of range")
     type_id_out_of_range: error("sparrow-id") {
       title = "{id} can't be the TypeId of {type}: a facet's own types start at 64"
-      id: field(String)
-      type: field(String)
+      id: String
+      type: String
       | Reported as [language.apis.sparrow.numbering.type_ids] says.
     }
 
+    @status(422)
     @display("Generic TypeId")
     generic_type_id: error("sparrow-id") {
       title = "{type} is generic, and each of its instances is a type of its own: @sparrow.id can't number them"
-      type: field(String)
+      type: String
       | Reported as [language.apis.sparrow.numbering.type_ids] says.
     }
 
+    @status(422)
     @display("Sigil out of range")
     sigil_out_of_range: error("sparrow-id") {
       title = "{id} can't be the sigil of {name}: a facet's own sigils start at 64"
-      id: field(String)
-      name: field(String)
+      id: String
+      name: String
       | Reported as [language.apis.sparrow.numbering.sigil_ids] says.
     }
 
+    @status(422)
     @display("Mixed sigils")
     mixed_sigils: error("sparrow-id") {
       title = "{enum} gives some values a @sigil and not {value}: give all of them one or none"
-      enum: field(String)
-      value: field(String)
+      enum: String
+      value: String
       | Reported as [language.apis.sparrow.numbering.sigil_ids] says.
     }
 
+    @status(422)
     @display("Sparrow id overflow")
     sparrow_id_overflow: error("sparrow-id") {
       title = "{id} can't be the {space} of {name}: a Sparrow message holds no integer above 2^53 - 1"
-      id: field(String)
-      space: field(String)
-      name: field(String)
+      id: String
+      space: String
+      name: String
       | Reported as [language.apis.sparrow.numbering.id_bound] says.
     }
 
+    @status(422)
     @display("No Sparrow mapping")
     no_sparrow_mapping: error("sparrow") {
       title = "{type} has no Sparrow form: {reason}"
-      type: field(String)
-      reason: field(String)
+      type: String
+      reason: String
       | Reported as [language.apis.sparrow.types.unmappable_types] says.
     }
 
+    @status(422)
     @display("Code and sigil")
     code_and_sigil: error("sparrow") {
-      title = "{error} has a core code, @sparrow.code({code}), and a sigil of its own: give it one or the other"
-      error: field(String)
-      code: field(String)
+      title = "{error} has a core code, @sparrow.status({code}), and a sigil of its own: give it one or the other"
+      error: String
+      code: String
       | Reported as [language.apis.sparrow.status_codes.code_or_sigil] says.
     }
 
+    @status(422)
     @display("Implicit Sparrow id")
     @severity(warning)
     implicit_sparrow_id: error("sparrow-id") {
       title = "{name} has no {annotation} while other {kind} of facet {facet} do: its {space}, {id}, follows the order {order}"
-      name: field(String)
-      annotation: field(String)
-      kind: field(String)
-      facet: field(String)
-      space: field(String)
-      id: field(String)
-      order: field(String)
+      name: String
+      annotation: String
+      kind: String
+      facet: String
+      space: String
+      id: String
+      order: String
       | Reported as [language.apis.sparrow.numbering.implicit_ids] says.
     }
   }

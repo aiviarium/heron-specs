@@ -1,9 +1,9 @@
 @display("std/sparrow")
-sparrow: part {
+sparrow: feature {
   | Binds apis to the services of a [Sparrow facet](#language.apis.sparrow.sparrow_facet), ops to its methods, and the types they
   | reach to the facet's type definitions, numbered by tag, TypeId and sigil.
   |
   | Its surface is declared in `std/sparrow/package.heron`, whose types the API reference renders.
-  | `@sparrow`, `@tag`, `@id`, `@sigil`, `@sparse`, `@reserved`, `@retired`, `@code` and the `Code`
+  | `@sparrow`, `@tag`, `@id`, `@sigil`, `@sparse`, `@reserved`, `@retired`, `@sparrow.status` and the `Code`
   | enum are specified in [Sparrow](#language.apis.sparrow).
 }

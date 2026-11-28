@@ -20,12 +20,12 @@ The catalogue of every string the tools show that doesn't come from a spec, in
 ## Catalogue wording {#catalogue_wording}
 
 <rule id="labels_not_sentences" refs="system.docs_generator">
-<mustNot>hold an entry that ends with a full stop</mustNot>
+<must_not>hold an entry that ends with a full stop</must_not>
 <then>the docs show no helper sentences, no intro lines saying what a page or panel shows, and no paragraphs in empty states</then>
 </rule>
 
 <rule id="no_generated_tells" refs="system.docs_generator">
-<mustNot>hold "seamless", "powerful", "effortless", "Let's", "Note that", "Learn more", "Powered by", "Auto-generated", "New", an exclamation mark, a question mark, an emoji or a sparkle</mustNot>
+<must_not>hold "seamless", "powerful", "effortless", "Let's", "Note that", "Learn more", "Powered by", "Auto-generated", "New", an exclamation mark, a question mark, an emoji or a sparkle</must_not>
 </rule>
 
 <rule id="interface_style" refs="system.prose_linter">
@@ -46,7 +46,7 @@ These bind whoever writes a view or a catalogue entry.
 </rule>
 
 <rule id="nothing_redundant" refs="actors.implementer">
-<mustNot>show a label that repeats its heading, an overview that restates the children, a tooltip that repeats the visible text, or a section for an empty field</mustNot>
+<must_not>show a label that repeats its heading, an overview that restates the children, a tooltip that repeats the visible text, or a section for an empty field</must_not>
 <example>"Returns the order" under a return type of `Order` is redundant</example>
 </rule>
 
@@ -55,10 +55,10 @@ These bind whoever writes a view or a catalogue entry.
 </rule>
 
 <rule id="tables_earn_their_place" refs="actors.implementer">
-<mustNot>lay out as a [table](#heron.language.markup.components.table) what has one [column](#heron.language.grammar.lexical.column) or fewer than three rows</mustNot>
+<must_not>lay out as a [table](#heron.language.markup.components.table) what has one [column](#heron.language.grammar.lexical.column) or fewer than three rows</must_not>
 <instead>write a list, or one line per row, and keep [tables](#heron.language.markup.components.table) for data with [columns](#heron.language.grammar.lexical.column) to compare, such as options with their types and defaults</instead>
 </rule>
 
 <rule id="no_closing_summary" refs="actors.implementer">
-<mustNot>close a page with a summary, ask a rhetorical question, or use a "Learn more" link that doesn't say where it goes</mustNot>
+<must_not>close a page with a summary, ask a rhetorical question, or use a "Learn more" link that doesn't say where it goes</must_not>
 </rule>

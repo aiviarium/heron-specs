@@ -9,7 +9,7 @@ a kind with a renderer shows properly, and any other kind as a plain node.
 </rule>
 
 <rule id="renderer_per_kind_otherwise" refs="system.docs_generator">
-<where>no renderer is registered for a kind</where>
+<while>no renderer is registered for a kind</while>
 <must>show its nodes as their title, prose, fields and children</must>
 </rule>
 

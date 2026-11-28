@@ -19,7 +19,7 @@ long_form: section {
   }
 
   sections_are_structure: rule(actors.author) {
-    mustNot {{ give prose outside a [prose file](#language.core_format.prose_layer.prose_file) headings of its own }}
+    must_not {{ give prose outside a [prose file](#language.core_format.prose_layer.prose_file) headings of its own }}
     instead {{ title a part with a section node, whose [display name](#language.core_format.naming.display_name) is its heading and whose nesting sets the level }}
   }
 
@@ -157,10 +157,11 @@ long_form: section {
   }
 
   errors: section {
+    @status(422)
     @display("Heading needs a name")
     heading_needs_name: error("unnamed") {
       title = "the heading {text} declares a section and needs a {#name}"
-      text: field(String)
+      text: String
       | A heading in a [prose_file] without `{#name}`; its text is shown, never turned into a name.
       | Reported as [language.markup.long_form.heading_names] says.
     }

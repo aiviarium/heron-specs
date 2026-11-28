@@ -50,20 +50,22 @@ lifecycles: section {
   }
 
   errors: section {
+    @status(422)
     @display("Not an enum field")
     not_enum_field: error("lifecycle") {
       title = "{field} isn't of an enum type, so it has no states"
-      field: field(String)
+      field: String
       | A [lifecycle](#language.specifications.lifecycles.lifecycle) on a field whose values aren't a closed set.
       | Reported as [language.specifications.lifecycles.lifecycle_field_enum] says.
     }
 
+    @status(422)
     @display("Incomplete lifecycle")
     @severity(warning)
     incomplete_lifecycle: error("lifecycle") {
       title = "{state} of {lifecycle} can't be reached"
-      state: field(String)
-      lifecycle: field(String)
+      state: String
+      lifecycle: String
       | A state, transition or op the [lifecycle](#language.specifications.lifecycles.lifecycle) doesn't connect; the message names which.
       | Reported as [language.specifications.lifecycles.lifecycle_lints] says.
     }

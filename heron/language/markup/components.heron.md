@@ -11,7 +11,7 @@ which is the kind's `in` category, `block` or `inline`.
 | `code`                             | block, inline | Code, with `lang` and `title`                            |
 | `table`                            | block         | A [table](#heron.language.markup.components.table) from an array of [records](#language.data.values.record_value) |
 | `figure`, `image`, `caption`       | block         | An image with alt text and a caption                     |
-| `note`, `tip`, `warning`, `danger` | block         | Callouts                                                 |
+| `note`, `tip`, `warning`, `danger` | block         | Callouts, one kind each                                  |
 | `details`, `title`                 | block         | A collapsible block                                      |
 | `tabs`, `tab`                      | block         | Alternatives, such as one example per language           |
 | `definitions`                      | block         | A glossary built from terms in scope                     |
@@ -51,7 +51,7 @@ condition, and `<for each={changes} as="change">…</for>` repeats it, with `ind
 
 <rule id="tag_or_structure" refs="system.checker">
 <must>build the same node from a component written as a tag and in structure</must>
-<example>`<note kind="tip">Text</note>` and `note(kind = tip) { | Text }` are one node</example>
+<example>`<tip>Text</tip>` and `tip { | Text }` are one node</example>
 </rule>
 
 <rule id="terms_are_nodes" refs="actors.author">

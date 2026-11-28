@@ -18,12 +18,12 @@ streams: section {
   }}
 
   stream_directions: rule(system.docs_generator) {
-    where {{ an op streams its result, a parameter or both }}
+    while {{ an op streams its result, a parameter or both }}
     must {{ show its messages by direction, client to server for a streamed parameter and server to client for a streamed result, framed as server-sent events over HTTP, as WebSocket messages on a socket, and as stream messages of the method over gRPC and Connect }}
   }
 
   op_socket_overrides: rule(system.docs_generator) {
-    where {{ both an op and its api carry `@ws` }}
+    while {{ both an op and its api carry `@ws` }}
     must {{ open the op's socket at the op's path }}
   }
 
@@ -34,11 +34,12 @@ streams: section {
   }
 
   errors: section {
+    @status(422)
     @display("Streamed parameter over HTTP")
     streamed_http_param: error("stream") {
       title = "{op} is bound only to HTTP, which can't stream {param} from the client"
-      op: field(String)
-      param: field(String)
+      op: String
+      param: String
       | A `Stream(T)` parameter on an op with no binding that streams from the client.
       | Reported as [language.apis.streams.no_streamed_http_params] says.
     }

@@ -1,24 +1,24 @@
 requirements: section {
   | The specification [layer](#heron.language.specifications.layers.layer) says what must hold of the product, from outside, in its own
-  | words. A rule states one behaviour of one subject, a constraint limits the solution for a
+  | words, [feature](#language.specifications.context.feature_kind) by feature. A rule states one behaviour of one subject, a constraint limits the solution for a
   | stated reason, a part names a party inside the boundary that rules bind, and a scenario
   | illustrates a rule with a case or measures a quality. Use cases, with their own notation,
   | are [the next section](#language.specifications.usecases). Every one is a node,
   | `name: kind(refs…)`, and references up to what it serves.
   | [The refund window](#language.specifications.requirements.specifications_example) is a
-  | complete area written this way.
+  | complete feature written this way.
   |
   | | Strength    | Polarity | Reads      |
   | | ----------- | -------- | ---------- |
-  | | `must`      | positive | must       |
-  | | `should`    | positive | should     |
-  | | `may`       | positive | may        |
-  | | `mustNot`   | negative | must not   |
-  | | `shouldNot` | negative | should not |
+  | | `must`       | positive | must       |
+  | | `should`     | positive | should     |
+  | | `may`        | positive | may        |
+  | | `must_not`   | negative | must not   |
+  | | `should_not` | negative | should not |
   |
   | | Condition | Says                                                    | In one rule      |
   | | --------- | ------------------------------------------------------- | ---------------- |
-  | | `where`   | the optional feature the rule applies with              | at most one      |
+  | | `where`   | the [optional feature](#language.specifications.context.optional_feature) the rule applies with, linked in its text | at most one |
   | | `while`   | a state the rule applies in                             | any number       |
   | | `when`    | the trigger that makes the rule apply                   | at most one trigger, `when` or `if` |
   | | `if`      | the unwanted situation the rule answers                 | as above         |
@@ -32,8 +32,9 @@ requirements: section {
   rule_kind: term {{
     `name: rule(refs…) { … }`, one behaviour in one strength node and the conditions that say
     when it applies. A leaf: its references name what it states a fact about, its subject, the
-    goals and qualities it serves and the assumptions it relies on, each by the kind it names;
-    the terms it uses are linked in its prose. A `rationale {{ … }}` says in one line why it
+    goals and qualities it serves, the assumptions it relies on and the features it belongs to
+    beyond the one it stands in, each by the kind it names; the terms it uses are linked in its
+    prose. A `rationale {{ … }}` says in one line why it
     holds, and `@rev` is its [revision](#heron.language.specifications.layers.revisions.revision).
   }}
 
@@ -60,10 +61,11 @@ requirements: section {
   }}
 
   constraint_kind: term {{
-    `name: constraint(refs…, reason = "…") { must {{ … }} }`, a limit on the solution with a
-    reason from outside it, such as a regulation or a platform the product must run on: the one
-    requirement that needs no goal to serve. Its references name the goals and qualities it
-    serves, the assumptions it relies on and the actors or personas who asked for it.
+    `name: constraint(refs…) { must {{ … }} rationale {{ … }} }`, a limit on the solution with
+    a reason from outside it, its rationale, such as a regulation or a platform the product
+    must run on: the one requirement that needs no goal to serve. Its references name the goals
+    and qualities it serves, the assumptions it relies on and the actors or personas who asked
+    for it.
   }}
 
   part_kind: term {{
@@ -82,11 +84,12 @@ requirements: section {
 
   rationale_kind: term {{
     `rationale {{ … }}` in a rule or a constraint, `<rationale>…</rationale>` in an element: in
-    one line, why it holds, at most one.
+    one line, why it holds, at most one. It's the one way a requirement says why; a
+    constraint has one always.
   }}
 
   spec_layer: rule(system.checker) {
-    must {{ give `rule`, `constraint`, `part`, `term`, `scenario`, `usecase`, `states` and `transition` the `SPECIFICATION` [layer](#language.specifications.layers.layer) }}
+    must {{ give `feature`, `rule`, `constraint`, `part`, `term`, `scenario`, `usecase`, `states` and `transition` the `SPECIFICATION` [layer](#language.specifications.layers.layer) }}
   }
 
   one_strength: rule(system.checker) {
@@ -112,8 +115,14 @@ requirements: section {
   }
 
   constraint_reason: rule(system.checker) {
-    if {{ a constraint has no `reason`, or an empty one }}
+    if {{ a constraint has no `rationale`, or an empty one }}
     must {{ report it as an error at the constraint }}
+  }
+
+  where_links_feature: rule(system.checker) {
+    if {{ the text of a rule's or a constraint's `where` links no [optional feature](#language.specifications.context.optional_feature) }}
+    must {{ report it as an error at the `where` }}
+    then {{ a state the rule applies in is written with `while` }}
   }
 
   scenario_one_form: rule(system.checker) {
@@ -137,7 +146,7 @@ requirements: section {
   }
 
   no_repeated_connective: rule(system.docs_generator) {
-    where {{ the text of a rule's `then` or `instead` already holds the connective the sentence of the [rule](#language.specifications.requirements.rule_kind) would join it with, as a `then` that reads "the nearest declaration wins, so a section named `grammar` hides a kind of that name" }}
+    while {{ the text of a rule's `then` or `instead` already holds the connective the sentence of the [rule](#language.specifications.requirements.rule_kind) would join it with, as a `then` that reads "the nearest declaration wins, so a section named `grammar` hides a kind of that name" }}
     must {{ end the sentence before that clause and render the clause as the next sentence of the paragraph, starting with a capital }}
     then {{ no sentence reads ", so … so" or "instead … instead" }}
   }
@@ -147,7 +156,7 @@ requirements: section {
   }
 
   rationale_shown: rule(system.docs_generator) {
-    must {{ show a rule's or a constraint's [rationale](#language.specifications.requirements.rationale_kind) or reason after its sentence, and the goals and qualities it serves, the assumptions it relies on and the actors or personas who asked for it as links in its facts }}
+    must {{ show a rule's or a constraint's [rationale](#language.specifications.requirements.rationale_kind) after its sentence, and the goals and qualities it serves, the assumptions it relies on, the actors or personas who asked for it and the features it's referenced into as links in its facts }}
   }
 
   examples_after_sentence: rule(system.docs_generator) {
@@ -185,26 +194,37 @@ requirements: section {
   }
 
   errors: section {
+    @status(422)
     @display("Instead under a positive strength")
     instead_positive: error("instead") {
       title = "instead stands only under a negative strength, and {strength} is positive"
-      strength: field(String)
-      | An `instead` in a rule whose strength is `must`, `should` or `may`; with no strength, the title ends "`mustNot` or `shouldNot`".
+      strength: String
+      | An `instead` in a rule whose strength is `must`, `should` or `may`; with no strength, the title ends "`must_not` or `should_not`".
       | Reported as [instead_only_negative] says.
     }
 
-    @display("Constraint without a reason")
-    constraint_without_reason: error("missing-argument") {
-      title = "constraint {name} needs a reason from outside the solution"
-      name: field(String)
+    @status(422)
+    @display("Constraint without a rationale")
+    constraint_without_reason: error("missing-rationale") {
+      title = "constraint {name} needs a rationale, its reason from outside the solution"
+      name: String
       | Reported as [constraint_reason] says.
     }
 
+    @status(422)
+    @display("Where without an optional feature")
+    where_without_feature: error("where") {
+      title = "where in {name} links no optional feature; it names the optional feature the requirement applies with, and a state is written with while"
+      name: String
+      | Reported as [where_links_feature] says.
+    }
+
+    @status(422)
     @display("Scenario of no form")
     scenario_form: error("scenario") {
       title = "scenario {name} {problem}"
-      name: field(String)
-      problem: field(String)
+      name: String
+      problem: String
       | "mixes outcome clauses and quality fields", "has neither outcome clauses nor quality fields", "references no rule or path of a use case", "references more than one rule or path", "has no measure", "references no quality it measures" or "references something other than the quality it measures".
       | Reported as [scenario_one_form], [outcome_illustrates_one] and [quality_scenario_measured] say.
     }
@@ -225,7 +245,7 @@ requirements: section {
     |   The moment a payment was captured. Partial refunds don't change it.
     | }}
     |
-    | refund_window: section {
+    | refund_window: feature(self_service) {
     |   | Customers can request a refund for a captured payment within *30 days*
     |   | of its [capture date](#capture_date), without contacting support.
     |
@@ -261,8 +281,9 @@ requirements: section {
     |     measure =| within 200 ms at the 99th percentile
     |   }
     |
-    |   card_rules: constraint(reason = "The card networks' rules for refunds.") {
+    |   card_rules: constraint {
     |     must {{ refund to the card the payment was captured from }}
+    |     rationale {{ The card networks' rules for refunds. }}
     |   }
     | }
     |

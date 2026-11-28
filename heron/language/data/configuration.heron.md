@@ -33,7 +33,7 @@ and an `if` expression chooses a value, as in
 </rule>
 
 <rule id="locals_not_amended" refs="system.checker">
-<mustNot>let another file read or amend a `let` binding</mustNot>
+<must_not>let another file read or amend a `let` binding</must_not>
 <instead>keep a local in the file that declares it, so a base file's defaults can only be changed through the paths it sets</instead>
 </rule>
 

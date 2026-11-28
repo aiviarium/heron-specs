@@ -1,5 +1,5 @@
 @display("std/schema")
-schema: part {
+schema: feature {
   | The kinds a [schema](#language.schemas.kinds.schema) is written with, so the format describes its own packages in Heron.
   |
   | Its surface is declared in `std/schema/package.heron`, whose types the API
@@ -19,7 +19,7 @@ schema: part {
   | | `Verbatim`                                                    | [a component's `exports`](#language.specifications.delivery.component_kind)                                                   |
 
   language_env: rule(system.interpreter) {
-    where {{ a `language` is declared with `env` }}
+    while {{ a `language` is declared with `env` }}
     must {{ give the values a script's code reads to its program as the mode says: `PARAMS` as positional parameters after the script, `VARIABLES` as variables of the program's environment }}
     example {{ `std/process`'s `sh` is declared with `env = Env.PARAMS`, so `$1` in a script is its first value }}
   }

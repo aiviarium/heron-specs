@@ -1,5 +1,5 @@
 @display("std/core")
-core: part {
+core: feature {
   | The [prelude](#language.core_format.imports.packages.prelude): the flags, annotations, code kinds and names every tree sees without importing anything.
   | The core also includes [std/spec](#language.std.spec): the spec kinds and the annotations they share, which every spec needs.
   |
@@ -9,7 +9,8 @@ core: part {
   | | Export                                              | Specified in                                                                                                         |
   | | --------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
   | | `variadic`, `export`                                | [Flags](#language.core_format.nodes.flags), [Exports](#language.core_format.exports)                                 |
-  | | `@doc`, `@display`                                  | [Doc lines](#language.core_format.prose_layer.doc_lines), [display names](#language.core_format.naming.display_name) |
+  | | `@doc`, `@display`, `@icon`                         | [Doc lines](#language.core_format.prose_layer.doc_lines), [display names](#language.core_format.naming.display_name), [icons](#tools.docs.icons) |
+  | | `@throws`                                           | [Responses and errors](#language.apis.responses)                                                                     |
   | | `@lint`                                             | [repeated import](#language.core_format.imports.packages.repeated_import)                                            |
   | | `func`                                              | [Funcs and templates](#language.scripting.funcs_and_templates)                                                       |
   | | `macro`, `emit`, `heron`                            | [Macros](#language.scripting.funcs_and_templates.macros)                                                             |

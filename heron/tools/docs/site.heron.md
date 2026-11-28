@@ -58,6 +58,6 @@ Reference when the tree has an api or a type, and Glossary when it has a term.
 </rule>
 
 <rule id="sentences_from_spec" refs="system.docs_generator">
-<mustNot>add a sentence of its own to a page</mustNot>
+<must_not>add a sentence of its own to a page</must_not>
 <instead>add headings, labels, navigation and values from the [string catalogue](#tools.docs.writing.string_catalogue), and show a kind with no prose as its structure alone</instead>
 </rule>

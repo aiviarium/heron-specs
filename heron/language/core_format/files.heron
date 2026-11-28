@@ -20,7 +20,7 @@ files: section {
   }}
 
   no_core_kinds: rule(system.checker) {
-    mustNot {{ define a kind of its own in the core format }}
+    must_not {{ define a kind of its own in the core format }}
     instead {{ leave every kind to the packages in `import`, with the core's own names declared in the prelude package `std/core` that every tree sees without importing it }}
   }
 
@@ -76,23 +76,26 @@ files: section {
   }
 
   errors: section {
+    @status(422)
     not_a_list: error("directive") {
       title = "{directive} takes a list of strings"
-      directive: field(String)
+      directive: String
       | ‹directive› is `include` or `import`.
       | Reported as [language.core_format.files.directives] says.
     }
 
+    @status(422)
     not_plain: error("directive") {
       title = "{directive} entries are plain strings"
-      directive: field(String)
+      directive: String
       | Reported as [language.core_format.files.directives] says.
     }
 
+    @status(422)
     @severity(warning)
     unreachable_file: error("unreachable-file") {
       title = "no entry point reaches {file}, so nothing checks it"
-      file: field(String)
+      file: String
       | Reported as [language.core_format.files.unreachable_file] says.
     }
   }

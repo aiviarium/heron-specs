@@ -8,52 +8,56 @@ flags: section {
   }
 
   flag_on: rule(system.linter) {
-    where {{ a flag is declared with `on`, a list of kinds and categories }}
+    while {{ a flag is declared with `on`, a list of kinds and categories }}
     should {{ report flag placement where it stands on a node whose kind is none of them and in none of the categories }}
     while {{ the flag's `on` lists kinds or categories }}
   }
 
   flag_on_annotation: rule(system.linter) {
-    where {{ a flag's `on` names an annotation, as `raw: flag(on = [insert])` }}
+    while {{ a flag's `on` names an annotation, as `raw: flag(on = [insert])` }}
     should {{ report flag on annotation where it stands on any other annotation }}
   }
 
   flag_groups: rule(system.linter) {
-    where {{ flags are declared with the same `group`, as `std/http` declares `get`, `post`, `put`, `patch` and `delete` in the group `"method"` }}
+    while {{ flags are declared with the same `group`, as `std/http` declares `get`, `post`, `put`, `patch` and `delete` in the group `"method"` }}
     should {{ report flags of one group where a node carries two flags of one group }}
   }
 
   errors: section {
+    @status(422)
     @severity(warning)
     flag_group_twice: error("flag-group") {
       title = "<{flag}> and <{other}> are both in the group {group}; a node carries one of them"
-      flag: field(String)
-      other: field(String)
-      group: field(String)
+      flag: String
+      other: String
+      group: String
       | Reported as [language.schemas.flags.flag_groups] says.
     }
 
+    @status(422)
     @severity(warning)
     flag_misplaced: error("flag-placement") {
       title = "<{flag}> doesn't attach to {kind}; it attaches to {kinds}"
-      flag: field(String)
-      kind: field(String)
-      kinds: field(String)
+      flag: String
+      kind: String
+      kinds: String
       | Reported as [language.core_format.nodes.flags.flag_placement], [language.schemas.flags.flag_on] and [language.specifications.traceability.status_placement] say.
     }
 
+    @status(422)
     @severity(warning)
     flag_misplaced_on_annotation: error("flag-placement") {
       title = "<{flag}> doesn't attach to @{annotation}; it attaches to {kinds}"
-      flag: field(String)
-      annotation: field(String)
-      kinds: field(String)
+      flag: String
+      annotation: String
+      kinds: String
       | Reported as [language.schemas.flags.flag_on_annotation] says.
     }
 
+    @status(422)
     not_a_flag: error("not-a-flag") {
       title = "{name} is not a flag"
-      name: field(String)
+      name: String
       | A flag names something in scope that isn't a flag.
       | Reported as [language.schemas.flags.declaring_flags] says.
     }

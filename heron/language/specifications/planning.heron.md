@@ -21,13 +21,13 @@ what it's about, with `owner` naming who answers it.
 </rule>
 
 <rule id="open_beside_flag" refs="actors.author">
-<where>a file imports `std/types`, beside the core's `std/spec`</where>
+<while>a file imports `std/types`, beside the core's `std/spec`</while>
 <must>write an open question as `spec.open {{ … }}`</must>
 <then>the name `open` can't resolve to the `<open>` flag `std/types` gives records, which "open is not a kind or a type" reports</then>
 </rule>
 
 <rule id="spec_never_imports_planning" refs="actors.author">
-<mustNot>import the [planning tree](#language.specifications.planning.planning_tree) from the spec tree</mustNot>
+<must_not>import the [planning tree](#language.specifications.planning.planning_tree) from the spec tree</must_not>
 <instead>let the [planning tree](#language.specifications.planning.planning_tree) import the spec, so the spec never loads its questions</instead>
 </rule>
 

@@ -31,13 +31,13 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="lens_switcher" refs="system.docs_generator">
-<where>the site builds more than one [lens](#tools.docs.lenses.lens_kind)</where>
+<while>the site builds more than one [lens](#tools.docs.lenses.lens_kind)</while>
 <must>show in the top bar, right beside the version switch, a dropdown captioned as the view, its options the `title` of each lens in the order of the docs block's `lenses`, the current one selected, each a plain link that works without a script, drawn as the version switch's select once a script runs</must>
 </rule>
 
 <rule id="no_switcher_alone" refs="system.docs_generator">
-<where>the site builds one lens</where>
-<mustNot>show a lens switcher</mustNot>
+<while>the site builds one lens</while>
+<must_not>show a lens switcher</must_not>
 </rule>
 
 <rule id="narrow_screens" refs="system.docs_generator">
@@ -50,7 +50,7 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="frame_uses_window" refs="system.docs_generator">
-<where>the window is wider than 1180 px</where>
+<while>the window is wider than 1180 px</while>
 <must>lay the frame out as three [columns](#heron.language.grammar.lexical.column) inside the window's width, up to a maximum of 1920 px and centred beyond it: the navigation at the frame's left edge, the right [column](#heron.language.grammar.lexical.column) at its right edge, each as wide on every page at a given window width, the right one whether it holds an outline, an op's examples or nothing; and the page in the space between them, at one width that depends only on the window, clamped between about 560 and 760 px, centred in that space</must>
 <then>the content has the same width and the same x on every page at a given window width, so moving between pages never changes it, and the room on either side of it is equal</then>
 </rule>
@@ -61,7 +61,7 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="pages_in_place" refs="system.docs_generator">
-<where>a script runs and the page is served over HTTP</where>
+<while>a script runs and the page is served over HTTP</while>
 <must>show a page that a link, the search or going back or forward leads to within the same lens's site in place: fetch it and swap in its top bar and frame in one step, without loading a new document, and update the address, the title and the history, while every link stays a plain link that works without a script</must>
 <then>moving between pages never shows a blank or light canvas between two pages, in any browser</then>
 </rule>

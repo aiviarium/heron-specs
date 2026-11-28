@@ -72,37 +72,41 @@ implementations: section {
   }
 
   errors: section {
+    @status(422)
     @display("Sealed")
     sealed_node: error("sealed") {
       title = "{path} is in the sealed package {package}: nothing outside it may amend, scope or set into its nodes; import it and refer to them instead"
-      path: field(String)
-      package: field(String)
+      path: String
+      package: String
       | Reported as [language.specifications.implementations.sealed.sealed_locked] says.
     }
 
+    @status(422)
     @display("Spec content")
     spec_content: error("project-mode") {
       title = "{name} is a {kind}, which is spec content: this tree implements {spec}, so the spec's kinds belong in the spec package, and the project only refers to them"
-      name: field(String)
-      kind: field(String)
-      spec: field(String)
+      name: String
+      kind: String
+      spec: String
       | Reported as [language.specifications.implementations.sealed.spec_kinds_in_spec] says.
     }
 
+    @status(422)
     @display("Spec version")
     spec_version: error("version") {
       title = "implements {spec} at {at}, but the spec package is version {version}: at copies the spec version exactly"
-      spec: field(String)
-      at: field(String)
-      version: field(String)
+      spec: String
+      at: String
+      version: String
       | Reported as [language.specifications.implementations.versions.spec_version_form] says.
     }
 
+    @status(422)
     @display("Project version")
     project_version: error("version") {
       title = "the project version {version} {reason}"
-      version: field(String)
-      reason: field(String)
+      version: String
+      reason: String
       | The version doesn't start with the implemented spec version, or doesn't have the form of the project's scheme.
       | Reported as [language.specifications.implementations.versions.schemes] and [language.specifications.implementations.versions.version_starts_with_spec] say.
     }

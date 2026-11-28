@@ -43,6 +43,6 @@ back as the type.
 </section>
 
 <rule id="encodings_keep_types" refs="actors.author">
-<mustNot>let an encoding package's annotations change the types they annotate</mustNot>
+<must_not>let an encoding package's annotations change the types they annotate</must_not>
 <then>one model encodes to every format</then>
 </rule>

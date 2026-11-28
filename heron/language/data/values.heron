@@ -57,7 +57,7 @@ values: section {
   }
 
   defaults_present: rule(system.interpreter) {
-    where {{ a member has a default, as in `currency: String = "EUR"` }}
+    while {{ a member has a default, as in `currency: String = "EUR"` }}
     must {{ treat it as optional on input and present, with its default, on every value read }}
   }
 
@@ -68,19 +68,21 @@ values: section {
   }
 
   errors: section {
+    @status(422)
     missing_member: error("missing-argument") {
       title = "{type} needs the member {name}"
-      type: field(String)
-      name: field(String)
+      type: String
+      name: String
       | Reported as [language.data.values.required_members] says.
     }
 
+    @status(422)
     out_of_range: error("type") {
       title = "{value} doesn't fit {type}, which holds {min} to {max}"
-      value: field(String)
-      type: field(String)
-      min: field(String)
-      max: field(String)
+      value: String
+      type: String
+      min: String
+      max: String
       | Reported as [language.data.values.sized_numbers] says.
     }
   }

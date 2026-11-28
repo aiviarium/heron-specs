@@ -27,7 +27,7 @@ overview: section {
   | A [term](#tour_term) links to a node, $gauge.size inserts a value,
   | and [this page](${docs}/gauges) points elsewhere.
   |
-  | <note kind="tip">Tags are nodes too, written inside the text.</note>
+  | <tip>Tags are nodes too, written inside the text.</tip>
 
   tour_term: term =| A word the glossary defines once.
 

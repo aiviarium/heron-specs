@@ -19,6 +19,6 @@ is the one [gRPC and Connect](#language.apis.grpc) gives, the same the docs show
 </rule>
 
 <rule id="proto_extra" refs="system.generator">
-<mustNot>generate the files unless asked for their target, or read them back</mustNot>
+<must_not>generate the files unless asked for their target, or read them back</must_not>
 <then>the tree stays the one source of the service</then>
 </rule>

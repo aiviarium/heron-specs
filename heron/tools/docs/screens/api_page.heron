@@ -17,7 +17,7 @@ api_page: screen(route = "/<api>.html") {
     | name, its protocols, and its methods by their signatures.
 
     service_lead: rule(system.docs_generator) {
-      where {{ an api is bound by `std/proto`, `std/jsonrpc` or `std/sparrow` }}
+      while {{ an api is bound by `std/proto`, `std/jsonrpc` or `std/sparrow` }}
       must {{ show the service's fully qualified name with a copy button, the [protocols](#language.apis.grpc.proto_protocol) it's served over, its JSON-RPC [framing](#language.apis.jsonrpc.jsonrpc_framing) and encoding, whether it takes batches, its Sparrow [facet](#language.apis.sparrow.sparrow_facet) with its id, version, facet hash and retired ids and its service with its id, and its [server URLs](#language.apis.rpc.server_url) }}
     }
 
@@ -26,7 +26,7 @@ api_page: screen(route = "/<api>.html") {
     }
 
     methods_grouped: rule(system.docs_generator) {
-      where {{ an api is bound by `std/proto`, `std/jsonrpc` or `std/sparrow` }}
+      while {{ an api is bound by `std/proto`, `std/jsonrpc` or `std/sparrow` }}
       must {{ group a gRPC service's methods by [streaming kind](#language.apis.rpc.streaming_kind), unary first, a Sparrow service's likewise with its [notifications](#language.apis.sparrow.sparrow_notification) last, and a JSON-RPC api's by the part of the method's name before its first `/` or `.`, [notifications](#language.apis.jsonrpc.jsonrpc_notification) last }}
     }
 
@@ -36,7 +36,7 @@ api_page: screen(route = "/<api>.html") {
     }
 
     both_indexes: rule(system.docs_generator) {
-      where {{ an api has more than one binding }}
+      while {{ an api has more than one binding }}
       must {{ show each binding's index under the binding switch, one binding at a time }}
     }
   }

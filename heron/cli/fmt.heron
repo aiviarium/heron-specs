@@ -1,32 +1,27 @@
-fmt: command("heron fmt", cli.fmt.check_changes_nothing) {
-  usage = ["heron fmt [--check] [--stdout] [paths…]"]
-
+fmt(
+  /// Changes nothing, and prints the path of every file that isn't formatted, relative to
+  /// the working folder, one per line.
+  @option
+  check: Bool = false,
+  /// Prints every file's formatted text, one after another, instead of rewriting it. It
+  /// wins over `--check`.
+  @option
+  stdout: Bool = false,
+  /// Files and folders, relative to the working folder. With none, `.`. A file named
+  /// directly is formatted whatever its extension.
+  paths<variadic>?: String,
+): command("heron fmt", cli.fmt.check_changes_nothing) {
   | Formats [Heron files](#language.core_format.files.heron_file) in place from their [lossless tree](#language.grammar.recovery.lossless_tree), as [the formatter](#system.formatter) lays
   | them out, writing a file only when its text changes. A folder is walked for `.heron`
   | and `.heron.md` files, skipping folders whose names start with `.` and `node_modules`.
   | A file with syntax errors is formatted too. Options come before the paths.
 
-  paths: argument("paths", type = String, optional = true, variadic = true) {
-    | Files and folders, relative to the working folder. With none, `.`. A file named
-    | directly is formatted whatever its extension.
-  }
-
-  check: option("--check", cli.fmt.check_changes_nothing, type = Bool, default = false) {
-    | Changes nothing, and prints the path of every file that isn't formatted, relative to
-    | the working folder, one per line.
-  }
-
-  stdout: option("--stdout", type = Bool, default = false) {
-    | Prints every file's formatted text, one after another, instead of rewriting it. It
-    | wins over `--check`.
-  }
-
   | Exits 0 when: every file is formatted, or was rewritten.
-  @exit(1)
+  @status(422)
   exit_1: error("heron fmt exit 1") {
     title = "with --check, a file isn't formatted; or a path doesn't exist, or a file can't be read or written"
   }
-  @exit(2)
+  @status(400)
   exit_2: error("heron fmt exit 2") {
     title = "an unknown option"
   }
@@ -34,7 +29,7 @@ fmt: command("heron fmt", cli.fmt.check_changes_nothing) {
   example {{ `heron fmt --check fixtures spec std` lists the files a commit would leave unformatted, as CI runs it. }}
 
   check_changes_nothing: rule(system.command_line) {
-    mustNot {{ write any file }}
+    must_not {{ write any file }}
   }
 
 }

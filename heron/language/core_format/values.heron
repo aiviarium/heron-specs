@@ -27,13 +27,13 @@ values: section {
   }
 
   enum_values: rule(system.checker) {
-    where {{ an enum is expected }}
+    while {{ an enum is expected }}
     must {{ accept the variant's path, its bare name, or a string naming it in any case, and report not a variant with the closest variant for a name or string that names none }}
-    example {{ `note(kind = tip)`, `note(kind = "TIP")` and `<note kind="tip">`: the same variant }}
+    example {{ `actor(role = AGENT)`, `actor(role = "agent")` and `<actor role="agent">`: the same variant }}
   }
 
   strings_parsed_by_type: rule(system.checker) {
-    where {{ a type that parses from a string is expected, such as `Duration` or `Money` }}
+    while {{ a type that parses from a string is expected, such as `Duration` or `Money` }}
     must {{ parse a string literal by that type's [form](#language.data.typed_strings), and report the type's diagnostic, such as not a duration, where it doesn't parse }}
     example {{ `limit = "30d"`: a `Duration`; `amount = "40.00 EUR"`: `Money` }}
   }
@@ -48,19 +48,21 @@ values: section {
   }
 
   errors: section {
+    @status(422)
     wrong_type: error("type") {
       title = "expected {type}, got {what}"
-      type: field(String)
-      what: field(String)
+      type: String
+      what: String
       | ‹what› says what the literal is, as "expected Int, got a string".
       | Reported as [language.core_format.values.literal_types] and [language.data.typed_strings.other_literals] say.
     }
 
+    @status(422)
     not_a_variant: error("type") {
       title = "{value} is not a value of {enum}"
-      value: field(String)
-      enum: field(String)
-      | ‹value› is written as the source has it, a string in quotes: `"hint" is not a value of NoteKind`.
+      value: String
+      enum: String
+      | ‹value› is written as the source has it, a string in quotes: `"robot" is not a value of ActorRole`.
       | Reported as [language.core_format.values.enum_values] says.
     }
   }

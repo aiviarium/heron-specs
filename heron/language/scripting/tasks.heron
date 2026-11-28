@@ -22,7 +22,7 @@ tasks: section {
     }
 
     repository_tasks: rule(system.command_line) {
-      where {{ no task has the path from the root, and the tree enters `std/repo`'s `repository` }}
+      while {{ no task has the path from the root, and the tree enters `std/repo`'s `repository` }}
       must {{ look the path up inside `repository` }}
       then {{ `heron run setup` runs `repository.setup` }}
     }
@@ -49,7 +49,7 @@ tasks: section {
     }
 
     bool_switch: rule(system.command_line) {
-      where {{ a `Bool` option is last or followed by another option }}
+      while {{ a `Bool` option is last or followed by another option }}
       must {{ read it as `true` }}
       example {{ `--dry` }}
     }
@@ -76,7 +76,7 @@ tasks: section {
 
   ordering: section {
     needs_annotation: rule(system.command_line) {
-      where {{ a task has `@needs(…)` }}
+      while {{ a task has `@needs(…)` }}
       must {{ run each task it names, and theirs in turn, once and before it, in the order the annotations name them, and the asked task last }}
       example {{ `setup` needing `left` and `right`, which both need `base`, runs `base`, `left`, `right`, `setup` }}
     }
@@ -130,12 +130,12 @@ tasks: section {
     }
 
     yes_flag: rule(system.command_line) {
-      where {{ `--yes` is given }}
+      while {{ `--yes` is given }}
       must {{ run `<confirm>` tasks without asking }}
     }
 
     command_flag: rule(system.command_line) {
-      where {{ a task is `<command>` }}
+      while {{ a task is `<command>` }}
       must {{ list it among the commands an agent harness is given, by its path, with its parameters and their `///` lines }}
     }
   }
@@ -158,7 +158,7 @@ tasks: section {
     }
 
     no_undo_by_default: rule(system.command_line) {
-      mustNot {{ undo anything when `--undo-on-failure` isn't given }}
+      must_not {{ undo anything when `--undo-on-failure` isn't given }}
     }
 
     stage_undo: rule(system.command_line) {
@@ -173,7 +173,7 @@ tasks: section {
     }
 
     json_results: rule(system.command_line) {
-      where {{ `--json` is given }}
+      while {{ `--json` is given }}
       must {{ print the return value as indented JSON, a `String` and null included }}
     }
 
@@ -193,59 +193,66 @@ tasks: section {
   errors: section {
     | `heron run` prints each of these on standard error after `heron run: `.
 
+    @status(400)
     @display("No task")
     no_task: error("run") {
       title = "no task {path}"
-      path: field(String)
+      path: String
       | Reported as [language.scripting.tasks.finding.no_such_task] says.
     }
 
+    @status(400)
     @display("Bad parameter")
     bad_param: error("run") {
       title = "--{param} takes an Int, not \"{text}\""
-      param: field(String)
-      text: field(String)
+      param: String
+      text: String
       | Or the message for the type, such as `takes one of RED, BLUE`, or `‹task› takes no
       | parameter --‹name›`, `--‹name› needs a value`, `--‹name› is given more than once` and
       | `unexpected argument ‹arg›; parameters are given as --name value`.
       | Reported as [language.scripting.tasks.params.bad_params] says.
     }
 
+    @status(400)
     @display("Needs a parameter")
     needs_param: error("run") {
       title = "{task} needs --{param} ({type})"
-      task: field(String)
-      param: field(String)
-      type: field(String)
+      task: String
+      param: String
+      type: String
       | Reported as [language.scripting.tasks.params.missing_params_fail] says.
     }
 
+    @status(400)
     @display("Needs a cycle")
     needs_cycle: error("run") {
       title = "@needs forms a cycle: {task} → … → {task}"
-      task: field(String)
+      task: String
       | Reported as [language.scripting.tasks.ordering.needs_cycle] says.
     }
 
+    @status(400)
     @display("Needs no task")
     needs_non_task: error("run") {
       title = "{task} needs {path}, which is no task"
-      task: field(String)
-      path: field(String)
+      task: String
+      path: String
       | Reported as [language.scripting.tasks.ordering.needs_non_task] says.
     }
 
+    @status(409)
     @display("Not confirmed")
     not_confirmed: error("run") {
       title = "{task} was not confirmed"
-      task: field(String)
+      task: String
       | Reported as [language.scripting.tasks.confirming.declined] says.
     }
 
+    @status(400)
     @display("Asks before it runs")
     needs_yes: error("run") {
       title = "{task} asks before it runs; pass --yes to run it without a terminal"
-      task: field(String)
+      task: String
       | Reported as [language.scripting.tasks.confirming.confirm_without_terminal] says.
     }
   }

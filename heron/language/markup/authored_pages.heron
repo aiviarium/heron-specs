@@ -57,7 +57,7 @@ authored_pages: section {
     }
 
     unmarked_in_every_lens: rule(system.docs_generator) {
-      where {{ an [authored page](#language.markup.authored_pages.authored_page) carries no [lens mark](#tools.docs.lenses.lens_mark) }}
+      while {{ an [authored page](#language.markup.authored_pages.authored_page) carries no [lens mark](#tools.docs.lenses.lens_mark) }}
       must {{ render it in every lens whose lists keep it }}
     }
   }
@@ -79,17 +79,17 @@ authored_pages: section {
     }
 
     other_blocks_shown: rule(system.checker) {
-      mustNot {{ check a code block outside an `example`, or one marked with a language other than `heron` }}
+      must_not {{ check a code block outside an `example`, or one marked with a language other than `heron` }}
     }
   }
 
   facts: section {
     | A page inserts a fact, such as a command's name or an option's default, from the node
-    | that states it, rather than copying it: `${cli.serve.addr.default}` shows the
+    | that states it, rather than copying it: `${cli.serve.addr}` shows the
     | default as the spec has it, and stops the check when the spec no longer has it.
 
     insert_arguments: rule(system.checker) {
-      must {{ resolve an [insertion](#language.markup.inserts.insertion) whose last name is a parameter of the kind of the node before it, as `${cli.serve.addr.default}`, to the argument the node passes for it, or to the parameter's default when it passes none }}
+      must {{ resolve an [insertion](#language.markup.inserts.insertion) whose last name is a parameter of the kind of the node before it, as `${cli.serve.name}`, to the argument the node passes for it, or to the parameter's default when it passes none, and one whose last name is a parameter the node declares, as `${cli.serve.addr}` for an option of a command, to that parameter's default }}
     }
 
     inserted_facts_required: rule(system.checker) {
@@ -99,7 +99,7 @@ authored_pages: section {
     }
 
     inserted_strings: rule(system.docs_generator) {
-      where {{ an [insertion](#language.markup.inserts.insertion) resolves to a string }}
+      while {{ an [insertion](#language.markup.inserts.insertion) resolves to a string }}
       must {{ render the string's text without its quotes, as inline code }}
       example {{ `${cli.check.name}` renders `heron check` }}
     }
@@ -117,12 +117,13 @@ authored_pages: section {
   }
 
   errors: section {
+    @status(422)
     @display("Example doesn't check")
     example_fails: error("example") {
       title = "the example {path} doesn't check: {message} (line {line})"
-      path: field(String)
-      message: field(String)
-      line: field(String)
+      path: String
+      message: String
+      line: String
       | Fix the code in the example, or move code that isn't a whole file out of the example into a code block of the page.
       | Reported as [language.markup.authored_pages.checked_examples.example_errors] says.
     }
@@ -134,9 +135,7 @@ authored_pages: section {
     | import = ["std/doc@1", "std/docs@1"]
     |
     | cli: section {
-    |   check: command("acme check") {
-    |     verbose: option("--verbose", type = Bool, default = false)
-    |   }
+    |   check(@option verbose: Bool = false): command("acme check") {{ Checks the files of a folder. }}
     | }
     |
     | @lens(user)
@@ -148,7 +147,7 @@ authored_pages: section {
     |   }
     |
     |   read: step {
-    |     | Read each line it prints. `--verbose`, ${cli.check.verbose.default} unless you pass it, lists every file it read.
+    |     | Read each line it prints. ${cli.check.name} with `--verbose` lists every file it read.
     |   }
     | }
     | ```

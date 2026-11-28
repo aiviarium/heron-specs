@@ -36,7 +36,7 @@ tags: section {
   }
 
   anonymous_elements: rule(system.checker) {
-    where {{ an element has no `id` and stands in a node's text or inside a sentence, rather than on lines of its own in a named element's body }}
+    while {{ an element has no `id` and stands in a node's text or inside a sentence, rather than on lines of its own in a named element's body }}
     must {{ read it as content of that text, which renders in place and declares no node }}
   }
 
@@ -63,7 +63,7 @@ tags: section {
   }
 
   forms_kept: rule(system.formatter) {
-    mustNot {{ turn a Markdown form into an element, or an element into a Markdown form }}
+    must_not {{ turn a Markdown form into an element, or an element into a Markdown form }}
     then {{ the tree records which form each node was written in, and `heron fmt` writes it back so }}
   }
 
@@ -86,7 +86,7 @@ tags: section {
   }
 
   variadic_attributes: rule(system.checker) {
-    where {{ an attribute names a variadic parameter }}
+    while {{ an attribute names a variadic parameter }}
     must {{ give its value as that parameter's arguments, in order and before the named ones: a quoted value as one, a braced list as one per item }}
     example {{ `<increment id="first" delivers="refund_story">` is `first: increment(refund_story)`, and `delivers={[refund_story, refund_window]}` gives two }}
   }
@@ -110,41 +110,46 @@ tags: section {
   }
 
   errors: section {
+    @status(422)
     missing_attribute: error("missing-argument") {
       title = "<{kind}> needs the attribute {name}"
-      kind: field(String)
-      name: field(String)
+      kind: String
+      name: String
       | Reported as [language.markup.tags.required_attributes] says.
     }
 
+    @status(422)
     tag_not_accepted: error("accept") {
       title = "<{kind}> doesn't accept <{child}>; it accepts {kinds}"
-      kind: field(String)
-      child: field(String)
-      kinds: field(String)
+      kind: String
+      child: String
+      kinds: String
       | Reported as [language.markup.tags.slots] says.
     }
 
+    @status(422)
     @display("Element needs an id")
     element_needs_id: error("unnamed") {
       title = "<{kind}> declares a node and needs an id"
-      kind: field(String)
+      kind: String
       | A section, a step, a concept or another kind with a heading, or a term, written as an element without `id`.
       | Reported as [language.markup.tags.element_needs_id] says.
     }
 
+    @status(422)
     @display("Code in an element")
     code_in_element: error("element-code") {
       title = "<{kind}>'s body is code; write it in a .heron file"
-      kind: field(String)
+      kind: String
       | A kind whose body is a `do` block, written as an element; code has no element form.
       | Reported as [language.markup.tags.code_stays_in_heron] says.
     }
 
+    @status(422)
     @display("Unquoted attribute")
     unquoted_attribute: error("syntax") {
       title = "the value of {name} needs quotes or braces"
-      name: field(String)
+      name: String
       | An attribute written `name=value`; write `name="value"`, or `name={expr}` for an expression.
       | Reported as [language.markup.tags.quoted_attributes] says.
     }

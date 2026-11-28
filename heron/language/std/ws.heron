@@ -1,5 +1,5 @@
 @display("std/ws")
-ws: part {
+ws: feature {
   | Binds apis and ops to WebSockets, each op a message type on the socket.
   |
   | Its surface is declared in `std/ws/package.heron`, whose types the API reference renders.

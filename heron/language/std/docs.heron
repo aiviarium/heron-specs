@@ -1,5 +1,5 @@
 @display("std/docs")
-docs: part {
+docs: feature {
   | How the docs generator is configured and what it's given to render: its styling, the
   | layout each section uses, the components each slot shows, the modules that render kinds,
   | the [lenses](#tools.docs.lenses.lens_kind) a site is read through, and the [authored pages](#language.markup.authored_pages.authored_page) written for its readers. A

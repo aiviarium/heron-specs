@@ -4,22 +4,22 @@
 @status(404)
 no_such_file: error("server.NO_SUCH_FILE") {
   title = "{path}: no such file"
-  path: field(String)
+  path: String
   | Reported as [tools.server.ops.agent_export_op] says.
 }
 
 @status(404)
 no_op: error("server.NO_OP") {
   title = "no op at {method} {path}"
-  method: field(String)
-  path: field(String)
+  method: String
+  path: String
   | Reported as [tools.server.serving.unknown_op] says.
 }
 
 @status(403)
 origin_not_allowed: error("server.ORIGIN_NOT_ALLOWED") {
   title = "{origin} may not call this server"
-  origin: field(String)
+  origin: String
   | A request from a page of another origin than the server's.
   | Reported as [tools.server.serving.same_origin] says.
 }

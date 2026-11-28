@@ -29,8 +29,13 @@ the folder's name, so `language/grammar/lexical.heron` declares nodes under
 </term>
 
 <term id="concern_file" aliases={["concern file"]}>
-A file that holds one concern of its folder, as one section or one command.
+A file that holds one concern of its folder, as one section, one feature or one command.
 </term>
+
+<rule id="capabilities_are_features" refs="actors.author">
+<must>declare each folder that holds a capability of Heron as a [feature](#language.specifications.context.feature_kind) where the folder is included, with the goals its index declares, as `grammar: feature(grammar.forgiving_syntax) {}`, and each standard package as a feature of its own</must>
+<then>the language's areas, the command line, the tools, the docs, the VS Code extension and each standard package are features, and the sections inside them only title parts of their pages</then>
+</rule>
 
 <rule id="folder_index" refs="actors.author">
 <must>give every folder an `index.heron` that opens with one prose line saying what its scope specifies, and includes the folder's files and folders in reading order</must>
@@ -46,7 +51,7 @@ A file that holds one concern of its folder, as one section or one command.
 </rule>
 
 <rule id="acronym_display_names" refs="actors.author">
-<where>a folder's name is an acronym, as `cli/`</where>
+<while>a folder's name is an acronym, as `cli/`</while>
 <must>give its scope a [display name](#language.core_format.naming.display_name) with `@display` in the index that includes the folder, right after the include list, as `@display("CLI") cli {}`</must>
 </rule>
 
@@ -56,7 +61,7 @@ A file that holds one concern of its folder, as one section or one command.
 </rule>
 
 <rule id="folder_lenses" refs="actors.author">
-<where>a folder is for some [lenses](#tools.docs.lenses.lens_kind) of the docs alone</where>
+<while>a folder is for some [lenses](#tools.docs.lenses.lens_kind) of the docs alone</while>
 <must>mark its scope with `@lens` in the index that includes the folder, right after the include list, as `@lens(developer) tools {}`</must>
 <then>the tools are marked `@lens(developer)`, and the guide, a file, carries `@lens(explore)` on its section</then>
 </rule>
@@ -71,7 +76,7 @@ A file that holds one concern of its folder, as one section or one command.
 </rule>
 
 <rule id="one_command_per_file" refs="actors.author">
-<must>specify each subcommand of the binary as one `command` in a file of its own under `cli/`</must>
+<must>specify each subcommand of the binary as one `command` in a file of its own under `cli/`, declared as an op is, with its parameters</must>
 </rule>
 </section>
 
@@ -82,24 +87,25 @@ renderer can read it. Prose carries context and reasons, never a behaviour on it
 | To state                          | Write                                                               |
 | --------------------------------- | ------------------------------------------------------------------- |
 | What an area is for               | a `goal` it opens with, with its `measure`                          |
+| A capability                      | a `feature` with the goals it serves                                |
 | Who crosses the boundary          | an `actor`, once, at the package top                                |
 | What's deliberately left out      | a `nongoal`                                                         |
 | A behaviour                       | a `rule(subject, goal)` with one strength and its conditions        |
-| A limit with an outside reason    | a `constraint` with its `reason`                                    |
+| A limit with an outside reason    | a `constraint` with its `rationale`                                 |
 | A party inside that rules bind    | a `part`, at the package top                                        |
 | A [lifecycle](#language.specifications.lifecycles.lifecycle)                       | `states` and `transition`                                           |
 | A word                            | a `term`, once, where its domain is                                 |
 | An interaction                    | a `usecase` with its numbered steps and extensions                  |
 | A case of a rule                  | a `scenario(rule)`                                                   |
 | A measured quality                | a `quality` and a quality `scenario(quality)` with its `measure`     |
-| A subcommand                      | a `command` with its usage, arguments, options and errors           |
+| A subcommand                      | a `command`, its parameters its arguments and `@option`s, with its errors |
 | Syntax                            | a `grammar` of `production` and `token` nodes, from `std/grammar`   |
-| A problem the product reports     | an `error` with its id, title, fields, projections and a link to its rule |
+| A problem the product reports     | an `error` with its id, title, members, `@status` and a link to its rule |
 | A screen                          | a `screen` of nested `region` nodes                                 |
 | An example a reader can run       | an `example` with a complete code block                             |
 
 <rule id="behaviour_in_kinds" refs="actors.author">
-<mustNot>state a behaviour in prose alone</mustNot>
+<must_not>state a behaviour in prose alone</must_not>
 <instead>state it as a rule, a use case step or a transition, with the prose around it giving the reasons</instead>
 </rule>
 
@@ -141,9 +147,9 @@ run up or across the [layers](#heron.language.specifications.layers.layer) and n
 </rule>
 
 An error is a result, not a party: it never names who reports it, with a reference. The
-raiser names it, as an op's `@throws` or a command holding it, or the rule its prose links names the
+raiser names it, with `@throws` or by holding it, or the rule its prose links names the
 raiser as its subject. The spec kinds and their annotations are part of the core, so a spec
-imports `std/doc` for its sections and terms and nothing for its rules and errors.
+imports `std/doc` for its sections and nothing for its features, terms, rules and errors.
 
 <rule id="layer_placement" refs="actors.author">
 <must>place each statement in the [layer](#heron.language.specifications.layers.layer) its test puts it in: what the people it's for want is intent, what the product guarantees at its boundary in the domain's words is the specification, and the exact bytes, flags, fields or screens of the boundary are the contract</must>
@@ -159,7 +165,7 @@ imports `std/doc` for its sections and terms and nothing for its rules and error
 </rule>
 
 <rule id="no_small_tables" refs="actors.author">
-<mustNot>write a [table](#heron.language.markup.components.table) in prose with one [column](#heron.language.grammar.lexical.column) or fewer than three rows below its header</mustNot>
+<must_not>write a [table](#heron.language.markup.components.table) in prose with one [column](#heron.language.grammar.lexical.column) or fewer than three rows below its header</must_not>
 <instead>write the rows as a list or a sentence, and keep [tables](#heron.language.markup.components.table) for data with [columns](#heron.language.grammar.lexical.column) to compare</instead>
 </rule>
 
@@ -168,8 +174,8 @@ imports `std/doc` for its sections and terms and nothing for its rules and error
 </rule>
 
 <rule id="facts_inserted" refs="actors.author">
-<where>an [authored page](#language.markup.authored_pages.authored_page) states a fact a node of the spec holds, such as the name of a command, the default of an option or the message of a diagnostic</where>
-<must>insert it from that node, as `${cli.serve.addr.default}`, rather than copy it</must>
+<while>an [authored page](#language.markup.authored_pages.authored_page) states a fact a node of the spec holds, such as the name of a command, the default of an option or the message of a diagnostic</while>
+<must>insert it from that node, as `${cli.serve.addr}`, rather than copy it</must>
 </rule>
 
 <guidance id="named_instances">
@@ -185,7 +191,7 @@ its rules target; everything else is loaded when a link leads there. A subtree i
 complete when that's enough to build it.
 
 <rule id="subtree_is_enough" refs="actors.author">
-<must>write each section and command so that its subtree, the terms it links and the surface of its targets are all an implementer needs</must>
+<must>write each feature, section and command so that its subtree, the terms it links and the surface of its targets are all an implementer needs</must>
 </rule>
 </section>
 
@@ -196,7 +202,7 @@ choice for the implementer.
 
 <rule id="unstated_behaviour_is_a_finding" refs="actors.implementer">
 <when>building needs a behaviour the spec doesn't state</when>
-<mustNot>decide that behaviour on the spec's behalf</mustNot>
+<must_not>decide that behaviour on the spec's behalf</must_not>
 <instead>report it to the spec's authors as a finding</instead>
 </rule>
 

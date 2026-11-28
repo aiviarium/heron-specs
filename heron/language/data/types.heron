@@ -72,7 +72,7 @@ types: section {
   }
 
   errors_never_enums: rule(system.checker) {
-    mustNot {{ accept an enum as an error, in `@throws` or a `throw` }}
+    must_not {{ accept an enum as an error, in `@throws` or a `throw` }}
     instead {{ report not an error, since an error carries a message and an enum variant doesn't }}
   }
 
@@ -88,12 +88,12 @@ types: section {
   }
 
   interfaces_for_all_variants: rule(system.checker) {
-    where {{ an enum or a union implements an interface }}
+    while {{ an enum or a union implements an interface }}
     must {{ check the interface against every variant }}
   }
 
   no_interface_fields: rule(system.checker) {
-    mustNot {{ accept an interface as the type of a member of encoded data }}
+    must_not {{ accept an interface as the type of a member of encoded data }}
     instead {{ require a `union` there; an interface can still be a parameter's type }}
   }
 
@@ -103,18 +103,20 @@ types: section {
   }
 
   errors: section {
+    @status(422)
     not_an_error: error("type") {
       title = "{type} can't be thrown: it doesn't implement Error"
-      type: field(String)
+      type: String
       | Reported as [language.apis.responses.thrown_types_are_errors], [language.data.types.errors_never_enums] and [language.data.types.only_errors_thrown] say.
     }
 
+    @status(422)
     restate_member: error("conflict") {
       title = "{type} gets {member} from both {a} and {b}; restate it"
-      type: field(String)
-      member: field(String)
-      a: field(String)
-      b: field(String)
+      type: String
+      member: String
+      a: String
+      b: String
       | Reported as [language.data.types.restating_members] says.
     }
   }
@@ -143,16 +145,14 @@ types: section {
     | /// Everything a refund request can be refused with.
     | RefundError: interface(Error)
     |
-    | // One error, projected on each binding: an HTTP status and a gRPC code.
+    | // One error, with one status: its gRPC code, FAILED_PRECONDITION, derives from it.
     | @status(422)
-    | @code(FAILED_PRECONDITION)
     | RefundWindowExpired: type(RefundError) {
     |   message: String = "The 30-day refund window has passed."
     |   captured_at: Timestamp
     | }
     |
     | @status(404)
-    | @code(NOT_FOUND)
     | PaymentNotFound: type(RefundError) {
     |   message: String = "No payment exists with this id."
     |   payment_id: String

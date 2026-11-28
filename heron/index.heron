@@ -23,18 +23,20 @@ heron: package(version = "0.6.0", sealed = true) {
 
   // A folder's scope is named after the folder, so a name that's an acronym
   // gets its display name here, where the folder is included, and its icon.
+  // The folders that hold a capability of Heron are its features, declared
+  // here with the goals they serve.
   @display("CLI")
   @icon("terminal")
-  cli {}
+  cli: feature(cli.scriptable, actors.author) {}
 
   // The lenses a folder is for are said where the folder is included, as
   // the guide says: the tools are for people who write trees of their own.
   @lens(developer)
   @icon("wrench")
-  tools {}
+  tools: feature(tools.tools_agree, actors.author) {}
 
   @icon("braces")
-  language {}
+  language: feature(one_source, actors.author) {}
 
   @icon("graduation-cap")
   learn {}

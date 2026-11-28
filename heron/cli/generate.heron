@@ -1,6 +1,27 @@
-generate: command("heron generate", cli.generate.block_only_for_all) {
-  usage = ["heron generate [--entry file] [targets…]", "heron generate [--entry file] --pack id [agents]"]
-
+generate(
+  /// The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
+  /// folder. Files are still written under the working folder.
+  @option(value = "file")
+  entry: String = ".",
+  /// The [stable id](#tools.docs.agents.stable_id) of a node, as `language.apis`: the `agents` target also writes that
+  /// node's [context pack](#tools.docs.agents.context_pack), to `.heron/agents/packs/‹id›.md`. It runs the `agents` target
+  /// alone.
+  @option(value = "id")
+  pack?: String,
+  /// The targets to run. The built-in ones:
+  ///
+  /// - `ts` writes `.heron/types.ts`, the TS types of the tree's declarations.
+  /// - `docs` writes the documentation site, under `.heron/docs/`, with the [agent export](#tools.docs.agents.agent_export) in it.
+  /// - `agents` writes the [agent export](#tools.docs.agents.agent_export), the tree as Markdown files for agents, under `.heron/agents/`.
+  ///
+  /// And those run only when they're named, for outside tooling:
+  ///
+  /// - `asyncapi` writes an [AsyncAPI](#tools.asyncapi) document of each api, under `.heron/asyncapi/`.
+  /// - `proto` writes the [`.proto` files](#tools.proto) of the tree's gRPC services, under `.heron/proto/`.
+  /// - `openrpc` writes an [OpenRPC](#tools.openrpc) document of each api with JSON-RPC methods, under `.heron/openrpc/`.
+  /// - `sparrow` writes each [Sparrow facet](#tools.sparrow) of the tree as canonical CBOR with a JSON rendering, and all of them as one Sparrow `schema` document, under `.heron/sparrow/`.
+  targets<variadic>?: String,
+): command("heron generate", cli.generate.block_only_for_all, cli.generate.unknown_target) {
   | Checks the tree and runs the adapters of the generation targets asked for, or of every
   | registered target that isn't run on request alone for none, writing their files under
   | the working folder and printing `wrote ‹path›` for each file it changed. Run with no
@@ -8,38 +29,12 @@ generate: command("heron generate", cli.generate.block_only_for_all) {
   | `.gitignore`: `/.heron/` and every file an adapter marks as a build output. Options
   | come before the targets.
 
-  targets: argument("targets", cli.generate.unknown_target, type = String, optional = true, variadic = true) {
-    | The targets to run. The built-in ones:
-    |
-    | - `ts` writes `.heron/types.ts`, the TS types of the tree's declarations.
-    | - `docs` writes the documentation site, under `.heron/docs/`, with the [agent export](#tools.docs.agents.agent_export) in it.
-    | - `agents` writes the [agent export](#tools.docs.agents.agent_export), the tree as Markdown files for agents, under `.heron/agents/`.
-    |
-    | And those run only when they're named, for outside tooling:
-    |
-    | - `asyncapi` writes an [AsyncAPI](#tools.asyncapi) document of each api, under `.heron/asyncapi/`.
-    | - `proto` writes the [`.proto` files](#tools.proto) of the tree's gRPC services, under `.heron/proto/`.
-    | - `openrpc` writes an [OpenRPC](#tools.openrpc) document of each api with JSON-RPC methods, under `.heron/openrpc/`.
-    | - `sparrow` writes each [Sparrow facet](#tools.sparrow) of the tree as canonical CBOR with a JSON rendering, and all of them as one Sparrow `schema` document, under `.heron/sparrow/`.
-  }
-
-  entry: option("--entry", type = String, default = ".") {
-    | The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`, relative to the working
-    | folder. Files are still written under the working folder.
-  }
-
-  pack: option("--pack", type = String) {
-    | The [stable id](#tools.docs.agents.stable_id) of a node, as `language.apis`: the `agents` target also writes that
-    | node's [context pack](#tools.docs.agents.context_pack), to `.heron/agents/packs/‹id›.md`. It runs the `agents` target
-    | alone.
-  }
-
   | Exits 0 when: every target ran; unchanged files aren't rewritten.
-  @exit(1)
+  @status(500)
   exit_1: error("heron generate exit 1") {
     title = "the tree doesn't check, a target has no adapter, or an adapter failed or returned a path outside the working folder"
   }
-  @exit(2)
+  @status(400)
   exit_2: error("heron generate exit 2") {
     title = "an unknown option, an entry point whose path can't be resolved, or `--pack` with a target other than `agents`"
   }
@@ -52,7 +47,7 @@ generate: command("heron generate", cli.generate.block_only_for_all) {
   }
 
   on_request_targets: rule(system.generator) {
-    mustNot {{ run a target that runs on request alone, as `asyncapi`, `proto`, `openrpc` and `sparrow` do, unless it's named }}
+    must_not {{ run a target that runs on request alone, as `asyncapi`, `proto`, `openrpc` and `sparrow` do, unless it's named }}
     example {{ `heron generate` writes the TS types, the docs and the [agent export](#tools.docs.agents.agent_export), and `heron generate proto` the `.proto` files alone }}
   }
 
@@ -63,7 +58,7 @@ generate: command("heron generate", cli.generate.block_only_for_all) {
   }
 
   block_only_for_all: rule(system.generator) {
-    mustNot {{ write the managed ignore block when it runs only the targets it was given }}
+    must_not {{ write the managed ignore block when it runs only the targets it was given }}
   }
 
 }

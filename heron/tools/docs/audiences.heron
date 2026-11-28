@@ -32,7 +32,7 @@ audiences: section {
   }
 
   fact_follows_spec: scenario(language.markup.authored_pages.facts.insert_arguments) {
-    given {{ a how-to that inserts `${cli.serve.addr.default}` }}
+    given {{ a how-to that inserts `${cli.serve.addr}` }}
     when {{ the option's default changes and the docs are generated again }}
     then {{ the how-to shows the new default }}
   }

@@ -7,7 +7,7 @@ delivery: section {
   |
   | | Kind                          | Holds                                                                   |
   | | ----------------------------- | ----------------------------------------------------------------------- |
-  | | `component(path, …, lang)`    | `uses`, responsibilities and `exports`, its references naming the parts it builds |
+  | | `component(path, …, lang)`    | `uses`, responsibilities and `exports`, its references naming the features and parts it builds |
   | | `story(refs…, adds, changes)` | the goals it advances, the spec items it adds and changes, and its `done` |
   | | `increment(delivers)`         | the stories a shippable slice delivers, and its `done`                  |
   | | `milestone(reached_by)`       | what a point in time is measured against, and its `done`                |
@@ -16,7 +16,7 @@ delivery: section {
   component_kind: term {{
     `name: component("internal/parser", parser, lang = "go") { … }`, a unit of the
     implementation's code with one contract, at a path from the repository's root. Its
-    references after the path name the spec's parts, actors or sections it builds, `uses` lists
+    references after the path name the spec's features and parts it builds, `uses` lists
     the components it may import, and an `exports` holds part of its exported interface
     verbatim. It's architecture, never a spec kind.
   }}
@@ -60,20 +60,22 @@ delivery: section {
   }
 
   errors: section {
+    @status(422)
     @display("Behaviour in a story")
     behaviour_in_story: error("story") {
       title = "story {story} holds a {kind}; a story lists the spec items it adds or changes, which state the behaviour"
-      story: field(String)
-      kind: field(String)
+      story: String
+      kind: String
       | Reported as [story_lists_items] says.
     }
 
+    @status(422)
     @display("Import outside uses")
     @severity(warning)
     import_outside_uses: error("component-uses") {
       title = "{component} imports {other}, which its uses doesn't list"
-      component: field(String)
-      other: field(String)
+      component: String
+      other: String
       | An import that breaks a component's contract.
       | Reported as [uses_enforced] says.
     }

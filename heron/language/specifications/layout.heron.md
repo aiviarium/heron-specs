@@ -8,13 +8,13 @@ targets, and nothing else until a link leads there. Heron's own spec follows thi
 layout, as its [guide](#guide.layout) says.
 
 <term id="feature_subtree">
-A feature's section in its entry file, with its terms, guidance and scenarios in
-sibling files the entry includes, as a feature's entry file
-does, so a tool can load or leave out each part.
+A [feature](#language.specifications.context.feature_kind) in its folder's entry file, with
+its terms, guidance and scenarios in sibling files the entry includes, as a feature's entry
+file does, so a tool can load or leave out each part.
 </term>
 
 <rule id="entry_file_holds_section" refs="actors.author">
-<should>hold a feature's section in its folder's entry file, and its terms, guidance and scenarios in sibling files the entry includes</should>
+<should>declare a feature in its folder's entry file, and its terms, guidance and scenarios in sibling files the entry includes</should>
 </rule>
 
 <rule id="one_subtree" refs="actors.implementer">
@@ -22,7 +22,7 @@ does, so a tool can load or leave out each part.
 </rule>
 
 <rule id="planning_apart" refs="actors.author">
-<mustNot>put an open question where the [entry point](#language.core_format.files.entry_point) of an implementer reaches it on the way to the requirements</mustNot>
+<must_not>put an open question where the [entry point](#language.core_format.files.entry_point) of an implementer reaches it on the way to the requirements</must_not>
 <instead>keep it in a [planning tree](#language.specifications.planning.planning_tree)</instead>
 </rule>
 

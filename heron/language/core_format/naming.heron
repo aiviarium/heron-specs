@@ -42,7 +42,7 @@ naming: section {
   }
 
   own_tree_first: rule(system.checker) {
-    where {{ a link's path matches by suffix nodes of the tree's own and nodes of a package it imports }}
+    while {{ a link's path matches by suffix nodes of the tree's own and nodes of a package it imports }}
     must {{ resolve it to the tree's own matches, and to an imported package's only where the tree has none }}
   }
 
@@ -57,25 +57,28 @@ naming: section {
   }
 
   errors: section {
+    @status(422)
     unknown_name: error("unresolved") {
       title = "unknown name {name}"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.naming.unknown_names], [language.core_format.prose_layer.inserts_resolve] and [language.markup.authored_pages.facts.inserted_facts_required] say.
     }
 
+    @status(422)
     no_member: error("unresolved") {
       title = "{path} has no member {name}"
-      path: field(String)
-      name: field(String)
+      path: String
+      name: String
       | Reported as [language.core_format.naming.unknown_names] and [language.data.types.closed_records] say.
     }
 
+    @status(422)
     @display("Ambiguous link")
     ambiguous_link: error("ambiguous") {
       title = "{path} names {count} nodes: {candidates}; write a longer path"
-      path: field(String)
-      count: field(String)
-      candidates: field(String)
+      path: String
+      count: String
+      candidates: String
       | Two or more nodes whose paths end with the link's names, at the same precedence; each candidate is named by the shortest end of its path that picks it.
       | Reported as [language.core_format.naming.ambiguous_links] says.
     }

@@ -13,7 +13,7 @@ package adds is declared in one, so nothing needs a new build of the `heron` bin
 | `kind`       | A node kind, valid in structure and as a tag in prose          | `scenario(on?: Ref(Any)): kind`                       |
 | `accept`     | Inside a kind: what its body takes                             | `accept(kind = cases, max = 1)`                       |
 | `flag`       | A flag and the kinds it attaches to                            | `slow: flag(on = [case])`                             |
-| `annotation` | An annotation, its parameters and what it attaches to          | `status(code: Int): annotation(on = [types.variant])` |
+| `annotation` | An annotation, its parameters and what it attaches to          | `weight(n: Int): annotation(on = [types.variant])`    |
 | `language`   | An embedded language and the grammar to inject                 | `sh: language(grammar = "source.shell")`              |
 
 <term id="schema">
@@ -23,7 +23,7 @@ declares what a package adds. Schemas drive checking, completion, the docs and
 </term>
 
 <rule id="parsing_needs_no_schema" refs="system.parser">
-<mustNot>read a [schema](#language.schemas.kinds.schema), or any package, to parse a file</mustNot>
+<must_not>read a [schema](#language.schemas.kinds.schema), or any package, to parse a file</must_not>
 <instead>parse every file by the grammar alone, and leave what's valid where to the checker</instead>
 </rule>
 
@@ -80,9 +80,9 @@ with the kind's own arguments, then a body of `accept` entries and typed members
 | `references`  | `List(Ref(Any))`     | none    | The kinds, and categories of kinds, the instances' [hard references](#language.specifications.layers.references.hard_reference) may name, as the [reference kind list](#language.specifications.layers.references.reference_kind_list) says |
 
 <rule id="references_kinds" refs="system.checker">
-<where>a kind is declared with `references = [k, …]`</where>
+<while>a kind is declared with `references = [k, …]`</while>
 <must>read the arguments its variadic reference parameter takes as the instance's constructor references, and check them and its `@touch` references against the listed kinds, the kinds in a listed category, and the kinds that extend either, and give a kind that extends it the same list unless it declares its own</must>
-<example>`std/spec` declares `rule(refs<variadic>?: Ref(Any)): kind(references = [actor, part, goal, quality, assumption])`, so `rule(desk, self_service)` references a part and a goal, and `command(name: String, refs<variadic>?: Ref(Any)): kind(references = [types.realized])` takes the kinds that join `types.realized`</example>
+<example>`std/spec` declares `rule(refs<variadic>?: Ref(Any)): kind(references = [actor, part, goal, quality, assumption, feature])`, so `rule(desk, self_service)` references a part and a goal, and `command(name: String, refs<variadic>?: Ref(Any)): kind(references = [spec.touchable])` takes the kinds that join `spec.touchable`</example>
 </rule>
 
 <rule id="heading_kind" refs="system.checker">
@@ -101,13 +101,13 @@ with the kind's own arguments, then a body of `accept` entries and typed members
 </rule>
 
 <rule id="args_from" refs="system.checker">
-<where>a kind is declared with `args_from = k`</where>
+<while>a kind is declared with `args_from = k`</while>
 <must>check an instance's arguments against the parameters of its nearest enclosing node of kind `k`</must>
 <example>in `std/scenarios`, `case(days_ago = 31)` under `late_request(days_ago: Int): scenario` is checked against `days_ago: Int`</example>
 </rule>
 
 <rule id="fields_from" refs="system.checker">
-<where>a kind is declared with `fields_from = k`</where>
+<while>a kind is declared with `fields_from = k`</while>
 <must>accept as fields of an instance the parameters of its nearest enclosing node of kind `k`, each with its parameter's type</must>
 <example>`std/types` declares `example: kind(fields_from = op)`, so an example under `get_pet(pet_id: Int): op` sets `pet_id`</example>
 </rule>
@@ -126,7 +126,7 @@ names the kind the reference is meant to reach. A `Ref` argument such as
 </rule>
 
 <rule id="ref_kind_documents" refs="system.checker">
-<mustNot>report a reference whose target's kind differs from `K`</mustNot>
+<must_not>report a reference whose target's kind differs from `K`</must_not>
 <instead>read `K` as documentation and as the completion filter of the language server</instead>
 </rule>
 </section>
@@ -179,7 +179,7 @@ scenarios: package(version = "1.0", requires = ["std/doc@1", "std/types@1"]) {
   judge(value: Any, rubric: Prose): func
 
   /// The spec nodes a scenario, review or example covers.
-  covers(targets<variadic>: Ref(Any)): annotation<repeatable>(on = [scenario, review, types.example])
+  covers(targets<variadic>: Ref(Any)): annotation<repeatable>(on = [scenario, review, spec.example])
 
   generated(by: String, reviewed_by?: String): annotation(on = [scenario, verification])
 
@@ -193,6 +193,6 @@ scenarios: package(version = "1.0", requires = ["std/doc@1", "std/types@1"]) {
 </example>
 
 <rule id="schema_kinds_by_example" refs="actors.author">
-<mustNot>import `std/schema` into Heron's own spec, which would make `kind`, `flag` and the other [schema](#language.schemas.kinds.schema) kinds part of the spec tree</mustNot>
+<must_not>import `std/schema` into Heron's own spec, which would make `kind`, `flag` and the other [schema](#language.schemas.kinds.schema) kinds part of the spec tree</must_not>
 <instead>show a standard package's declarations in examples, and link to one only from a file that imports its package, as [links](#language.markup.links) into imported packages allow</instead>
 </rule>

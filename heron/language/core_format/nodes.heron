@@ -52,13 +52,13 @@ nodes: section {
 
     enter_never_creates: rule(system.checker) {
       if {{ `name { … }` names no node that exists and no field its parent's type declares }}
-      mustNot {{ create a node }}
+      must_not {{ create a node }}
       instead {{ report entering never creates with the closest field }}
       while {{ the parent is closed }}
     }
 
     enter_never_creates_otherwise: rule(system.checker) {
-      where {{ the parent is open: the file root, a map or an untyped node }}
+      while {{ the parent is open: the file root, a map or an untyped node }}
       must {{ create the node it enters }}
     }
 
@@ -90,7 +90,7 @@ nodes: section {
     }
 
     optional_before_references: rule(system.checker) {
-      where {{ an optional parameter that takes no reference comes before a variadic one that takes references }}
+      while {{ an optional parameter that takes no reference comes before a variadic one that takes references }}
       must {{ pass over the optional parameter with a positional argument that's a path naming no type, which fills the references instead }}
       example {{ `op(Refund, refund_window)` returns a `Refund` and references `refund_window`, and `op(refund_window)` only references it }}
     }
@@ -151,7 +151,12 @@ nodes: section {
     ambiguous_annotations: rule(system.checker) {
       if {{ an annotation's name is unqualified and more than one package the file imports declares an annotation of that name }}
       must {{ report ambiguous annotation, naming each package's qualified form }}
-      then {{ `@code` in a file that imports `std/proto` and `std/jsonrpc` is written `@proto.code` or `@jsonrpc.code` }}
+      then {{ `@reserved` in a file that imports `std/proto` and `std/sparrow` is written `@proto.reserved` or `@sparrow.reserved` }}
+    }
+
+    core_annotations_win: rule(system.checker) {
+      must {{ read an unqualified annotation name that the core, `std/core` or `std/spec`, declares as the core's annotation, even where an imported package declares one of that name }}
+      then {{ `@status` is the core's error status, and `std/proto`'s is written `@proto.status` }}
     }
 
     annotation_placement: rule(system.linter) {
@@ -172,11 +177,11 @@ nodes: section {
     }
 
     locals_stay_out: rule(system.checker) {
-      mustNot {{ emit, encode or expose a local by path to another file }}
+      must_not {{ emit, encode or expose a local by path to another file }}
     }
 
     locals_never_change: rule(system.checker) {
-      mustNot {{ let a local be set }}
+      must_not {{ let a local be set }}
       instead {{ read `name = value` below a `let name` as setting a field of the node }}
     }
 
@@ -187,76 +192,87 @@ nodes: section {
   }
 
   errors: section {
+    @status(422)
     unknown_kind: error("unresolved") {
       title = "unknown kind or type {name}"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.nodes.declaring.declared_kinds] says.
     }
 
+    @status(422)
     not_a_kind: error("not-a-kind") {
       title = "{name} is not a kind or a type"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.nodes.declaring.declared_kinds] says.
     }
 
+    @status(422)
     entered_missing: error("unresolved") {
       title = "{path} doesn't exist, and entering never creates a node"
-      path: field(String)
+      path: String
       | Reported as [language.core_format.nodes.entering.enter_never_creates] says.
     }
 
+    @status(422)
     too_many_arguments: error("too-many-arguments") {
       title = "{callee} takes {n} positional arguments"
-      callee: field(String)
-      n: field(String)
+      callee: String
+      n: String
       | ‹callee› is the kind or type as `kind note` or `type Refund`, and the plural follows
       | ‹n›: "takes 1 positional argument".
       | Reported as [language.core_format.nodes.creating.argument_errors] says.
     }
 
+    @status(422)
     unknown_argument: error("unknown-argument") {
       title = "{callee} takes no argument {name}"
-      callee: field(String)
-      name: field(String)
+      callee: String
+      name: String
       | Reported as [language.core_format.nodes.creating.argument_errors] says.
     }
 
+    @status(422)
     missing_argument: error("missing-argument") {
       title = "{callee} needs the argument {name}"
-      callee: field(String)
-      name: field(String)
+      callee: String
+      name: String
       | Reported as [language.core_format.nodes.creating.argument_errors] says.
     }
 
+    @status(422)
     unknown_flag: error("unresolved") {
       title = "unknown flag {name}"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.nodes.flags.known_flags] says.
     }
 
+    @status(422)
     unknown_annotation: error("unresolved") {
       title = "unknown annotation @{name}"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.nodes.annotations.annotations_resolve] says.
     }
 
+    @status(422)
     not_an_annotation: error("not-an-annotation") {
       title = "{name} is not an annotation"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.nodes.annotations.annotations_resolve] says.
     }
 
+    @status(422)
     ambiguous_annotation: error("ambiguous") {
       title = "@{name} is declared by more than one imported package: write {forms}"
-      name: field(String)
-      forms: field(String)
+      name: String
+      forms: String
       | Reported as [language.core_format.nodes.annotations.ambiguous_annotations] says.
     }
 
+    @status(422)
     @severity(warning)
     unused_let: error("unused-let") {
       title = "let {name} is never used"
-      name: field(String)
+      name: String
       | Reported as [language.core_format.nodes.locals.unused_locals] says.
     }
   }

@@ -29,7 +29,7 @@ from_markdown: section {
   }
 
   markdown_not_carried: rule(actors.author) {
-    mustNot {{ write `# Heading` in `|` lines or a `{{ }}` body, `[^1]` footnotes, `$…$` math or raw HTML }}
+    must_not {{ write `# Heading` in `|` lines or a `{{ }}` body, `[^1]` footnotes, `$…$` math or raw HTML }}
     instead {{ use a section, `<footnote>`, `<math>` or a component }}
   }
 
@@ -39,11 +39,12 @@ from_markdown: section {
   }
 
   errors: section {
+    @status(422)
     @severity(warning)
     markdown_form: error("markdown-form") {
       title = "{form} isn't markup here; use {instead}"
-      form: field(String)
-      instead: field(String)
+      form: String
+      instead: String
       | ‹form› is "a heading", "a footnote reference" or "`$…$` math"; ‹instead› is a section,
       | `<footnote>` or `<math>`.
       | Reported as [language.markup.from_markdown.markdown_forms_reported] says.

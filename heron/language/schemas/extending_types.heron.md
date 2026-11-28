@@ -50,9 +50,6 @@ http: package(version = "1.0", requires = ["std/types@1"]) {
   query: annotation(on = [types.param])
   header(name?: String): annotation(on = [types.param])
   body: annotation(on = [types.param])
-
-  /// The status code an error is returned with, on a type that implements Error.
-  status(code: Int): annotation(on = [types.type])
 }
 ```
 </example>

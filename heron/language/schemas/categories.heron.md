@@ -11,7 +11,7 @@ accept with `accept(category = …)`.
 
 <rule id="joining" refs="system.checker">
 <must>put a kind in each category its `in` argument names, and in no other</must>
-<example>`note(kind: NoteKind = NoteKind.NOTE): kind(in = [block])` is a block wherever `std/doc` is imported</example>
+<example>`code(lang?: String, title?: String): kind(in = [block, inline])` is a block and an inline kind wherever `std/doc` is imported</example>
 </rule>
 
 <rule id="open_sets" refs="system.checker">
@@ -20,18 +20,18 @@ accept with `accept(category = …)`.
 
 `std/doc` declares the categories prose and documentation are built from: `block`, for
 what stands on a line of its own or as a block tag, and `inline`, for what stands inside
-a sentence. `std/spec` adds `strength` and `condition`, and `revised`, through which other
-packages' kinds take `@rev`, and `std/types` adds `realized`, the spec kinds a contract
-surface's references may name. `std/schema` declares `flow` and
+a sentence. `std/spec` adds `strength` and `condition`, `revised`, through which other
+packages' kinds take `@rev`, and `touchable`, the spec kinds a contract surface's
+references may name. `std/schema` declares `flow` and
 `phrasing`, the sketch's names for the same two sets, which no standard kind joins.
 
 <rule id="builtin_categories" refs="actors.author">
-<shouldNot>put a kind in `schema.flow` or `schema.phrasing`</shouldNot>
+<should_not>put a kind in `schema.flow` or `schema.phrasing`</should_not>
 <instead>put block kinds in `doc.block` and inline kinds in `doc.inline`, which every documentation body accepts</instead>
 </rule>
 
-An excerpt of `std/doc`: the categories, a block kind with an enum parameter, and an
-inline kind with [overloads](#language.schemas.overloads.overload).
+An excerpt of `std/doc`: the categories, a heading kind, a kind that's a block and inline at
+once, a callout and an inline kind.
 
 <example id="std_doc_schema" @display="Example: std/doc">
 ```heron
@@ -53,21 +53,12 @@ doc: package(version = "1.0") {
     accept(text = Verbatim)
   }
 
-  note(kind: NoteKind = NoteKind.NOTE): kind(in = [block]) {
+  tip: kind(in = [block]) {
     accept(prose)
     accept(category = inline)
   }
 
   kbd: kind(in = [inline]) {
-    accept(prose)
-  }
-
-  term: kind(in = [block]) {
-    accept(prose)
-  }
-
-  @highlight(token = "comment.doc")
-  doc: annotation {
     accept(prose)
   }
 }

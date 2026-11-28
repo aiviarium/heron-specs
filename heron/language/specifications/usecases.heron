@@ -96,7 +96,7 @@ usecases: section {
   }
 
   step_subject: rule(system.docs_generator) {
-    where {{ a step opens with the link to its actor or part and the link's text starts with a lowercase letter }}
+    while {{ a step opens with the link to its actor or part and the link's text starts with a lowercase letter }}
     must {{ render the link as the subject of the sentence, with "The" before it, as "The editor underlines the problem", keeping the link, in the step list and in the flow diagram }}
     then {{ a step reads as a sentence while its source names the party by its path }}
   }
@@ -106,12 +106,12 @@ usecases: section {
   }
 
   flow_diagram: rule(system.docs_generator) {
-    where {{ a use case has two extensions or more }}
+    while {{ a use case has two extensions or more }}
     may {{ offer, in the developer and explore lenses, a flow diagram of its [main path](#heron.language.specifications.usecases.main_path) and extensions, drawn from the same steps }}
   }
 
   no_diagram_exported: rule(system.docs_generator) {
-    mustNot {{ put a use case's flow diagram in the [agent export](#tools.docs.agents.agent_export) }}
+    must_not {{ put a use case's flow diagram in the [agent export](#tools.docs.agents.agent_export) }}
   }
 
   usecase_export: rule(system.docs_generator) {
@@ -161,37 +161,41 @@ usecases: section {
   }
 
   errors: section {
+    @status(422)
     @display("Step without an actor or a part")
     step_by: error("usecase") {
       title = "step {step} opens with {name}, a {kind}; a step's first link names an actor or a part"
-      step: field(String)
-      name: field(String)
-      kind: field(String)
+      step: String
+      name: String
+      kind: String
       | Reported as [step_actor] and [usecase_actor_checked] say.
     }
 
+    @status(422)
     @display("No such step")
     no_such_step: error("usecase") {
       title = "use case {usecase} has no step {step}"
-      usecase: field(String)
-      step: field(String)
+      usecase: String
+      step: String
       | Reported as [extension_at_step] and [step_references_resolve] say.
     }
 
+    @status(422)
     @display("Extension without one outcome")
     extension_outcome: error("usecase") {
       title = "extension {step} ends with {text}; it ends with exactly one of \"Fails.\", \"Back to N.\" or \"Succeeds.\""
-      step: field(String)
-      text: field(String)
+      step: String
+      text: String
       | Reported as [one_outcome] says.
     }
 
+    @status(422)
     @display("Include not at a lower level")
     include_level: error("usecase") {
       title = "step {step} includes {usecase}, which is at level {level}; an include is at a lower level, with no cycle"
-      step: field(String)
-      usecase: field(String)
-      level: field(String)
+      step: String
+      usecase: String
+      level: String
       | Reported as [step_include] says.
     }
   }

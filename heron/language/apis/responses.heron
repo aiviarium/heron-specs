@@ -10,15 +10,18 @@ responses: section {
   }}
 
   throws_annotation: term {{
-    The annotation of `std/types` for the errors an op may throw, `@throws(RefundError)` above
-    the op, or above an api for all of its ops. It takes any number of errors and may be
-    written more than once.
+    The core's annotation for the errors a node may raise, `@throws(RefundError)` above an
+    op, above an api for all of its ops, or above a command, a func or a task. It takes any
+    number of errors and may be written more than once.
   }}
 
   status_annotation: term {{
-    The core's annotation for the status code an error is answered with over HTTP,
-    `@status(422)` above a spec error or a type that implements `Error`: the HTTP projection of
-    the error's identity, beside `@exit` and `@severity`. No package declares another.
+    The core's annotation for the status code an error is answered with over HTTP, and its
+    text, `@status(422)` above a spec error or a type that implements `Error`: the one
+    [projection](#language.specifications.contract.error_projection) every error has, which
+    its codes on the other [surfaces](#heron.tools.docs.design_system.surfaces) [derive](#language.specifications.contract.codes.derived_code)
+    from. An unqualified `@status` is always the core's; a binding's override of its own name is
+    written qualified, as `@proto.status`.
   }}
 
   api_errors_add: rule(system.docs_generator) {
@@ -26,7 +29,7 @@ responses: section {
   }
 
   interface_errors: rule(system.docs_generator) {
-    where {{ `@throws` names an interface }}
+    while {{ `@throws` names an interface }}
     must {{ read it as every type that implements the interface }}
     example {{ `@throws(StoreError)` lists `NotFound` with 404 and `Conflict` with 409 when both implement `StoreError` }}
   }
@@ -53,12 +56,13 @@ responses: section {
   }
 
   errors: section {
+    @status(422)
     @display("Status outside an error")
     @severity(warning)
     status_misplaced: error("status") {
       title = "@status({code}) stands on {type}, which isn't an error with a 4xx or 5xx code"
-      code: field(String)
-      type: field(String)
+      code: String
+      type: String
       | A status code on a type no op can throw, or one that doesn't signal an error.
       | Reported as [language.apis.responses.status_on_errors] says.
     }

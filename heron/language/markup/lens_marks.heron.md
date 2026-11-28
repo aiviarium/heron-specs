@@ -32,13 +32,13 @@ its paragraphs included.
 </rule>
 
 <rule id="element_marks" refs="system.checker">
-<where>an element that declares no node has an `@lens` attribute, as `<p @lens="user, developer">…</p>`</where>
+<while>an element that declares no node has an `@lens` attribute, as `<p @lens="user, developer">…</p>`</while>
 <must>read it as a [lens mark](#tools.docs.lenses.lens_mark) on the element's content, checked as one on a [prose run](#language.markup.lens_marks.prose_run)</must>
 <then>a prose file's block that is such an element is a marked [prose run](#language.markup.lens_marks.prose_run), as `|` lines under `@lens(user, developer)` are</then>
 </rule>
 
 <rule id="element_marks_shown" refs="system.docs_generator">
-<where>an element inside a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark)</where>
+<while>an element inside a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark)</while>
 <must>render its content only in the lenses the mark names, and in explore with the mark's lenses beside it, as a marked run renders</must>
 </rule>
 

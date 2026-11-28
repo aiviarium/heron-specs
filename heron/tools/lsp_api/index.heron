@@ -83,10 +83,11 @@ SourceText: type {
 }
 
 errors: section {
+  @status(404)
   @code(-32602)
   no_file: error("lsp.NO_FILE") {
     title = "no file {uri}"
-    uri: field(String)
+    uri: String
     | An invalid-parameters error: the URI names no open document, loaded file or file on disk.
     | Reported as [tools.lsp.extensions.source_request_otherwise] says.
   }

@@ -9,7 +9,7 @@ intent: section {
   | | Kind                   | Holds                                                                  |
   | | ---------------------- | ---------------------------------------------------------------------- |
   | | `goal(refs…, measure)` | what the product is for, with an optional measure of success; its references name the actors or personas who asked for it |
-  | | `actor(kind)`          | a role that crosses the boundary: `PERSON`, the default, `SYSTEM` or `AGENT` |
+  | | `actor(role)`          | a role that crosses the boundary: `PERSON`, the default, `SYSTEM` or `AGENT` |
   | | `persona(plays)`       | an archetype of a person who plays an actor, with `goals` and `pains`   |
   | | `nongoal`              | something the product could plausibly do and deliberately doesn't       |
   | | `assumption`           | what the spec relies on an actor or the environment to do               |
@@ -22,7 +22,7 @@ intent: section {
   }}
 
   actor_kind: term {{
-    `name: actor(kind = ActorKind.SYSTEM) {{ … }}`, a role that crosses the system's
+    `name: actor(role = ActorRole.SYSTEM) {{ … }}`, a role that crosses the system's
     boundary: a person, another program or an agent. It's the one "who" of a spec: rules bind
     actors and parts, use cases start from an actor, and personas play one.
   }}
@@ -58,7 +58,7 @@ intent: section {
   }
 
   actor_kinds: rule(system.checker) {
-    must {{ read an actor's `kind` as `ActorKind.PERSON` when it's left out }}
+    must {{ read an actor's `role` as `ActorRole.PERSON` when it's left out }}
   }
 
   references_named_kind: rule(system.checker) {
@@ -67,7 +67,7 @@ intent: section {
   }
 
   goals_never_proven: rule(system.checker) {
-    mustNot {{ require a proof or a status for a goal, a `nongoal`, an assumption, an actor, a persona or a quality }}
+    must_not {{ require a proof or a progress for a goal, a `nongoal`, an assumption, an actor, a persona or a quality }}
     then {{ conformance lists none of them }}
   }
 
@@ -76,7 +76,7 @@ intent: section {
   }
 
   actor_view: rule(system.docs_generator) {
-    must {{ show an actor with its kind, the personas that play it, and the use cases and rules that name it }}
+    must {{ show an actor with its role, the personas that play it, and the use cases and rules that name it }}
   }
 
   stakeholders_as_source: rule(actors.author) {
@@ -98,7 +98,7 @@ intent: section {
     |
     | customer: actor {{ Someone who paid with the shop. }}
     |
-    | bank: actor(kind = ActorKind.SYSTEM) {{ The card network that settles payments. }}
+    | bank: actor(role = ActorRole.SYSTEM) {{ The card network that settles payments. }}
     |
     | priya: persona(plays = customer) {{ Buys weekly, on her phone, between meetings. }}
     |
@@ -111,11 +111,12 @@ intent: section {
   }
 
   errors: section {
+    @status(422)
     @display("Not an actor")
     not_an_actor: error("type") {
       title = "{name} is a {kind}, not an actor"
-      name: field(String)
-      kind: field(String)
+      name: String
+      kind: String
       | A reference that must name an actor naming another kind of node; any `Ref(kind)` is checked the same way.
       | Reported as [persona_plays_actor] and [references_named_kind] say.
     }

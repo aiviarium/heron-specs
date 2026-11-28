@@ -49,7 +49,7 @@ op_page: screen(route = "/<api>.<op>.html") {
     | Buf registry and the Connect docs are the reference for how a method of a service reads.
 
     binding_switch: rule(system.docs_generator) {
-      where {{ an op has more than one binding }}
+      while {{ an op has more than one binding }}
       must {{ show a switch of its bindings, HTTP, gRPC, Connect, JSON-RPC and Sparrow in that order, above the header, the parameters, the messages, the responses and the examples, which it shows for the binding picked, with the switch's selected binding always the one shown, and keep the reader's pick from page to page, applied before the page paints }}
       then {{ an op bound to HTTP and gRPC has one page, never one per binding }}
     }
@@ -59,22 +59,22 @@ op_page: screen(route = "/<api>.<op>.html") {
     }
 
     rpc_header: rule(system.docs_generator) {
-      where {{ the binding picked is gRPC or Connect }}
+      while {{ the binding picked is gRPC or Connect }}
       must {{ show the method's path, `/<package>.<Service>/<Method>`, with a copy button, its signature as `Method(Request) returns (stream Response)` with each message linked to its part of the page, and its [streaming kind](#language.apis.rpc.streaming_kind) as a badge }}
     }
 
     jsonrpc_header: rule(system.docs_generator) {
-      where {{ the binding picked is JSON-RPC }}
+      while {{ the binding picked is JSON-RPC }}
       must {{ show the method's wire name with a copy button, and mark a [notification](#language.apis.jsonrpc.jsonrpc_notification) as one }}
     }
 
     sparrow_header: rule(system.docs_generator) {
-      where {{ the binding picked is Sparrow }}
+      while {{ the binding picked is Sparrow }}
       must {{ show the method as `<facet>/<method>` with a copy button, its signature with its method id, its input and its output linked to their parts of the page, and its [streaming kind](#language.apis.rpc.streaming_kind) or that it's a [notification](#language.apis.sparrow.sparrow_notification) as a badge }}
     }
 
     sparrow_facts: rule(system.docs_generator) {
-      where {{ the binding picked is Sparrow }}
+      while {{ the binding picked is Sparrow }}
       must {{ show the method's facet with its id, its method id and its flags as facts, and its input and output with their [TypeIds](#language.apis.sparrow.type_id), an [input struct](#language.apis.sparrow.input_struct)'s fields by [tag](#language.apis.sparrow.sparrow_tag) }}
     }
 
@@ -83,7 +83,7 @@ op_page: screen(route = "/<api>.<op>.html") {
     }
 
     outline_follows_binding: rule(system.docs_generator) {
-      where {{ a page has a binding switch }}
+      while {{ a page has a binding switch }}
       must {{ list in the page's outline the headings of the binding shown alone }}
     }
   }
@@ -111,7 +111,7 @@ op_page: screen(route = "/<api>.<op>.html") {
       }
 
       deprecated_shown: rule(system.docs_generator) {
-        where {{ an op is marked `deprecated` }}
+        while {{ an op is marked `deprecated` }}
         must {{ show a deprecation mark beside its name, on its page, in the sidebar and on its api's page, with the op its prose names in its place }}
       }
     }
@@ -128,12 +128,12 @@ op_page: screen(route = "/<api>.<op>.html") {
       }
 
       rpc_messages: rule(system.docs_generator) {
-        where {{ the binding picked is gRPC or Connect }}
+        while {{ the binding picked is gRPC or Connect }}
         must {{ show the [request message](#language.apis.grpc.request_message) and the [response message](#language.apis.grpc.response_message) as lists of their fields, each with its [field number](#language.apis.grpc.field_number), its name, its protobuf type linked to its type's page, its [JSON name](#language.apis.grpc.json_name), whether it's optional and its docs, and then the [metadata](#language.apis.grpc.proto_metadata) the method reads, by name }}
       }
 
       jsonrpc_params: rule(system.docs_generator) {
-        where {{ the binding picked is JSON-RPC }}
+        while {{ the binding picked is JSON-RPC }}
         must {{ show the method's params by name or by position, as its [params structure](#language.apis.jsonrpc.params_structure) says, a `@params` record by its fields }}
       }
 
@@ -148,23 +148,23 @@ op_page: screen(route = "/<api>.<op>.html") {
       }
 
       error_rule_once: rule(system.docs_generator) {
-        where {{ the rule behind an error is among the op's rules the lens shows }}
+        while {{ the rule behind an error is among the op's rules the lens shows }}
         must {{ show that rule once, in full under the op's rules, and under the error a link to it by its name }}
         then {{ an op page never prints one rule's sentence twice }}
       }
 
       error_projections: rule(system.docs_generator) {
-        where {{ an op throws an `error` node }}
+        while {{ an op throws an `error` node }}
         must {{ show it as an outcome with its HTTP status, its id as the body's `code`, its title with each `{field}` marked, its fields and its prose }}
       }
 
       errors_by_code: rule(system.docs_generator) {
-        where {{ the binding picked is gRPC, Connect, JSON-RPC or Sparrow }}
+        while {{ the binding picked is gRPC, Connect, JSON-RPC or Sparrow }}
         must {{ list the errors the op throws keyed by the binding's code, the gRPC code's name, the Connect code with its HTTP status, the JSON-RPC integer, or the Sparrow core code or sigil with its number, each with its title with every `{field}` marked, its fields and what causes it, as a list rather than a [table](#heron.language.markup.components.table) }}
       }
 
       streams_shown: rule(system.docs_generator) {
-        where {{ the op takes or returns a `Stream`, or is a WebSocket }}
+        while {{ the op takes or returns a `Stream`, or is a WebSocket }}
         must {{ show the message types in each direction and how they're framed: server-sent events for a stream, frames for a socket }}
       }
     }
@@ -183,45 +183,45 @@ op_page: screen(route = "/<api>.<op>.html") {
     }
 
     json_messages: rule(system.docs_generator) {
-      where {{ an op has no example }}
+      while {{ an op has no example }}
       must {{ show its request body and its response as JSON built from their types, each field with a value of its type, as they travel on the wire }}
       then {{ a reader sees every message as JSON before writing a request }}
     }
 
     rpc_example_forms: rule(system.docs_generator) {
-      where {{ the binding picked is gRPC, Connect, JSON-RPC or Sparrow }}
+      while {{ the binding picked is gRPC, Connect, JSON-RPC or Sparrow }}
       must {{ show each [op example](#language.apis.examples.op_example) as its request and its response in JSON, a stream's as the ordered messages of each direction, and as calls: `grpcurl` and `buf curl` for gRPC, `curl` with JSON and a Connect client in TS for Connect, the request's envelope, with `curl` where it's framed for HTTP, for JSON-RPC, and for Sparrow a call of Sparrow's TS `Session` over its WebSocket binding, by the facet's name and the method as `Service.method`, answered with its result, its items or a `SparrowError` with its status, message and details }}
     }
 
     rpc_try_it: rule(system.docs_generator) {
-      where {{ the op's api declares a [server URL](#language.apis.rpc.server_url) and the binding picked is Connect, for a unary or server-streaming method, or JSON-RPC framed for HTTP }}
+      while {{ the op's api declares a [server URL](#language.apis.rpc.server_url) and the binding picked is Connect, for a unary or server-streaming method, or JSON-RPC framed for HTTP }}
       must {{ offer Try it, which sends the example's request as JSON to that server, editable, and shows each message of the response as it arrives, or the error with its code }}
     }
 
     grpc_no_try_it: rule(system.docs_generator) {
-      where {{ the binding picked is gRPC, or Connect for a client-streaming or bidirectional method }}
-      mustNot {{ offer Try it }}
+      while {{ the binding picked is gRPC, or Connect for a client-streaming or bidirectional method }}
+      must_not {{ offer Try it }}
       instead {{ show the `grpcurl` call to copy, since a browser can't speak gRPC or stream from the client }}
     }
 
     sparrow_no_try_it: rule(system.docs_generator) {
-      where {{ the binding picked is Sparrow }}
-      mustNot {{ offer Try it }}
+      while {{ the binding picked is Sparrow }}
+      must_not {{ offer Try it }}
       instead {{ show the session's call to copy, since Try it sends JSON over HTTP and Sparrow speaks CBOR in a session of its own }}
     }
 
     served_try_it: rule(system.docs_generator) {
-      where {{ the docs are served by `heron serve` and the op belongs to the API that server publishes }}
+      while {{ the docs are served by `heron serve` and the op belongs to the API that server publishes }}
       must {{ offer Try it, which sends the request to the page's own origin, with no server to choose, and shows the response as JSON with its status }}
     }
 
     static_try_it: rule(system.docs_generator) {
-      where {{ the docs are a static build, opened from disk or from a site that doesn't serve the API }}
-      mustNot {{ show Try it on an op of the API `heron serve` publishes }}
+      while {{ the docs are a static build, opened from disk or from a site that doesn't serve the API }}
+      must_not {{ show Try it on an op of the API `heron serve` publishes }}
     }
 
     error_bodies: rule(system.docs_generator) {
-      where {{ an example's response is a [thrown error](#language.scripting.code.thrown_error) }}
+      while {{ an example's response is a [thrown error](#language.scripting.code.thrown_error) }}
       must {{ answer it with the error's `@status` and a body of the error type's defaults }}
     }
   }

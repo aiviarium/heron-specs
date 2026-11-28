@@ -1,8 +1,9 @@
 errors: section {
+  @status(503)
   @display("Language server not running")
   server_not_running: error("vscode.SERVER_NOT_RUNNING") {
     title = "can't start `{command} lsp`"
-    command: field(String)
+    command: String
     | Shown as an error message, with an action that opens the `heron.path` setting.
     | Reported as [tools.vscode.fixing.fix_a_diagnostic.1a] says.
   }

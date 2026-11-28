@@ -4,7 +4,7 @@ traceability: section {
   | only on the implementation's side: a project that imports the spec names the
   | requirements each test proves, in a `proves` node of `std/project`, at the [revision](#heron.language.specifications.layers.revisions.revision) it
   | proves, and the spec itself never names a test. Where nothing proves a requirement yet,
-  | the project's `status` says whether it's planned or built and untested. Conformance and
+  | the project's `progress` says whether it's planned or built and untested. Conformance and
   | `heron lint` turn the links into lists of gaps, never matrices.
 
   verify_kind: term {{
@@ -50,8 +50,14 @@ traceability: section {
   }
 
   planned_has_no_verify: rule(actors.author) {
-    mustNot {{ name a requirement in both a `status<planned>` and a `proves` that has a `verify` link }}
-    instead {{ drop the status in the change that builds the behaviour, and add its proof in that change }}
+    must_not {{ name a requirement in both a `progress<planned>` and a `proves` that has a `verify` link }}
+    instead {{ drop the progress in the change that builds the behaviour, and add its proof in that change }}
+  }
+
+  proofs_name_requirements: rule(system.checker) {
+    if {{ a `proves` or a `progress` names a node of the spec that isn't a requirement, or a path into the spec that names no node }}
+    must {{ report it as an error at the name }}
+    then {{ a proof of a requirement the spec renamed or dropped stops the check, and never counts }}
   }
 
   verify_paths_exist: rule(system.linter) {
@@ -92,7 +98,7 @@ traceability: section {
     }
 
     unmotivated_requirement: rule(system.linter) {
-      if {{ a rule or a use case references no goal or quality, and none is declared in the sections above it, and it isn't a constraint }}
+      if {{ a rule or a use case references no goal or quality, the [features](#language.specifications.context.feature_kind) it belongs to reference none, none is declared in the sections above it, and it isn't a constraint }}
       should {{ report unmotivated requirement at it }}
     }
 
@@ -116,49 +122,62 @@ traceability: section {
     }
 
     gap_report_shown: rule(system.docs_generator) {
-      must {{ render the [gap report](#language.specifications.traceability.gap_report) on the project's conformance page and in `heron generate conformance`, one list per gap, grouped by the area each entry is in, the first two names of its path, with the count of each group and the groups folded, and each entry linked, and leave out a gap with nothing in it }}
+      must {{ render the [gap report](#language.specifications.traceability.gap_report) on the project's conformance page and in `heron generate conformance`, one list per gap, grouped by the innermost [feature](#language.specifications.context.feature_kind) each entry stands in, or, for an entry in no feature, by the area it's in, the first two names of its path, with the count of each group and the groups folded, and each entry linked, and leave out a gap with nothing in it }}
     }
   }
 
   errors: section {
+    @status(422)
+    @display("Unknown requirement")
+    unknown_requirement: error("unresolved") {
+      title = "unknown name {path}: a proof or progress names a requirement of the spec"
+      path: String
+      | Reported as [language.specifications.traceability.proofs_name_requirements] says.
+    }
+
+    @status(422)
     @display("Missing proof")
     @severity(warning)
     missing_proof: error("verify") {
       title = "verify names {path}, which doesn't exist"
-      path: field(String)
+      path: String
       | A `verify` whose file or test is gone; the message names the test when the file is there and the test isn't.
       | Reported as [language.specifications.traceability.verify_paths_exist] says.
     }
 
+    @status(422)
     @display("Unserved goal")
     @severity(warning)
     unserved_goal: error("Spec.UnservedGoal") {
       title = "nothing serves {name}; serve it from a rule, a use case or a scenario, or drop it"
-      name: field(String)
+      name: String
       | Reported as [language.specifications.traceability.gaps.unserved_goal] says.
     }
 
+    @status(422)
     @display("Unmotivated requirement")
     @severity(warning)
     unmotivated: error("Spec.Unmotivated") {
       title = "{name} serves no goal; reference a goal or a quality in its signature, or make it a constraint with its reason"
-      name: field(String)
+      name: String
       | Reported as [language.specifications.traceability.gaps.unmotivated_requirement] says.
     }
 
+    @status(422)
     @display("Orphan entry")
     @severity(warning)
     orphan_entry: error("Spec.OrphanEntry") {
       title = "{name} names no rule or step it exists for; give an entry its references, and link an error's rule in its prose"
-      name: field(String)
+      name: String
       | Reported as [language.specifications.traceability.gaps.orphan_entry] says.
     }
 
+    @status(422)
     @display("Unhandled failure")
     @severity(warning)
     unhandled_failure: error("Spec.UnhandledFailure") {
       title = "extension {step} fails, and no error links it"
-      step: field(String)
+      step: String
       | Reported as [language.specifications.traceability.gaps.unhandled_failure] says.
     }
   }

@@ -19,27 +19,27 @@ path would be unclear, as in `${days}-day`.
 </rule>
 
 <rule id="insert_prose" refs="system.docs_generator">
-<where>an insertion's path names a node whose value is prose</where>
+<while>an insertion's path names a node whose value is prose</while>
 <must>render that prose in place, with its emphasis, links, tags and [insertions](#language.markup.inserts.insertion)</must>
 </rule>
 
 <rule id="insert_value" refs="system.docs_generator">
-<where>an insertion's path names a node whose value is anything but prose</where>
+<while>an insertion's path names a node whose value is anything but prose</while>
 <must>render the value's expression as inline code, highlighted as code</must>
 <example>`$limit` with `limit = 30` renders `30`</example>
 </rule>
 
 <rule id="insert_node" refs="system.docs_generator">
-<where>an insertion's path names a node with no value, such as a section</where>
+<while>an insertion's path names a node with no value, such as a section</while>
 <must>render it as a link to the node, with its path as inline code</must>
 </rule>
 
 <rule id="inserted_once" refs="system.docs_generator">
-<mustNot>read the text an inserted value renders to as markup again</mustNot>
+<must_not>read the text an inserted value renders to as markup again</must_not>
 <then>a value holding `$` or `<` shows those characters</then>
 </rule>
 
 <rule id="insert_calls_not_run" refs="system.docs_generator">
-<where>an [insertion](#language.markup.inserts.insertion) is a call or an expression, as `$data(diff)` or `${n + 1}`</where>
+<while>an [insertion](#language.markup.inserts.insertion) is a call or an expression, as `$data(diff)` or `${n + 1}`</while>
 <must>render its result where the arguments are known at generation time, and its source as inline code where they aren't</must>
 </rule>

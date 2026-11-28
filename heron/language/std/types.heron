@@ -1,5 +1,5 @@
 @display("std/types")
-types: part {
+types: feature {
   | Records, enums, unions, interfaces, apis and ops, and the types data and APIs build on.
   |
   | Its surface is declared in `std/types/package.heron`, whose types the API
@@ -10,12 +10,12 @@ types: part {
   | | `type`, `<open>`, `member`, `param` | [Records](#language.data.types.type_kind)                                                                                   |
   | | `enum`, `union`, `variant`          | [Enums](#language.data.types.enum_kind), [unions](#language.data.types.union_kind)                                          |
   | | `interface`, `Error`                | [Interfaces](#language.data.types.interface_kind), [error types](#language.data.types.error_type)                           |
-  | | `api`, `op`, `example`, `@throws`   | [APIs and ops](#language.apis.apis_and_ops), [examples](#language.apis.examples), [responses](#language.apis.responses)     |
+  | | `api`, `op`                         | [APIs and ops](#language.apis.apis_and_ops), [examples](#language.apis.examples), [responses](#language.apis.responses)     |
   | | `Patch`, `Stream`, `Result`         | [Patch](#language.data.types.patch_type), [streams](#language.apis.streams), [`attempt`](#language.scripting.code.failures) |
   | | `Timestamp`, `Duration`, `Money`    | [Typed strings](#language.data.typed_strings), [encodings](#language.data.encodings)                                        |
   | | `u8` … `i64`, `f32`, `f64`          | [Scalars](#language.data.values.scalar)                                                                                     |
 
-  unit_members_dropped: rule(language.std.types) {
+  unit_members_dropped: rule {
     must {{ declare `Duration` and `Money` without members, so a `Duration` or `Money` value is only its parsed string and the wire's milliseconds or decimal }}
     example {{ the members `days` … `millis` of `Duration` and `amount` and `currency` of `Money` are read by nothing and go }}
   }

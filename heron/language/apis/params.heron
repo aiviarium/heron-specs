@@ -45,19 +45,19 @@ params: section {
   }
 
   names_carry_no_location: rule(system.docs_generator) {
-    mustNot {{ read a parameter's [location](#language.apis.params.param_location) from its name }}
+    must_not {{ read a parameter's [location](#language.apis.params.param_location) from its name }}
     instead {{ group an op's parameters by their annotations, showing a parameter with none among the plain parameters, or as the body when it's the record of an HTTP op }}
     example {{ `note(@path id: String, body: String)` shows `body` as a plain parameter, not as the request body }}
   }
 
   header_name_default: rule(system.docs_generator) {
-    where {{ `@header` names no header }}
+    while {{ `@header` names no header }}
     must {{ show the parameter as the header named after it }}
     example {{ `@header("Idempotency-Key") key: String` travels as `Idempotency-Key`, and `@header key: String` as `key` }}
   }
 
   default_binding: rule(system.interpreter) {
-    where {{ a parameter of an op bound to `std/http` has no location annotation }}
+    while {{ a parameter of an op bound to `std/http` has no location annotation }}
     must {{ bind it by the transport's default: a parameter the route names as `:name` is a [path parameter](#language.apis.params.path_parameter), and the one remaining parameter whose type is a record is the body }}
   }
 
@@ -73,21 +73,23 @@ params: section {
   }
 
   errors: section {
+    @status(422)
     @display("Unplaced parameter")
     unplaced_parameter: error("binding") {
       title = "{op} binds {param} nowhere: annotate it with @path, @query, @header or @body"
-      op: field(String)
-      param: field(String)
+      op: String
+      param: String
       | A parameter of an HTTP-bound op that neither an annotation nor the default binding places.
       | Reported as [language.apis.params.no_guessed_location] says.
     }
 
+    @status(422)
     @display("Route and parameters disagree")
     route_mismatch: error("binding") {
       title = "the route of {op} names :{name}, which isn't a parameter of the op"
       related = "the op's parameters"
-      op: field(String)
-      name: field(String)
+      op: String
+      name: String
       | A route segment and the op's [path parameters](#language.apis.params.path_parameter) that don't match one to one.
       | Reported as [language.apis.params.route_names_params] says.
     }

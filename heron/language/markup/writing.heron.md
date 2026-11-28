@@ -29,7 +29,7 @@ it. Its prefixes and the common indentation of a `{{ }}` body are not part of it
 </rule>
 
 <rule id="markup_strings" refs="system.prose_linter">
-<where>a string literal is the value of a field or node typed `Prose`</where>
+<while>a string literal is the value of a field or node typed `Prose`</while>
 <must>read its inserts and project it as prose, with its inline code masked</must>
 </rule>
 
@@ -44,6 +44,6 @@ it. Its prefixes and the common indentation of a `{{ }}` body are not part of it
 </rule>
 
 <rule id="requirements_not_markup" refs="actors.author">
-<mustNot>write a rule's conditions, outcome and examples as markup in its text</mustNot>
+<must_not>write a rule's conditions, outcome and examples as markup in its text</must_not>
 <instead>write them as the rule's child nodes, which the docs render as one sentence</instead>
 </rule>

@@ -5,9 +5,10 @@ examples: section {
   | documentation, a mock response and a contract check.
 
   op_example: term {{
-    A named `example` node in an op's body. It sets the op's parameters as fields, such as
-    `request = …`, and states the outcome beside them, `returns = …` or `throws = …`. An
-    example may also be only prose, `told: example {{ … }}`.
+    A named [example](#language.specifications.contract.example_kind) node in an op's body,
+    the one kind of example `std/spec` declares: inside an op it takes its fields from the op,
+    setting the op's parameters, such as `request = …`, and stating the outcome beside them,
+    `returns = …` or `throws = …`. An example may also be only prose, `told: example {{ … }}`.
   }}
 
   example_fields: rule(system.checker) {
@@ -37,11 +38,12 @@ examples: section {
   }
 
   errors: section {
+    @status(422)
     @display("Two outcomes")
     two_outcomes: error("example") {
       title = "{example} states both returns and throws; an example has one outcome"
       related = "the other outcome"
-      example: field(String)
+      example: String
       | An [op example](#language.apis.examples.op_example) that both returns a value and throws an error.
       | Reported as [language.apis.examples.one_outcome] says.
     }

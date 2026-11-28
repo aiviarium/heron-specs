@@ -131,7 +131,7 @@ code: section {
     }
 
     method_fallback: rule(system.interpreter) {
-      where {{ a method isn't one of the value's own }}
+      while {{ a method isn't one of the value's own }}
       must {{ call the func its name resolves to in scope, with the value as the first positional argument }}
       example {{ `list.contains(x)` is the built-in; `orders.total()` is `total(orders)` }}
     }
@@ -259,7 +259,7 @@ code: section {
     }
 
     attempt_passes_faults: rule(system.interpreter) {
-      mustNot {{ catch a [fault](#language.scripting.code.code_fault) }}
+      must_not {{ catch a [fault](#language.scripting.code.code_fault) }}
       instead {{ let it fail the run, since retrying code that's wrong can't help }}
     }
 
@@ -283,7 +283,7 @@ code: section {
     }
 
     registered_step_funcs: rule(system.interpreter) {
-      where {{ the callee of a trailing block is a func built into `heron` }}
+      while {{ the callee of a trailing block is a func built into `heron` }}
       must {{ call it with the block, which it runs as it chooses }}
       then {{ a test framework's `check` can run its block once, retry it or skip it }}
     }
@@ -302,35 +302,40 @@ code: section {
     | A [code fault](#language.scripting.code.code_fault) ends the run with its message after `heron run: ‹task› failed: ` and the
     | position, and the run record keeps it as the run's error.
 
+    @status(500)
     division_by_zero: error("fault") {
       title = "division by zero"
       | Reported as [language.scripting.code.values.division_by_zero] says.
     }
 
+    @status(500)
     @display("Int overflow")
     int_overflow: error("fault") {
       title = "{expression} overflows Int, a 64-bit integer"
-      expression: field(String)
+      expression: String
       | `9223372036854775807 + 1`, `-(-9223372036854775808)` or a literal such as `99999999999999999999`: the expression or literal is named as written.
       | Reported as [language.scripting.code.values.int_overflow] says.
     }
 
+    @status(500)
     @display("Needs a Bool")
     needs_bool: error("fault") {
       title = "{if_and_or_not} needs a Bool, got {type}"
-      if_and_or_not: field(String)
-      type: field(String)
+      if_and_or_not: String
+      type: String
       | Reported as [language.scripting.code.values.bools_only] says.
     }
 
+    @status(500)
     @display("Operator not defined")
     operator_undefined: error("fault") {
       title = "{type} {operator} {type} isn't defined"
-      type: field(String)
-      operator: field(String)
+      type: String
+      operator: String
       | Reported as [language.scripting.code.values.operands] says.
     }
 
+    @status(500)
     @display("No capability")
     no_capability: error("fault") {
       title = "no processes can run here"
@@ -339,74 +344,84 @@ code: section {
       | Reported as [language.scripting.code.values.missing_capability] says.
     }
 
+    @status(500)
     @display("No member")
     no_member: error("fault") {
       title = "{type} has no member {name}"
-      type: field(String)
-      name: field(String)
+      type: String
+      name: String
       | Or `null has no member ‹name›`, or `‹type› has no method ‹name›` for a call.
       | Reported as [language.scripting.code.members.no_member] says.
     }
 
+    @status(500)
     @display("Already bound")
     already_bound: error("fault") {
       title = "{name} is already bound in this block; locals never change"
-      name: field(String)
+      name: String
       | Reported as [language.scripting.code.bindings.bound_once] says.
     }
 
+    @status(500)
     @display("Locals never change")
     locals_never_change: error("fault") {
       title = "{name} is a local, and locals never change; only a node's field can be set"
-      name: field(String)
+      name: String
       | Reported as [language.scripting.code.bindings.fields_not_locals] says.
     }
 
+    @status(500)
     @display("Not iterable")
     not_iterable: error("fault") {
       title = "for iterates a list, a set or a map, not {type}"
-      type: field(String)
+      type: String
       | Reported as [language.scripting.code.control_flow.for_collections] says.
     }
 
+    @status(500)
     @display("Return inside an expression")
     return_in_expression: error("fault") {
       title = "return can't stand inside an expression"
       | Reported as [language.scripting.code.control_flow.return_in_expression] says.
     }
 
+    @status(500)
     @display("Calls itself")
     calls_itself: error("fault") {
       title = "{name} calls itself; code has no recursion"
-      name: field(String)
+      name: String
       | Reported as [language.scripting.code.control_flow.no_recursion] says.
     }
 
+    @status(500)
     @display("Wrong arguments")
     wrong_arguments: error("fault") {
       title = "{name} needs the argument {param}"
-      name: field(String)
-      param: field(String)
+      name: String
+      param: String
       | Or `‹name› takes ‹n› positional arguments` and `‹name› takes no argument ‹param›`.
       | Reported as [language.scripting.code.calls.argument_mismatch] and [language.scripting.tasks.ordering.needed_without_args] say.
     }
 
+    @status(500)
     @display("No implementation")
     no_implementation: error("fault") {
       title = "{name} has no body and no implementation is registered for {path}"
-      name: field(String)
-      path: field(String)
+      name: String
+      path: String
       | Reported as [language.scripting.code.calls.bodiless_funcs] says.
     }
 
+    @status(500)
     @display("Can't be called")
     not_callable: error("fault") {
       title = "{path} can't be called: it is no func, task or type"
-      path: field(String)
+      path: String
       | Or `macro ‹name› is invoked in structure, not called from code`.
       | Reported as [language.scripting.code.calls.uncallable] says.
     }
 
+    @status(500)
     @display("Attempt takes one call")
     attempt_arity: error("fault") {
       title = "attempt takes one call"

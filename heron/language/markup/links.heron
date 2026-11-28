@@ -18,7 +18,8 @@ links: section {
   @display("URL link")
   url_link: term {{
     `[text](url)`, a link to a page outside the tree. Its URL may hold inserts, as
-    `[issue](https://example.com/issues/$id)`.
+    `[issue](https://example.com/issues/$id)`. Its element form is `std/doc`'s
+    `<link uri="url">text</link>`, which links only to a URL; a node is linked with `<ref>`.
   }}
 
   node_links_resolve: rule(system.checker) {
@@ -33,7 +34,7 @@ links: section {
   }
 
   ref_element: rule(system.checker) {
-    must {{ read `<ref to="name"/>` as the element form of `[name]`, and `<ref to="name" code/>` as that of ``[`name`]``, resolved and reported alike }}
+    must {{ read `<ref to="name"/>` as the element form of `[name]`, `<ref to="name" code/>` as that of ``[`name`]``, and `<ref to="name">text</ref>` as that of `[text](#name)`, resolved and reported alike }}
   }
 
   short_link_text: rule(system.docs_generator) {
@@ -42,7 +43,7 @@ links: section {
   }
 
   links_kept_by_format: rule(system.formatter) {
-    mustNot {{ expand a [short link](#language.markup.links.short_link) into a [node link](#language.markup.links.node_link), shorten a [node_link], or change the path either is written with }}
+    must_not {{ expand a [short link](#language.markup.links.short_link) into a [node link](#language.markup.links.node_link), shorten a [node_link], or change the path either is written with }}
   }
 
   node_links_render: rule(system.docs_generator) {
@@ -63,20 +64,21 @@ links: section {
   }
 
   empty_link_text: rule(system.docs_generator) {
-    where {{ a node link's text is empty, `[](#path)` }}
+    while {{ a node link's text is empty, `[](#path)` }}
     must {{ render the node's [display name](#language.core_format.naming.display_name) as its text }}
   }
 
   url_links_unchecked: rule(system.checker) {
-    mustNot {{ fetch or check a [URL link](#language.markup.links.url_link) }}
+    must_not {{ fetch or check a [URL link](#language.markup.links.url_link) }}
     instead {{ check only the inserts its URL holds, as names in scope }}
   }
 
   errors: section {
+    @status(422)
     @display("Unresolved short link")
     unresolved_short_link: error("unresolved") {
       title = "[{path}] names no node"
-      path: field(String)
+      path: String
       | A [short_link] whose name matches no node; the message ends with the closest name when one is close.
       | Reported as [language.markup.links.short_links_resolve] says.
     }

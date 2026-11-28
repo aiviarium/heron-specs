@@ -1,36 +1,31 @@
-lint: command("heron lint", cli.lint.any_finding_fails) {
-  usage = ["heron lint [--json] [--fix] [entry points…]"]
-
+lint(
+  /// Prints the findings as one JSON array, each with `file`, `start`, `end`, `severity`,
+  /// `code`, `message`, `related`, `fixes`, `line` and `column`.
+  @option
+  json: Bool = false,
+  /// Applies each finding's first fix that isn't a suggestion, writes `heron lint: applied
+  /// ‹n› fixes` to standard error, and reports the findings it didn't fix. A suggestion is
+  /// a guess among others, such as a spelling correction, which only the editor offers, as
+  /// a code action. The tree isn't linted again after the fixes: run `heron lint` once more
+  /// to see what they changed.
+  @option
+  fix: Bool = false,
+  /// Files, or folders whose `index.heron` is the [entry point](#language.core_format.files.entry_point), relative to the working
+  /// folder. With none, `.`.
+  entry_points<variadic>?: String,
+): command("heron lint", cli.lint.any_finding_fails, cli.lint.fix_applies_no_guess, cli.lint.fix_in_place, cli.lint.fix_no_overlap) {
   | Checks each [entry point](#language.core_format.files.entry_point) and runs every
   | registered lint and [prose lint provider](#language.markup.prose_view.prose_lint_provider) over it: the core lints and the prose
   | providers, such as Vale and the spec-aware lints of `std/lint`. It prints the check's
   | diagnostics and the findings together, sorted, as `heron check` prints them.
   | Options come before the [entry points](#language.core_format.files.entry_point).
 
-  entries: argument("entry points", type = String, optional = true, variadic = true) {
-    | Files, or folders whose `index.heron` is the [entry point](#language.core_format.files.entry_point), relative to the working
-    | folder. With none, `.`.
-  }
-
-  json: option("--json", type = Bool, default = false) {
-    | Prints the findings as one JSON array, each with `file`, `start`, `end`, `severity`,
-    | `code`, `message`, `related`, `fixes`, `line` and `column`.
-  }
-
-  fix: option("--fix", cli.lint.fix_applies_no_guess, cli.lint.fix_in_place, cli.lint.fix_no_overlap, type = Bool, default = false) {
-    | Applies each finding's first fix that isn't a suggestion, writes `heron lint: applied
-    | ‹n› fixes` to standard error, and reports the findings it didn't fix. A suggestion is
-    | a guess among others, such as a spelling correction, which only the editor offers, as
-    | a code action. The tree isn't linted again after the fixes: run `heron lint` once more
-    | to see what they changed.
-  }
-
   | Exits 0 when: no diagnostic and no finding, of any severity.
-  @exit(1)
+  @status(422)
   exit_1: error("heron lint exit 1") {
     title = "a diagnostic or a finding is left, a warning or a hint included; or a fix couldn't be written"
   }
-  @exit(2)
+  @status(400)
   exit_2: error("heron lint exit 2") {
     title = "an unknown option, or an entry point that doesn't exist"
   }
@@ -42,13 +37,13 @@ lint: command("heron lint", cli.lint.any_finding_fails) {
   }
 
   fix_applies_no_guess: rule(system.command_line) {
-    mustNot {{ apply a fix marked as a suggestion }}
+    must_not {{ apply a fix marked as a suggestion }}
     instead {{ leave the finding reported, for the editor to offer its suggestions as code actions }}
   }
 
   fix_no_overlap: rule(system.command_line) {
     if {{ the edits of a fix overlap an edit already taken, or start at the same offset }}
-    mustNot {{ apply it }}
+    must_not {{ apply it }}
     instead {{ leave its finding reported, so the next `heron lint --fix` can apply it to the changed text }}
   }
 

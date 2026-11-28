@@ -1,21 +1,19 @@
-help: command("heron help", cli.help.prints_usage) {
-  usage = ["heron help [command]", "heron [-h | --help]", "heron"]
-
-  | Lists the registered commands, or shows one command's usage line and summary. It isn't
-  | a registered command: the [command line](#system.command_line) answers it before looking a
+help(
+  /// A command's name. Its usage line, `usage: heron ‹name› ‹usage›`, and its summary are
+  /// printed on standard output. A name that isn't registered lists every command instead, as `heron help` does: the list goes to standard error.
+  command?: String,
+): command("heron help", cli.help.prints_usage) {
+  | Lists the registered commands, or shows one command's usage line and summary;
+  | `heron -h` and `heron --help` are `heron help`, and `heron` alone lists the commands
+  | too. It isn't a registered command: the [command line](#system.command_line) answers it before looking a
   | command up, so it lists whatever commands the installed parts registered.
   |
   | Each command's own `-h` prints its options in the standard flag listing and exits
   | with status 2; `heron run`, which reads its options by hand, treats `-h` as an unknown
   | option.
 
-  command: argument("command", type = String, optional = true) {
-    | A command's name. Its usage line, `usage: heron ‹name› ‹usage›`, and its summary are
-    | printed on standard output. A name that isn't registered lists every command instead, as `heron help` does: the list goes to standard error.
-  }
-
   | Exits 0 when: `heron help`, `heron -h` or `heron --help`, with or without a command.
-  @exit(2)
+  @status(400)
   exit_2: error("heron help exit 2") {
     title = "heron with no arguments, which lists the commands on standard error"
   }

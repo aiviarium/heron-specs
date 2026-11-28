@@ -21,7 +21,7 @@ lexical: section {
   }
 
   meaning_is_local: rule(system.parser) {
-    mustNot {{ change how a construct parses with the kind it's written in, the imports or anything a checker knows }}
+    must_not {{ change how a construct parses with the kind it's written in, the imports or anything a checker knows }}
     then {{ a file parses the same alone as in its tree, and an editor can parse it on every keystroke }}
   }
 
@@ -53,7 +53,7 @@ lexical: section {
   }
 
   no_comments_in_text: rule(system.parser) {
-    mustNot {{ read `//` as a comment inside a prose line, a doc line, a `{{ }}` body or a string }}
+    must_not {{ read `//` as a comment inside a prose line, a doc line, a `{{ }}` body or a string }}
     then {{ a URL in prose or in a string needs no escape }}
   }
 
@@ -74,7 +74,7 @@ lexical: section {
   }
 
   words_in_structure_otherwise: rule(system.parser) {
-    where {{ a reserved word is `do` followed by `{`, or `let` followed by a space and a name, in structure }}
+    while {{ a reserved word is `do` followed by `{`, or `let` followed by a space and a name, in structure }}
     must {{ read `do {` as opening code and `let name` as binding a local }}
   }
 

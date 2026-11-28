@@ -1,5 +1,5 @@
 @display("std/jsonrpc")
-jsonrpc: part {
+jsonrpc: feature {
   | Binds apis and ops to JSON-RPC 2.0 methods and notifications, framed for HTTP, the language
   | server protocol, length-prefixed streams or WebSockets.
   |

@@ -16,7 +16,7 @@ conflicts: section {
   }
 
   unordered_conflict_otherwise: rule(system.checker) {
-    where {{ one of the two files includes the other }}
+    while {{ one of the two files includes the other }}
     must {{ let the including file's setting win without a report }}
   }
 
@@ -26,42 +26,47 @@ conflicts: section {
   }
 
   errors: section {
+    @status(422)
     declared_twice: error("conflict") {
       title = "{name} is declared twice"
       related = "first declared here"
-      name: field(String)
+      name: String
       | A name declared twice in one scope.
       | Reported as [language.core_format.nodes.declaring.declared_once] and [language.schemas.overloads.overloads_together] say.
     }
 
+    @status(422)
     set_twice: error("conflict") {
       title = "{path} is set twice in one body"
       related = "set here first"
-      path: field(String)
+      path: String
       | A field set twice in one body.
       | Reported as [language.apis.examples.one_outcome_each] and [language.core_format.conflicts.set_once] say.
     }
 
+    @status(422)
     set_in_two_files: error("conflict") {
       title = "{path} is set in two files, and neither includes the other"
       related = "also set here"
-      path: field(String)
+      path: String
       | A path set in two files, neither including the other.
       | Reported as [language.core_format.conflicts.unordered_conflict] says.
     }
 
+    @status(422)
     exported_twice: error("conflict") {
       title = "two packages export {name}"
-      name: field(String)
+      name: String
       | A name exported by two packages.
       | Reported as [language.core_format.conflicts.set_once] says.
     }
 
+    @status(422)
     exported_and_declared: error("conflict") {
       title = "{name} is exported by {package} and also declared in this tree"
       related = "declared here"
-      name: field(String)
-      package: field(String)
+      name: String
+      package: String
       | An exported name also declared in the tree.
       | Reported as [language.core_format.conflicts.set_once] says.
     }

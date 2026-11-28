@@ -10,7 +10,7 @@ type_page: screen(route = "/<type>.html", tools.docs.screens.type_page.type_card
     }
 
     proto_definition: rule(system.docs_generator) {
-      where {{ a type is a message or an enum of a [gRPC service](#language.apis.grpc.proto_service) }}
+      while {{ a type is a message or an enum of a [gRPC service](#language.apis.grpc.proto_service) }}
       must {{ show beside its declaration, as tabs, its `.proto` definition with every [field number](#language.apis.grpc.field_number), as `heron generate proto` writes it, and its JSON form, each field by its [JSON name](#language.apis.grpc.json_name) with a value of its type }}
     }
   }

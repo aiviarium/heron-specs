@@ -27,7 +27,7 @@ accept: section {
   }
 
   max_bound: rule(system.checker) {
-    where {{ an entry has `max = n` }}
+    while {{ an entry has `max = n` }}
     must {{ report accepts at most once, at the first child past the bound, counting every kind of a category entry together }}
     example {{ `rule` accepts `category = strength, max = 1`, so a rule with `must` and `should` reports "rule accepts at most 1 strength node" }}
   }
@@ -43,41 +43,45 @@ accept: section {
   }
 
   verbatim_text: rule(system.checker) {
-    where {{ a kind accepts `text = Verbatim` }}
+    while {{ a kind accepts `text = Verbatim` }}
     must {{ keep its prose exactly as written, with no inserts, links, tags or emphasis read in it }}
     example {{ a grammar's `production` and a component's `surface` hold their text verbatim }}
   }
 
   errors: section {
+    @status(422)
     @display("Doesn't accept")
     doesnt_accept: error("accept") {
       title = "{kind} doesn't accept {child_kind}; it accepts {kinds}"
-      kind: field(String)
-      child_kind: field(String)
-      kinds: field(String)
+      kind: String
+      child_kind: String
+      kinds: String
       | The tail reads "; it accepts no child kinds" when the kind accepts none.
       | Reported as [language.schemas.accept.unaccepted_child] and [language.specifications.lifecycles.transition_body] say.
     }
 
+    @status(422)
     accepts_at_most: error("accept") {
       title = "{kind} accepts at most {n} {child_kind}"
-      kind: field(String)
-      n: field(String)
-      child_kind: field(String)
+      kind: String
+      n: String
+      child_kind: String
       | For a category entry the child kind reads as the category, as "1 strength node" or "2
       | block nodes".
       | Reported as [language.schemas.accept.max_bound] says.
     }
 
+    @status(422)
     takes_no_prose: error("accept") {
       title = "{kind} takes no prose"
-      kind: field(String)
+      kind: String
       | Reported as [language.core_format.prose_layer.prose_needs_a_kind] and [language.schemas.accept.prose_and_code] say.
     }
 
+    @status(422)
     takes_no_do_block: error("accept") {
       title = "{kind} takes no do block"
-      kind: field(String)
+      kind: String
       | Reported as [language.schemas.accept.prose_and_code] says.
     }
   }

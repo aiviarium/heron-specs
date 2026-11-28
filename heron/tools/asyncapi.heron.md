@@ -17,6 +17,6 @@ code generators and mock servers, read a Heron api too.
 </rule>
 
 <rule id="asyncapi_extra" refs="system.generator">
-<mustNot>generate the description unless asked for its target, or read it back</mustNot>
+<must_not>generate the description unless asked for its target, or read it back</must_not>
 <then>it never drifts into a second source of truth</then>
 </rule>

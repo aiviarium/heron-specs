@@ -17,5 +17,5 @@ demand, which the OpenRPC playground, its client generators and its mock servers
 </rule>
 
 <rule id="openrpc_extra" refs="system.generator">
-<mustNot>generate the document unless asked for its target, or read it back</mustNot>
+<must_not>generate the document unless asked for its target, or read it back</must_not>
 </rule>

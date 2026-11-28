@@ -74,7 +74,7 @@ code: section {
     }
 
     union_not_prose: rule(system.parser) {
-      mustNot {{ read a `|` after a value as an operator or as the start of prose }}
+      must_not {{ read a `|` after a value as an operator or as the start of prose }}
       instead {{ report the rest of the line, since a prose value starts only right after `=` }}
       example {{ `x = a | b`: `x = a` and an error at `|` }}
     }

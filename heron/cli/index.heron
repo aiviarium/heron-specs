@@ -9,11 +9,13 @@ include = [
   "./serve.heron",
   "./help.heron",
   "./version.heron",
+  "./release.heron",
 ]
 
 @lens(user, developer)
 | The `heron` binary's subcommands, one reference each: usage, arguments, options, exit
-| codes and examples.
+| codes and examples. Each is declared as an op is, its parameters its arguments and,
+| marked `@option`, its options, so its usage line is derived from its declaration.
 |
 | The commands share their conventions. Options come before the positional arguments and
 | take one dash or two, except `heron run`'s, which take two. No option has a short form

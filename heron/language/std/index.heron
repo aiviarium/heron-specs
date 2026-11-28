@@ -23,15 +23,16 @@ include = [
 
 @lens(user, developer)
 | The standard packages Heron ships. Each is Heron source under `std/` in the repository, a
-| [part](#language.specifications.requirements.part_kind) here with its purpose and
+| [feature](#language.specifications.context.feature_kind) here with its purpose and
 | where each of its exports is specified.
 | The package files are the one statement of the surface: the API reference renders their
 | types, and this tree links to them rather than repeating them. Only the primitive types are
 | built into `heron`, as the [prelude](#language.core_format.imports.packages.prelude) says.
 | The core is `std/core` with `std/spec`; every other package, `std/project`, `std/grammar` and
 | `std/http` among them, is optional and imported by the trees that need it. Standard packages
-| import no package in a cycle, besides the one
-| [import cycles](#language.core_format.imports.packages.import_cycle) allow.
+| import no package in a cycle, besides the ones
+| [import cycles](#language.core_format.imports.packages.import_cycle) allow among the core and
+| the packages it's written with.
 
 embedded_copy: rule(system.checker) {
   must {{ resolve an import `std/<name>@<major>` to `<name>/package.heron` in the copy of `std/` embedded in the binary, with the files it includes, and identify each of them as `std:` and its path }}
@@ -49,7 +50,7 @@ std_versions: rule(actors.implementer) {
 }
 
 std_surface_reviewed: rule(actors.implementer) {
-  mustNot {{ add to a standard package surface that no spec node specifies }}
+  must_not {{ add to a standard package surface that no spec node specifies }}
   instead {{ specify the export where its behaviour belongs and link it from the package's component here }}
 }
 

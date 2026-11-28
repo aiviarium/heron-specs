@@ -14,7 +14,7 @@ names.
 
 <rule id="both_directions" refs="system.checker">
 <must>admit an accepted kind as a child in structure and as a tag in prose alike, with the same arguments and children</must>
-<example>`note(kind = tip) { | Text }` and `<note kind="tip">Text</note>`: the same node</example>
+<example>`tip { | Text }` and `<tip>Text</tip>`: the same node</example>
 </rule>
 
 <rule id="heron_file_root" refs="system.checker">

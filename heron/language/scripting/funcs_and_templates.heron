@@ -34,7 +34,7 @@ funcs_and_templates: section {
     }
 
     bodiless_registered: rule(system.interpreter) {
-      where {{ a func has no body and no value }}
+      while {{ a func has no body and no value }}
       must {{ call what `heron` itself registered under its path in the declaring package, such as `process.run` or `repo.ensure_toolchain` }}
     }
 
@@ -43,7 +43,7 @@ funcs_and_templates: section {
     }
 
     no_effects_while_evaluating: rule(system.interpreter) {
-      mustNot {{ start a process, write a file or make a temporary one during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
+      must_not {{ start a process, write a file or make a temporary one during [evaluation](#language.scripting.funcs_and_templates.evaluation) }}
       then {{ a value of the tree never depends on a side effect }}
     }
 
@@ -84,6 +84,7 @@ funcs_and_templates: section {
   }
 
   errors: section {
+    @status(500)
     @display("Emit outside a macro")
     emit_outside: error("fault") {
       title = "emit(…) adds source only inside a macro"

@@ -16,7 +16,7 @@ quality_checks: section {
   | | Well formed  | compound rules, negations without a condition, long or scripted scenarios, missing measures |
 
   unambiguous_wording: rule(system.prose_linter) {
-    should {{ report weak modal where the text under `must` or `mustNot` says "should", "may", "might", "could" or "ideally", and vague word where a rule that serves no quality and stands beside no quality scenario uses a word such as "fast", "robust" or "several" }}
+    should {{ report weak modal where the text under `must` or `must_not` says "should", "may", "might", "could" or "ideally", and vague word where a rule that serves no quality and stands beside no quality scenario uses a word such as "fast", "robust" or "several" }}
     while {{ the word is used rather than mentioned: unquoted, outside code and unmasked }}
   }
 
@@ -26,7 +26,7 @@ quality_checks: section {
   }
 
   double_negative: rule(system.prose_linter) {
-    if {{ the text under `mustNot` or `shouldNot` is itself negative }}
+    if {{ the text under `must_not` or `should_not` is itself negative }}
     should {{ report a double negative }}
   }
 
@@ -41,7 +41,7 @@ quality_checks: section {
   }
 
   unlinked_node_fix: rule(system.prose_linter) {
-    where {{ the name an unlinked node reports names one node of the tree }}
+    while {{ the name an unlinked node reports names one node of the tree }}
     must {{ offer a fix that wraps the name in brackets as a [short link](#language.markup.links.short_link), which `heron lint -fix` applies }}
   }
 
@@ -98,136 +98,151 @@ quality_checks: section {
   }
 
   errors: section {
+    @status(422)
     @display("Unlinked term")
     @severity(warning)
     unlinked_term: error("Spec.UnlinkedTerm") {
       title = "\"{phrase}\" is the term {path}; link it"
-      phrase: field(String)
-      path: field(String)
+      phrase: String
+      path: String
       | A term's phrase in prose outside the term, not linked.
       | Reported as [language.specifications.quality_checks.nodes_linked] says.
     }
 
+    @status(422)
     @display("Ruled-out synonym")
     @severity(warning)
     ruled_out_synonym: error("Spec.Synonym") {
       title = "\"{alias}\" is a synonym the term {path} rules out; use the term"
-      alias: field(String)
-      path: field(String)
+      alias: String
+      path: String
       | One of a term's [aliases](#language.data.values.alias), used where the term should be.
       | Reported as [language.specifications.quality_checks.unambiguous_wording] says.
     }
 
+    @status(422)
     @display("Two senses")
     @severity(warning)
     two_senses: error("Spec.TwoSenses") {
       title = "\"{phrase}\" is defined by two terms, here and {path}, so it's used in two senses"
-      phrase: field(String)
-      path: field(String)
+      phrase: String
+      path: String
       | A phrase two terms define, reported at each.
       | Reported as [language.specifications.quality_checks.unambiguous_wording] says.
     }
 
+    @status(422)
     @display("Unlinked node")
     @severity(warning)
     unlinked_node: error("Spec.UnlinkedNode") {
       title = "{name} names a node without linking it"
-      name: field(String)
+      name: String
       | An identifier of the tree, with an underscore or an inner capital, written as plain text.
       | Reported as [language.specifications.quality_checks.nodes_linked] and [language.specifications.quality_checks.unlinked_node_fix] say.
     }
 
+    @status(422)
     @display("Dead link")
     @severity(warning)
     dead_link: error("Spec.DeadLink") {
       title = "the link's target {target} doesn't exist"
-      target: field(String)
+      target: String
       | A link to a file that isn't there.
       | Reported as [language.markup.authored_pages.links.file_links_checked] and [language.specifications.quality_checks.nodes_linked] say.
     }
 
+    @status(422)
     @display("Weak modal")
     @severity(warning)
     weak_modal: error("Spec.MustSaysShould") {
       title = "a {strength} requirement says \"{word}\"; state it as {strength}"
-      strength: field(String)
-      word: field(String)
+      strength: String
+      word: String
       | A weak modal verb under a mandatory strength.
       | Reported as [language.specifications.quality_checks.unambiguous_wording] says.
     }
 
+    @status(422)
     @display("Vague word")
     @severity(warning)
     vague_word: error("Spec.VagueWord") {
       title = "\"{word}\" is vague in a rule without a metric; measure it or say exactly"
-      word: field(String)
+      word: String
       | A word that can't be checked, in a rule no quality bounds.
       | Reported as [language.specifications.quality_checks.unambiguous_wording] says.
     }
 
+    @status(422)
     @display("Compound rule")
     @severity(warning)
     compound_rule: error("Spec.CompoundRule") {
       title = "this rule joins two behaviours with \"{word}\"; split it into two rules"
-      word: field(String)
+      word: String
       | Reported as [language.specifications.quality_checks.compound_rule] says.
     }
 
+    @status(422)
     @display("Negation without a condition")
     @severity(warning)
     bare_negation: error("Spec.BareNegation") {
       title = "\"{word}\" forbids without saying when; give a condition or what to do instead"
-      word: field(String)
+      word: String
       | Reported as [language.specifications.quality_checks.bare_negation] says.
     }
 
+    @status(422)
     @display("Design word")
     @severity(warning)
     design_word: error("Spec.DesignWord") {
       title = "\"{word}\" is a design word in the {layer} layer; say what's observable, or write a constraint with its reason"
-      word: field(String)
-      layer: field(String)
+      word: String
+      layer: String
       | Reported as [language.specifications.quality_checks.design_words] says.
     }
 
+    @status(422)
     @display("Measure missing")
     @severity(warning)
     measure_missing: error("Spec.MeasureMissing") {
       title = "quality {name} has no measure and no quality scenario"
-      name: field(String)
+      name: String
       | Reported as [language.specifications.quality_checks.measure_missing] says.
     }
 
+    @status(422)
     @display("Long scenario")
     @severity(warning)
     long_scenario: error("Spec.LongScenario") {
       title = "scenario {name} has {count} clauses; keep it to about five, or split the rule"
-      name: field(String)
-      count: field(String)
+      name: String
+      count: String
       | Reported as [language.specifications.quality_checks.long_scenario] says.
     }
 
+    @status(422)
     @display("Scripted scenario")
     @severity(warning)
     scripted_scenario: error("Spec.ScriptedScenario") {
       title = "\"{word}\" scripts a screen; say what happens, not how it's driven"
-      word: field(String)
+      word: String
       | Reported as [language.specifications.quality_checks.scripted_scenario] says.
     }
 
+    @status(422)
     @display("Delivery word")
     @severity(warning)
     delivery_word: error("Spec.DeliveryWord") {
       title = "\"{word}\" is delivery vocabulary; plan work in the project, not the spec"
-      word: field(String)
+      word: String
       | Reported as [language.specifications.quality_checks.delivery_words] says.
     }
 
+    @status(422)
     @display("Negated condition")
     @severity(warning)
     negated_condition_found: error("Spec.NegatedCondition") {
       title = "\"{words}\" negates the condition; say the state the rule applies in, or write the exception as a rule of its own"
-      words: field(String)
+      words: String
       | Reported as [negated_condition] says.
     }
   }

@@ -26,7 +26,7 @@ logo and its stylesheets.
 </rule>
 
 <rule id="changelog_entries" refs="system.docs_generator">
-<where>a section takes the `changelog` layout</where>
+<while>a section takes the `changelog` layout</while>
 <must>show each child section as an entry, its title in the margin and its notes beside it</must>
 </rule>
 

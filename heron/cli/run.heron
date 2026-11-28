@@ -1,51 +1,43 @@
-run: command("heron run", cli.run.every_run_recorded, cli.run.failure_stops, cli.run.install_before_check, cli.run.needs_once_in_order) {
-  usage = ["heron run [--json] [--yes] [--undo-on-failure] [--entry file] <task> [--param value…]"]
-
+run(
+  /// Prints the task's result as JSON, `null` included. Without it a string result is
+  /// printed as it is, any other result as indented JSON, and nothing for `null`.
+  @option
+  json: Bool = false,
+  /// Runs tasks marked `<confirm>` without asking. Without it, each is asked about on the
+  /// terminal, `Run ‹path›? [y/N]`, and only `y` or `yes` runs it.
+  @option
+  yes: Bool = false,
+  /// When a task fails, runs the `@undo` task of every task that finished, newest first,
+  /// each recorded with the role `undo`.
+  @option
+  undo_on_failure: Bool = false,
+  /// The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`; also written `--entry=file`.
+  @option(value = "file")
+  entry: String = ".",
+  /// The task's path from the tree's root, such as `seed_local` or `db.migrate`. A path
+  /// that names nothing at the root is looked up inside the tree's `repository` node when
+  /// that node is `std/repo`'s `Repository`, so `heron run setup` runs `repository.setup`.
+  task: String,
+  /// The task's parameters, as `--name value` or `--name=value`, a dash in the name read
+  /// as an underscore. A `Bool` given with no value is `true`. A `List` or `Set` takes the
+  /// option repeated or comma-separated values; an `Int`, a `Float` or `Decimal`, and a
+  /// `Bool` are parsed as such; an enum takes a variant's name; any other type takes JSON
+  /// when the value starts with `{` or `[`, and the text otherwise.
+  @display("--param value")
+  params<variadic>?: String,
+): command("heron run", cli.run.every_run_recorded, cli.run.failure_stops, cli.run.install_before_check, cli.run.needs_once_in_order, cli.run.missing_without_terminal, cli.run.missing_asked) {
   | Runs a task of the tree by its path, with its parameters as options. It checks the tree,
   | finds the task, reads its parameters, orders what it `@needs`, asks before a task marked
   | `<confirm>`, runs each task in order with the real capabilities, and writes a `run`
   | record. Its options are read by hand, not as the other commands' are: they take two
   | dashes, come before the task, and everything after the task is the task's parameters.
 
-  task: argument("task", type = String) {
-    | The task's path from the tree's root, such as `seed_local` or `db.migrate`. A path
-    | that names nothing at the root is looked up inside the tree's `repository` node when
-    | that node is `std/repo`'s `Repository`, so `heron run setup` runs `repository.setup`.
-  }
-
-  params: argument("--param value", cli.run.missing_without_terminal, cli.run.missing_asked, type = String, optional = true, variadic = true) {
-    | The task's parameters, as `--name value` or `--name=value`, a dash in the name read
-    | as an underscore. A `Bool` given with no value is `true`. A `List` or `Set` takes the
-    | option repeated or comma-separated values; an `Int`, a `Float` or `Decimal`, and a
-    | `Bool` are parsed as such; an enum takes a variant's name; any other type takes JSON
-    | when the value starts with `{` or `[`, and the text otherwise.
-  }
-
-  json: option("--json", type = Bool, default = false) {
-    | Prints the task's result as JSON, `null` included. Without it a string result is
-    | printed as it is, any other result as indented JSON, and nothing for `null`.
-  }
-
-  yes: option("--yes", type = Bool, default = false) {
-    | Runs tasks marked `<confirm>` without asking. Without it, each is asked about on the
-    | terminal, `Run ‹path›? [y/N]`, and only `y` or `yes` runs it.
-  }
-
-  undo: option("--undo-on-failure", type = Bool, default = false) {
-    | When a task fails, runs the `@undo` task of every task that finished, newest first,
-    | each recorded with the role `undo`.
-  }
-
-  entry: option("--entry", type = String, default = ".") {
-    | The [entry point](#language.core_format.files.entry_point): a file, or a folder's `index.heron`; also written `--entry=file`.
-  }
-
   | Exits 0 when: the task and everything it needs succeeded.
-  @exit(1)
+  @status(500)
   exit_1: error("heron run exit 1") {
     title = "the tree doesn't check, a task failed, or a confirmation was declined"
   }
-  @exit(2)
+  @status(400)
   exit_2: error("heron run exit 2") {
     title = "an unknown option, no task named, no such task, a parameter that's unknown, missing without a terminal or not of its type, an @needs cycle or a need that isn't a task, or a <confirm> task without a terminal or --yes"
   }

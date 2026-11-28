@@ -15,7 +15,7 @@ its header.
 </rule>
 
 <rule id="no_rule_columns" refs="system.docs_generator">
-<mustNot>render a rule's strength, conditions or consequences in a label [column](#heron.language.grammar.lexical.column), in a hanging indent, or in a smaller or fainter style than its sentence</mustNot>
+<must_not>render a rule's strength, conditions or consequences in a label [column](#heron.language.grammar.lexical.column), in a hanging indent, or in a smaller or fainter style than its sentence</must_not>
 </rule>
 
 <rule id="formal_parts_on_hover" refs="system.docs_generator">
@@ -28,7 +28,7 @@ its header.
 </rule>
 
 <rule id="gutter_marks" refs="system.docs_generator">
-<where>the lens's `kinds` is `ICON`, as it is unless set</where>
+<while>the lens's `kinds` is `ICON`, as it is unless set</while>
 <must>show beside each node a page renders inline as a block of its own, a rule, a goal, a term, a scenario, a use case, a transition or a diagnostic, the icon it shows in the left gutter, level with its first line: muted, in the [project colour](#tools.docs.design_system.project_colour) on hover, with the node's kind and name as its tooltip and label, and as the link to the node's anchor; and on a narrow screen, before its text; and, before the name of a defined node that has a heading of its own, such as a [lifecycle](#language.specifications.lifecycles.lifecycle), its kind's icon</must>
 <then>a reader tells the nodes a page defines from its descriptive prose at a glance, and the text never moves for the mark</then>
 </rule>
@@ -44,7 +44,7 @@ its header.
 </rule>
 
 <rule id="goals_not_pages" refs="system.docs_generator">
-<mustNot>give a goal a page, an entry in the navigation or a place in the previous and next sequence</mustNot>
+<must_not>give a goal a page, an entry in the navigation or a place in the previous and next sequence</must_not>
 <instead>show it on the page of the area or package it belongs to, the package's goals on its home page</instead>
 </rule>
 
@@ -57,7 +57,7 @@ its header.
 </rule>
 
 <rule id="small_tables_as_lines" refs="system.docs_generator">
-<where>data the generator would render as a [table](#heron.language.markup.components.table) is a [small table](#tools.docs.rendering.small_table)</where>
+<while>data the generator would render as a [table](#heron.language.markup.components.table) is a [small table](#tools.docs.rendering.small_table)</while>
 <must>render each of its rows as one line, its first cell first and every other cell after the label its [column](#heron.language.grammar.lexical.column) has in the [string catalogue](#tools.docs.writing.string_catalogue)</must>
 <example>a command with one option shows `--addr` String, default `127.0.0.1:7340` on one line, not a [table](#heron.language.markup.components.table) of one row</example>
 </rule>
@@ -85,5 +85,5 @@ its header.
 </rule>
 
 <rule id="no_nested_boxes" refs="system.docs_generator">
-<mustNot>draw a bordered box inside another, or indent a node's children under the node</mustNot>
+<must_not>draw a bordered box inside another, or indent a node's children under the node</must_not>
 </rule>

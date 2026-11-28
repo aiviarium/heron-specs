@@ -55,7 +55,7 @@ layers: section {
   }
 
   same_layer_free: rule(system.checker) {
-    mustNot {{ report a reference between two nodes of one [layer](#language.specifications.layers.layer), or from or to a node of a kind with no [layer](#heron.language.specifications.layers.layer) }}
+    must_not {{ report a reference between two nodes of one [layer](#language.specifications.layers.layer), or from or to a node of a kind with no [layer](#heron.language.specifications.layers.layer) }}
   }
 
   layer_declared: rule(system.checker) {
@@ -110,15 +110,16 @@ layers: section {
     |
     | | Constructor                                   | Its references name                                                    | Meaning                                          |
     | | --------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------ |
-    | | `rule(subject?, …)`                           | at most one actor or part; goals and qualities; assumptions           | its subject; what it serves; what it relies on   |
-    | | `constraint(…, reason = …)`                   | goals and qualities; assumptions; actors and personas                 | what it serves; what it relies on; who asked     |
+    | | `feature(…)`                                  | goals and qualities; actors                                            | what it serves; who it's for                     |
+    | | `rule(subject?, …)`                           | at most one actor or part; goals and qualities; assumptions; features | its subject; what it serves; what it relies on; the features it joins |
+    | | `constraint(…)`                               | goals and qualities; assumptions; actors and personas                 | what it serves; what it relies on; who asked     |
     | | `usecase(actor, …)`                           | goals and qualities; assumptions                                       | what it serves; what it relies on                |
     | | `goal(…)`                                     | actors and personas                                                    | who asked for it                                 |
     | | `scenario(…)`, an outcome scenario            | one rule, use case, step or extension                                  | the case it describes                            |
     | | `scenario(…)`, a quality scenario             | the quality                                                            | what it measures                                 |
     | | `example(…)`                                  | one outcome scenario                                                   | the case it pins down                            |
-    | | `op(result?, …)`, `command(name, …)`, `screen(route?, …)`, `api(…)`, `region(…)`, `argument(name, …)`, `option(name, …)`, `grammar(…)`, `production(…)`, `token(…)` | the kinds in `types.realized`: rules, constraints, use cases, steps, extensions, parts, [lifecycles](#heron.language.specifications.lifecycles.lifecycle) and transitions | what it carries out; a transition, what an op performs |
-    | | `@touch(…)` on a type, an enum, a union or an interface | the kinds in `types.realized`                                | what it carries out                              |
+    | | `op(result?, …)`, `command(name, …)`, `screen(route?, …)`, `api(…)`, `region(…)`, `grammar(…)`, `production(…)`, `token(…)` | the kinds in `spec.touchable`: rules, constraints, use cases, steps, extensions, parts, [lifecycles](#heron.language.specifications.lifecycles.lifecycle) and transitions | what it carries out; a transition, what an op performs |
+    | | `@touch(…)` on a type, an enum, a union or an interface | the kinds in `spec.touchable`                                | what it carries out                              |
     | | `@see(…)` on any node                         | any node but a term                                                    | what it's about                                  |
     | | `proves(…)`, in a project                     | any requirement, at a [revision](#heron.language.specifications.layers.revisions.revision) | what it proves                                   |
 
@@ -137,9 +138,10 @@ layers: section {
       A kind's `references`, `kind(references = [actor, part, goal])`: the kinds, and the
       categories of kinds, its [hard references](#language.specifications.layers.references.hard_reference)
       may name. A kind that extends another takes its list unless it declares its own, so a
-      custom kind can widen or narrow what its nodes reference. `std/types` declares
-      `realized`, the category of the spec kinds a contract surface carries out, and
-      `std/spec`'s `rule`, `constraint`, `usecase`, `part`, `states` and `transition` join it.
+      custom kind can widen or narrow what its nodes reference. `std/spec` declares
+      `touchable`, the category of the spec kinds a contract surface carries out, which its
+      `rule`, `constraint`, `usecase`, `part`, `states` and `transition` join, and which
+      `std/types`'s ops and apis and `std/grammar`'s kinds reference.
     }}
 
     reference_kinds: rule(system.checker) {
@@ -177,7 +179,7 @@ layers: section {
     }
 
     touch_annotation: rule(system.checker) {
-      must {{ accept `@touch(targets…)` on a node of any kind and read its targets as [hard references](#language.specifications.layers.references.hard_reference) of the node, checked against its kind's [reference kind list](#language.specifications.layers.references.reference_kind_list), and on a kind with no list against the kinds in `types.realized`, reading a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
+      must {{ accept `@touch(targets…)` on a node of any kind and read its targets as [hard references](#language.specifications.layers.references.hard_reference) of the node, checked against its kind's [reference kind list](#language.specifications.layers.references.reference_kind_list), and on a kind with no list against the kinds in `spec.touchable`, reading a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
       example {{ `@touch(refund_window) Refund: type { … }` and `@touch(refund_window) create(): op(Refund)` are accepted; `@touch(self_service)` above a type is reported }}
     }
 
@@ -191,7 +193,7 @@ layers: section {
     }
 
     area_goals: rule(system.checker) {
-      where {{ a rule, a constraint or a use case references no goal or quality }}
+      while {{ a rule, a constraint or a use case references no goal or quality }}
       must {{ read it as serving the goals declared in the nearest section above it that declares any, the package's own included }}
       then {{ an area that opens with its goals motivates the requirements in it, and a requirement references a goal of its own only where it serves another }}
     }
@@ -245,63 +247,70 @@ layers: section {
   }
 
   errors: section {
+    @status(422)
     @display("Reference points down")
     points_down: error("layer") {
       title = "{name} is a {kind} in the {to} layer, and a {from} node can't reference a lower layer; link it from the lower node instead"
-      name: field(String)
-      kind: field(String)
-      to: field(String)
-      from: field(String)
+      name: String
+      kind: String
+      to: String
+      from: String
       | A goal linking a rule, or a rule linking an op or an error. The fix is a reference on the lower node: a reference in its constructor or `@touch`, or a link to the rule in the error's prose.
       | Reported as [layers.references_point_up] says.
     }
 
+    @status(422)
     @display("Reference to a kind not taken")
     wrong_reference: error("reference") {
       title = "{name} is a {kind}, and a {from} references only {kinds}"
-      name: field(String)
-      kind: field(String)
-      from: field(String)
-      kinds: field(String)
+      name: String
+      kind: String
+      from: String
+      kinds: String
       | Reported as [layers.references.reference_kinds] says, and on a kind with no list as "{name} is a {kind}, and @touch on a {from} takes only a rule, a constraint, a use case or its step, a part, a [lifecycle](#heron.language.specifications.lifecycles.lifecycle) or a transition", as [layers.references.touch_annotation] says. A term gets its own message, "{name} is a term, which is vocabulary: a {from} doesn't reference it; mention it in the prose", or "@see doesn't reference it" for a [soft reference](#heron.language.specifications.layers.references.soft_reference), as [layers.references.term_not_referenced] says.
     }
 
+    @status(422)
     @display("Two subjects")
     two_subjects: error("subject") {
       title = "rule {name} binds {first} and {second}; a rule references at most one actor or part, its subject"
-      name: field(String)
-      first: field(String)
-      second: field(String)
+      name: String
+      first: String
+      second: String
       | Reported as [layers.references.one_subject] says.
     }
 
+    @status(422)
     @display("Rule linking a rule")
     rule_links_rule: error("rule-link") {
       title = "rule {name} links the rule {target}; a rule references no other rule, so link the term, part or section they share, or state the fact in the rule itself"
-      name: field(String)
-      target: field(String)
+      name: String
+      target: String
       | Reported as [layers.references.no_rule_to_rule] says.
     }
 
+    @status(422)
     @display("Reference listed twice")
     listed_twice: error("reference") {
       title = "{name} is listed twice, in the constructor and in @touch; list it once"
-      name: field(String)
+      name: String
       | Reported as [layers.references.listed_twice] says.
     }
 
+    @status(422)
     @display("Reference cycle")
     reference_cycle: error("cycle") {
       title = "{name} references itself through {path}"
-      name: field(String)
-      path: field(String)
+      name: String
+      path: String
       | Reported as [layers.references.references_acyclic] says.
     }
 
+    @status(422)
     @display("Revision below 1")
     revision_below_one: error("type") {
       title = "a revision is a whole number from 1, not {value}"
-      value: field(String)
+      value: String
       | Reported as [layers.revisions.revision_positive] says.
     }
   }

@@ -38,11 +38,11 @@ their text, which the core maps back onto the source.
 </rule>
 
 <rule id="what_is_not_projected" refs="system.prose_linter">
-<mustNot>project `do` blocks, code, the values of other types, or the text of a node whose kind accepts `text = Verbatim`</mustNot>
+<must_not>project `do` blocks, code, the values of other types, or the text of a node whose kind accepts `text = Verbatim`</must_not>
 </rule>
 
 <rule id="verbatim_docs" refs="system.prose_linter">
-<where>a node's kind accepts `text = Verbatim`, as a grammar's `production` does</where>
+<while>a node's kind accepts `text = Verbatim`, as a grammar's `production` does</while>
 <must>project the node's `///` docs, though not its text</must>
 </rule>
 
@@ -72,7 +72,7 @@ their text, which the core maps back onto the source.
 </rule>
 
 <rule id="no_titles" refs="system.prose_linter">
-<mustNot>project a section's title, since it comes from a name</mustNot>
+<must_not>project a section's title, since it comes from a name</must_not>
 <while>the section is declared in a [Heron file](#language.core_format.files.heron_file)</while>
 </rule>
 

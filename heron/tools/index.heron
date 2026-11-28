@@ -22,8 +22,11 @@ server_api {}
 @display("Language server API")
 lsp_api {}
 
+// The docs, prose linting and the VS Code extension are features of their own.
+docs: feature(readers_served, docs.tasks_first, docs.pages_stay_true, docs.write_for_readers, docs.read_by_topic, docs.own_lenses, docs.full_view, docs.agents_read_the_spec, docs.same_node_everywhere) {}
+
 @display("VS Code extension")
-vscode {}
+vscode: feature(actors.author) {}
 
 | What the development tools do, as their users see it: the language server, prose linting,
 | the editor grammar, the docs, the server and the VS Code extension.

@@ -5,7 +5,7 @@ deliberately small: code decides, combines and calls. Real work runs in the prog
 `std/process` launches; the [Scripting](#language.scripting) section covers both.
 
 <rule id="nothing_runs_outside_do" refs="system.interpreter">
-<mustNot>run anything outside a `do` block, except the calls in a body that yield its members at check time</mustNot>
+<must_not>run anything outside a `do` block, except the calls in a body that yield its members at check time</must_not>
 </rule>
 
 <rule id="fixed_statements" refs="system.parser">

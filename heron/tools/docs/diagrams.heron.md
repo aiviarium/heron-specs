@@ -16,12 +16,12 @@ from the theme's tokens, so they work without a script.
 </rule>
 
 <rule id="task_graph" refs="system.docs_generator">
-<where>a node holds tasks and one of them `@needs` another</where>
+<while>a node holds tasks and one of them `@needs` another</while>
 <must>show its tasks and their needs as a dependency graph</must>
 </rule>
 
 <rule id="package_graph" refs="system.docs_generator">
-<where>a tree imports a local package</where>
+<while>a tree imports a local package</while>
 <must>show the packages the tree imports, with their own imports, as a dependency graph on the home page</must>
 </rule>
 

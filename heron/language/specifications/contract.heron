@@ -6,20 +6,20 @@ contract: section {
   | inside. Every entry names the rules and use case steps it exists for in its constructor. An
   | error is a result, not an entry that solves anything: its prose links the rule that says when
   | it's reported, and it never names who reports it. The raiser names the error instead: an op's
-  | `@throws`, a command holding it, or the subject of the rule it links.
+  | or a command's `@throws`, a command holding it, or the subject of the rule it links.
   |
   | | Surface                     | Entry                                | Inputs                    | Outcomes                    |
   | | --------------------------- | ------------------------------------ | ------------------------- | --------------------------- |
   | | an API, `api`               | `op`                                 | params                    | responses, keyed by status  |
-  | | a command line              | `command(name)`                      | arguments and options     | exit statuses, as errors    |
+  | | a command line              | `command(name)`                      | params: arguments and `@option`s | exit statuses, as errors |
   | | an app, `screen(route)`     | `region`                             | what the reader enters    | what it shows, and errors   |
   | | a language, `std/grammar`   | `production`, `token`                | the text                  | the tree, and errors        |
   |
   | | Kind                                                   | Holds                                                         |
   | | ------------------------------------------------------ | ------------------------------------------------------------- |
-  | | `error(id)`, with `@status`, `@exit` and `@severity`  | its `title`, with a `{name}` for each `field`, `related`, a link to its rule, examples |
+  | | `error(id)`, with `@status`, and `@severity` as a diagnostic | its `title`, with a `{name}` for each member, its members, `related`, a link to its rule, examples |
   | | `example(scenario)`                                     | one concrete case, exact inputs and outputs                    |
-  | | `command(name)`                                        | `usage` lines, `errors`, arguments, options, examples and subcommands |
+  | | `name(params): command(name)`                           | its errors, examples and subcommands                           |
   | | `screen(route)`                                        | regions, nested as the layout nests                            |
 
   surface_entry: term {{
@@ -30,34 +30,40 @@ contract: section {
   }}
 
   error_kind: term {{
-    `name: error("id") { title = "…" }`, one problem the product reports, with one
-    identity wherever it's reported: its id. Its `title` is the message, with a `{name}` for
-    each part filled in where it happens, each a `field` of the error. Its prose links the rule
-    that says when it's reported, as `Reported as [late_rejected] says.`; it never names who
-    reports it, which comes from the rule's subject, the command holding it or an op's `@throws`.
-    These are core annotations, with no import. Where a surface reports
-    it, a projection annotation says how: `@status`, the HTTP status; `@code`, its
-    [error code](#language.apis.rpc.rpc_code) on a gRPC or JSON-RPC binding; `@exit`, the
-    command's exit status; `@severity` and the site, for a diagnostic; a `field`, for a form.
+    `@status(404) name: error("id") { title = "…" }`, one problem the product reports, with
+    one identity wherever it's reported: its id. Its `title` is the message, with a `{name}`
+    for each value it carries filled in where it happens, each a member of the error typed as
+    a record's is, as `payment: String`. Its prose links the rule that says when it's
+    reported, as `Reported as [late_rejected] says.`; it never names who reports it, which
+    comes from the rule's subject, the command holding it or a `@throws`. Its `@status` is its
+    one required [projection](#language.specifications.contract.error_projection), and
+    `@severity` says how serious it is as a diagnostic. These are core annotations, with no
+    import.
   }}
 
   error_projection: term {{
-    How one surface reports an error, as an annotation of the error: its `@status` on an API
-    over HTTP, its `@code` over gRPC or JSON-RPC, its `@exit` on a command line, its
-    `@severity` and site as a diagnostic, or the field it's shown at on a screen.
+    How one surface reports an error. Its `@status(code, text)`, the HTTP status, is the
+    one every error has: the [derived codes](#language.specifications.contract.codes.derived_code)
+    of the other [surfaces](#heron.tools.docs.design_system.surfaces) follow from it, its gRPC and [Sparrow code](#heron.language.apis.sparrow.status_codes.sparrow_code), its JSON-RPC code and its
+    exit status, and an override annotation sets one where the [derived code](#heron.language.specifications.contract.codes.derived_code) doesn't fit:
+    `@proto.status`, `@sparrow.status`, `@jsonrpc.code` or `@exit`. As a diagnostic it's
+    reported with its `@severity` at its site, and on a screen at the field it's shown at.
   }}
 
   example_kind: term {{
     `example(scenario) {{ … }}`, a concrete case with its exact inputs and outputs,
-    pinning only what the contract guarantees; a rule's `example {{ … }}` child is a key or
-    boundary case of that rule.
+    pinning only what the contract guarantees, the one kind of example: a rule's
+    `example {{ … }}` child is a key or boundary case of that rule, and an op's sets the op's
+    parameters as fields and its outcome as `returns` or `throws`.
   }}
 
   command_kind: term {{
-    `name: command("heron check") { … }`, an entry of a command line: one usage line per
-    form, `argument(name, type, optional, variadic)` and `option(name, type, default, short,
-    env)` as its inputs, and the errors its `errors` list names as its failing outcomes, each
-    with its `@exit` projection.
+    `name(params): command("heron check") { … }`, an entry of a command line, declared as an
+    op is. Each parameter is an input: a positional argument in the order written, or, marked
+    `@option(short, env, value)`, a named option, `--dry-run` for `dry_run`; `?` or a default
+    makes it optional and `<variadic>` repeats it. Its body holds the errors it exits with, or
+    `@throws` names them, its examples and its subcommands, and its usage line is derived from
+    its parameters.
   }}
 
   screen_kind: term {{
@@ -66,12 +72,12 @@ contract: section {
   }}
 
   contract_layer: rule(system.checker) {
-    must {{ give `error`, `example`, `command`, `argument`, `option`, `screen`, `region`, `api`, `op` and the kinds of `std/types` and `std/grammar` the `CONTRACT` [layer](#language.specifications.layers.layer) }}
+    must {{ give `error`, `example`, `command`, `screen`, `region`, `api`, `op` and the kinds of `std/types` and `std/grammar` the `CONTRACT` [layer](#language.specifications.layers.layer) }}
   }
 
   placeholders_declared: rule(system.checker) {
-    if {{ an error's `title` or `related` holds a `{name}` that no `field` of the error declares, or a field appears in neither }}
-    must {{ report it as an error at the [placeholder](#heron.language.core_format.expressions.placeholder) or the field }}
+    if {{ an error's `title` or `related` holds a `{name}` that no member of the error declares, or a member appears in neither }}
+    must {{ report it as an error at the [placeholder](#heron.language.core_format.expressions.placeholder), or as a warning at the member }}
     then {{ every value a message carries is also given as data, so nobody parses the message }}
   }
 
@@ -90,8 +96,18 @@ contract: section {
     must {{ report it as an error at the reference }}
   }
 
+  command_params: rule(system.checker) {
+    must {{ read a command's parameters as its inputs: each a positional argument, in the order written, unless `@option` marks it an option named `--` and its name with each `_` written `-`; optional where it has `?` or a default, the default its value when it's left out, and repeated where it's `<variadic>` }}
+    example {{ `refund(payment: String, @option(short = "-n") dry_run?: Bool): command("shop refund")` takes the payment as its argument and `--dry-run` or `-n` as an option }}
+  }
+
+  usage_derived: rule {
+    must {{ derive a command's usage line from its parameters: its name, then each option, as `[--name]` for a `Bool` and as `--name value` for any other, `value` the word its `@option(value)` gives or else its name, in brackets where it's optional, then each argument, as `<name>` and as `[name]` where it's optional, `…` after a variadic one's name, each by its [display name](#language.core_format.naming.display_name) or else its name with each `_` read as a space }}
+    example {{ `check(@option json: Bool = false, entry_points<variadic>?: String): command("heron check")` reads `heron check [--json] [entry points…]` }}
+  }
+
   command_view: rule(system.docs_generator) {
-    must {{ show a command under its name as the page title, with its arguments and its options each as a [table](#heron.language.markup.components.table) of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table), and the errors it exits with as a [table](#heron.language.markup.components.table) of exit status and title }}
+    must {{ show a command under its name as the page title, with its usage line, its arguments and its options each as a [table](#heron.language.markup.components.table) of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table), and the errors it exits with as a [table](#heron.language.markup.components.table) of exit status and title }}
   }
 
   screen_view: rule(system.docs_generator) {
@@ -103,7 +119,7 @@ contract: section {
   }
 
   errors_on_surfaces: rule(system.docs_generator) {
-    must {{ show on each [surface entry](#heron.language.specifications.contract.surface_entry) the errors it reports with their projection there: an op's with their status and their codes on its RPC bindings, a command's with their exit status }}
+    must {{ show on each [surface entry](#heron.language.specifications.contract.surface_entry) the errors it reports with their projection there: an op's with their status and their codes on its RPC bindings, a command's with their exit status, each code the effective one, derived or set by an override }}
   }
 
   error_granularity: rule(actors.author) {
@@ -118,28 +134,131 @@ contract: section {
     should {{ pin in an example only what a consumer may rely on, and leave out values the contract doesn't guarantee }}
   }
 
+  codes: section {
+    | An error's `@status` is its HTTP status, and the code it's reported with on every other
+    | surface is derived from it by the rules below, so an error states one code and every
+    | binding agrees. Where a [derived code](#heron.language.specifications.contract.codes.derived_code) doesn't fit, an override annotation of the surface
+    | sets one: `@proto.status` for gRPC and Connect, `@sparrow.status` for Sparrow,
+    | `@jsonrpc.code` for JSON-RPC and `@exit` for a command line.
+
+    derived_code: term {{
+      The code an error is reported with on a surface that doesn't speak HTTP, derived from
+      its `@status`: its [gRPC code](#heron.language.apis.grpc.status_codes.grpc_code), its Sparrow core status code, its JSON-RPC code or its exit
+      status. Its effective code on a surface is the derived one, or the one an override
+      annotation sets.
+    }}
+
+    status_text: rule {
+      must {{ read an error's `@status(code, text)` as its HTTP status and the text shown beside it, the error's id where `text` is left out }}
+      example {{ `@status(404) no_such_file: error("server.NO_SUCH_FILE")` is shown as `404 server.NO_SUCH_FILE` }}
+    }
+
+    status_required: rule(system.checker) {
+      if {{ an error has no `@status` }}
+      must {{ report it as an error at the error }}
+    }
+
+    | | `@status`     | gRPC and Connect      | Sparrow               |
+    | | ------------- | --------------------- | --------------------- |
+    | | 400           | `INVALID_ARGUMENT`    | `invalid_argument`    |
+    | | 401           | `UNAUTHENTICATED`     | `unauthenticated`     |
+    | | 403           | `PERMISSION_DENIED`   | `permission_denied`   |
+    | | 404           | `NOT_FOUND`           | `not_found`           |
+    | | 409           | `ALREADY_EXISTS`      | `already_exists`      |
+    | | 429           | `RESOURCE_EXHAUSTED`  | `resource_exhausted`  |
+    | | 499           | `CANCELLED`           | `cancelled`           |
+    | | 500           | `INTERNAL`            | `internal`            |
+    | | 501           | `UNIMPLEMENTED`       | `unimplemented`       |
+    | | 503           | `UNAVAILABLE`         | `unavailable`         |
+    | | 504           | `DEADLINE_EXCEEDED`   | `deadline_exceeded`   |
+    | | any other 4xx | `FAILED_PRECONDITION` | `failed_precondition` |
+    | | any other 5xx | `INTERNAL`            | `internal`            |
+    | | anything else | `UNKNOWN`             | `unknown`             |
+
+    grpc_derived: rule {
+      must {{ report an error over gRPC and Connect with the [gRPC code](#heron.language.apis.grpc.status_codes.grpc_code) the [table](#heron.language.markup.components.table) gives its `@status`, and over Sparrow with the core status code of the same row, unless its `@proto.status` or `@sparrow.status` sets one }}
+      example {{ `@status(404)` is `NOT_FOUND` over gRPC and `not_found` over Sparrow, and `@status(422)` is `FAILED_PRECONDITION` and `failed_precondition` }}
+    }
+
+    | | `@status`     | JSON-RPC code                        |
+    | | ------------- | ------------------------------------ |
+    | | 400 to 499    | -32000 − (status − 400), as -32004 for 404 |
+    | | 501           | -32601, method not found             |
+    | | any other 5xx | -32603, internal error               |
+    | | anything else | -32603, internal error               |
+
+    jsonrpc_derived: rule {
+      must {{ report an error over JSON-RPC with the code the [table](#heron.language.markup.components.table) gives its `@status`, unless its `@jsonrpc.code` sets one }}
+      example {{ `@status(404)` is -32004, `@status(429)` is -32029 and `@status(500)` is -32603 }}
+      then {{ a client error lands in the server range, -32000 to -32099, which JSON-RPC leaves to the server }}
+    }
+
+    | | `@status`     | Exit status |
+    | | ------------- | ----------- |
+    | | 400           | 2, a usage error |
+    | | anything else | 1, a failure     |
+
+    exit_derived: rule {
+      must {{ end a command-line run that reports an error with the exit status the [table](#heron.language.markup.components.table) gives its `@status`, unless its `@exit` sets one }}
+      example {{ `@status(400)` exits 2 and `@status(422)` exits 1 }}
+    }
+
+    redundant_override: rule(system.linter) {
+      if {{ an override annotation, `@proto.status`, `@sparrow.status`, `@jsonrpc.code` or `@exit`, sets the code its error's `@status` derives }}
+      should {{ report redundant code at the annotation }}
+      then {{ a fix offered with it removes the annotation }}
+    }
+
+    effective_codes_shown: rule(system.docs_generator) {
+      must {{ show an error's status with its text, and its effective code on each surface that reports it, as a fact marked derived or explicit }}
+      example {{ an error with `@status(404)` thrown by an op bound to gRPC shows "gRPC `NOT_FOUND`, derived" }}
+    }
+  }
+
   errors: section {
-    @display("Placeholder not a field")
+    @status(422)
+    @display("Placeholder not a member")
     placeholder_not_field: error("placeholder") {
-      title = "{placeholder} in the title of {error} is no field of it; declare {placeholder}: field(…)"
-      placeholder: field(String)
-      error: field(String)
+      title = "{placeholder} in the title of {error} is no member of it; declare {placeholder} with its type, as {placeholder}: String"
+      placeholder: String
+      error: String
       | Reported as [placeholders_declared] says.
     }
 
-    @display("Field not in the message")
+    @status(422)
+    @display("Member not in the message")
     @severity(warning)
-    field_unused: error("placeholder") {
-      title = "field {field} of {error} appears in neither its title nor its related message"
-      field: field(String)
-      error: field(String)
+    member_unused: error("placeholder") {
+      title = "member {member} of {error} appears in neither its title nor its related message"
+      member: String
+      error: String
       | Reported as [placeholders_declared] says.
     }
 
+    @status(422)
+    @display("Error without a status")
+    missing_status: error("status") {
+      title = "error {error} has no @status; every error has one, which the codes of its other surfaces derive from"
+      error: String
+      | Reported as [codes.status_required] says.
+    }
+
+    @status(422)
+    @display("Redundant code")
+    @severity(warning)
+    redundant_code: error("redundant-code") {
+      title = "{annotation} sets {code}, the code {error}'s @status derives; leave it out"
+      annotation: String
+      code: String
+      error: String
+      | Reported as [codes.redundant_override] says.
+    }
+
+    @status(422)
     @display("Refines no outcome scenario")
     refines_not_scenario: error("reference") {
       title = "{name} is a quality scenario; an example pins down an outcome scenario"
-      name: field(String)
+      name: String
       | A reference to a node that's no scenario at all is reported as [layers.references.reference_kinds] says.
       | Reported as [refines_scenario] says.
     }
@@ -161,16 +280,13 @@ contract: section {
     | @exit(3)
     | window_expired: error("refund.WINDOW_EXPIRED") {
     |   title = "the refund window of payment {payment} closed on {closed}"
-    |   payment: field(String)
-    |   closed: field(String)
+    |   payment: String
+    |   closed: String
     |   | Reported as [late_rejected] says.
     | }
     |
-    | refund: command("shop refund") {
-    |   usage = ["shop refund <payment>"]
-    |   errors = [window_expired]
-    |   payment: argument("payment", type = String)
-    | }
+    | @throws(window_expired)
+    | refund(payment: String, @option(short = "-n") dry_run?: Bool): command("shop refund", late_rejected)
     | ```
   }
 }

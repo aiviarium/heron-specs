@@ -20,6 +20,6 @@ against the facet hash the docs show. Every name, id and tag in them is the one
 </rule>
 
 <rule id="sparrow_extra" refs="system.generator">
-<mustNot>generate the files unless asked for their target, or read them back</mustNot>
+<must_not>generate the files unless asked for their target, or read them back</must_not>
 <then>the tree stays the one source of the facet</then>
 </rule>

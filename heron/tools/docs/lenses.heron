@@ -71,7 +71,7 @@ lenses: section {
     }
 
     overriding: rule(system.checker) {
-      where {{ a tree declares a lens with the name of a lens it imports, as `user` }}
+      while {{ a tree declares a lens with the name of a lens it imports, as `user` }}
       must {{ resolve that name, in the [docs block](#tools.docs.extending.docs_block) and in every [lens mark](#tools.docs.lenses.lens_mark) of the tree, to the tree's own lens }}
       then {{ a package overrides a standard lens by declaring one of the same name, and the standard one is left as it was for every other tree }}
     }
@@ -105,7 +105,7 @@ lenses: section {
     }
 
     lenses_unset: rule(system.docs_generator) {
-      where {{ the [docs block](#tools.docs.extending.docs_block) sets no `lenses`, or the tree has no [docs block](#tools.docs.extending.docs_block) }}
+      while {{ the [docs block](#tools.docs.extending.docs_block) sets no `lenses`, or the tree has no [docs block](#tools.docs.extending.docs_block) }}
       must {{ build the `explore` lens alone, at the site's root, with no lens switcher }}
       then {{ a tree that chooses no lens gets the full site it got before lenses existed }}
     }
@@ -162,58 +162,58 @@ lenses: section {
     }
 
     unlisted_kinds: rule(system.docs_generator) {
-      where {{ a node's kind and its categories are in none of the lens's three lists }}
+      while {{ a node's kind and its categories are in none of the lens's three lists }}
       must {{ treat the node as its parent is treated, and treat a child of the tree's root as rendered in full when the lens sets no `show` and as left out when it does }}
       then {{ `show` lists what a lens keeps: in the `user` lens a guide's own sections show with it, and the tree's sections don't }}
     }
 
     lens_depth: rule(system.docs_generator) {
-      where {{ a lens sets `depth` }}
+      while {{ a lens sets `depth` }}
       must {{ give pages of their own, in that lens, to the sections and [folder scopes](#guide.layout.folder_scope) less than its `depth` levels down, in place of the [docs block](#tools.docs.extending.docs_block)'s `depth`, and show a deeper section on its nearest ancestor's page, under its heading }}
       then {{ the `user` lens's language reference is a page per part of the language, while `developer` and `explore` keep a page per concern }}
     }
 
     containers_kept: rule(system.docs_generator) {
-      where {{ a lens leaves a section out and keeps a node below it }}
+      while {{ a lens leaves a section out and keeps a node below it }}
       must {{ keep the section's heading, and its page where it's a [page node](#tools.docs.site.page_node), as the place of the nodes it keeps, without the section's own prose }}
     }
 
     empty_containers_dropped: rule(system.docs_generator) {
-      where {{ a lens shows nothing of a section's or a [folder scope](#guide.layout.folder_scope)'s subtree, neither a node below it nor a [prose run](#language.markup.lens_marks.prose_run) of its own }}
-      mustNot {{ give the section or the scope a heading, a page or a place in the navigation in that lens }}
+      while {{ a lens shows nothing of a section's or a [folder scope](#guide.layout.folder_scope)'s subtree, neither a node below it nor a [prose run](#language.markup.lens_marks.prose_run) of its own }}
+      must_not {{ give the section or the scope a heading, a page or a place in the navigation in that lens }}
       then {{ a folder whose pages and prose are all marked for `user` has no empty page in `developer` }}
     }
 
     marked_nodes: rule(system.docs_generator) {
-      where {{ a node or a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark) }}
+      while {{ a node or a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark) }}
       must {{ leave it, with its subtree, out of every lens the mark doesn't name, except `explore` and a lens whose `marks` is false }}
     }
 
     marks_unread: rule(system.docs_generator) {
-      where {{ a lens's `marks` is false }}
+      while {{ a lens's `marks` is false }}
       must {{ decide every node and [prose run](#language.markup.lens_marks.prose_run) by the lens's kind lists alone, whatever [lens marks](#tools.docs.lenses.lens_mark) it carries }}
       then {{ a lens for every reader of the whole tree, as `agent` is, isn't narrowed by marks written for the site's audiences }}
     }
 
     mark_keeps_node: rule(system.docs_generator) {
-      where {{ a [lens mark](#tools.docs.lenses.lens_mark) names a lens whose lists would leave the marked node out }}
+      while {{ a [lens mark](#tools.docs.lenses.lens_mark) names a lens whose lists would leave the marked node out }}
       must {{ render the node in full in that lens }}
       then {{ `@lens(user)` on a section shows the section and its prose in the `user` lens, which doesn't show the tree's sections by their kind }}
     }
 
     marks_inherit: rule(system.docs_generator) {
-      where {{ a node or a [prose run](#language.markup.lens_marks.prose_run) below a marked node carries no [lens mark](#tools.docs.lenses.lens_mark) of its own }}
+      while {{ a node or a [prose run](#language.markup.lens_marks.prose_run) below a marked node carries no [lens mark](#tools.docs.lenses.lens_mark) of its own }}
       must {{ give it the lenses of the nearest marked node above it }}
     }
 
     inner_mark_narrows: rule(system.docs_generator) {
-      where {{ a marked node holds a node or a [prose run](#language.markup.lens_marks.prose_run) marked with a lens its own mark doesn't name }}
+      while {{ a marked node holds a node or a [prose run](#language.markup.lens_marks.prose_run) marked with a lens its own mark doesn't name }}
       must {{ leave the inner one out of that lens too }}
       then {{ a [lens mark](#tools.docs.lenses.lens_mark) narrows the lenses of what's above it and never widens them }}
     }
 
     links_across_lenses: rule(system.docs_generator) {
-      where {{ a link on a page of one lens leads to a node that lens leaves out }}
+      while {{ a link on a page of one lens leads to a node that lens leaves out }}
       must {{ link the node's anchor on its page in the first lens of the site's `lenses` that shows it, with that lens named only in the link's tooltip, as "Opens in the Developer docs" }}
       then {{ a user's page can link a rule, which opens in `explore`, and every link reads as its words alone }}
     }
@@ -224,35 +224,35 @@ lenses: section {
     | the same [page nodes](#tools.docs.site.page_node) in every lens that keeps them.
 
     task_nav: rule(system.docs_generator) {
-      where {{ a lens's `nav` is `LensNav.TASK` }}
+      while {{ a lens's `nav` is `LensNav.TASK` }}
       must {{ list in its navigation the pages its `entry` names, then its other [authored pages](#language.markup.authored_pages.authored_page) grouped by kind as guides, tutorials, how-tos and concepts, each group in the order the tree writes it, then a group of the reference: every other page the lens keeps, in the order of the tree, then its diagnostics page, titled with the [string catalogue](#tools.docs.writing.string_catalogue)'s word for errors, and its glossary }}
     }
 
     task_reference_once: rule(system.docs_generator) {
-      where {{ a lens's `nav` is `LensNav.TASK`, and a page of the reference holds nothing the lens shows but its own prose and [authored pages](#language.markup.authored_pages.authored_page) its navigation already lists }}
-      mustNot {{ list that page in the reference group }}
+      while {{ a lens's `nav` is `LensNav.TASK`, and a page of the reference holds nothing the lens shows but its own prose and [authored pages](#language.markup.authored_pages.authored_page) its navigation already lists }}
+      must_not {{ list that page in the reference group }}
       then {{ a folder of how-tos is listed once, by its how-tos, and not again by its folder }}
     }
 
     task_home: rule(system.docs_generator) {
-      where {{ a lens's `nav` is `LensNav.TASK` }}
+      while {{ a lens's `nav` is `LensNav.TASK` }}
       must {{ show on its home page the site's title and the root's prose the lens keeps; then the first page its `entry` names, or else its first tutorial, as the primary link, with the page's title and the first sentence of its prose; then a group for each group of its navigation, labelled as the navigation labels it, with a link to each of its pages but the primary one, each with the page's title and the first sentence of its prose where it has one }}
       then {{ the home page reaches every page its navigation lists, and a group left with no page is left out }}
     }
 
     topic_home: rule(system.docs_generator) {
-      where {{ a lens's `nav` is `LensNav.TOPIC` }}
+      while {{ a lens's `nav` is `LensNav.TOPIC` }}
       must {{ show on its home page the site's title and the root's prose the lens keeps, then a group for each group of its navigation, labelled with its section's title, with a link to each of its pages and the first sentence of the page's prose where it has one }}
     }
 
     topic_nav: rule(system.docs_generator) {
-      where {{ a lens's `nav` is `LensNav.TOPIC` }}
+      while {{ a lens's `nav` is `LensNav.TOPIC` }}
       must {{ list in its navigation the sections the lens keeps, nested as the tree nests them, and the other [page nodes](#tools.docs.site.page_node) it keeps under the section that holds them }}
       then {{ the navigation names topics and pages, and never a rule, a term or a diagnostic }}
     }
 
     tree_nav: rule(system.docs_generator) {
-      where {{ a lens's `nav` is `LensNav.TREE` }}
+      while {{ a lens's `nav` is `LensNav.TREE` }}
       must {{ list in its navigation every page the lens keeps, nested as the tree nests them }}
       then {{ a node that's an anchor on a page is in that page's outline, never in the navigation }}
     }
@@ -263,86 +263,96 @@ lenses: section {
   }
 
   errors: section {
+    @status(422)
     @display("Bad budget")
     bad_budget: error("lens") {
       title = "{lens}: a budget is at least 500 tokens, not {budget}"
-      lens: field(String)
-      budget: field(String)
+      lens: String
+      budget: String
       | Reported as [tools.docs.lenses.declaring.budget_form] says.
     }
 
+    @status(422)
     @display("Not a site lens")
     markdown_lens_listed: error("lens") {
       title = "{lens} is written as Markdown; a site's lenses are written as HTML, and heron generate agents writes the agent lens"
-      lens: field(String)
+      lens: String
       | Reported as [tools.docs.lenses.choosing.html_lenses_only] says.
     }
 
+    @status(422)
     @display("Unknown lens")
     unknown_lens: error("unresolved") {
       title = "unknown lens {name}; the lenses in scope are {names}"
-      name: field(String)
-      names: field(String)
+      name: String
+      names: String
       | A [lens mark](#tools.docs.lenses.lens_mark) or a docs block's `lenses` naming a lens that's declared nowhere in scope.
       | Reported as [tools.docs.lenses.declaring.lens_names_resolve] says.
     }
 
+    @status(422)
     @display("Not a lens")
     not_a_lens: error("lens") {
       title = "{name} is a {kind}, not a lens"
-      name: field(String)
-      kind: field(String)
+      name: String
+      kind: String
       | A [lens mark](#tools.docs.lenses.lens_mark) or a docs block's `lenses` naming a node of another kind.
       | Reported as [tools.docs.lenses.declaring.lens_names_resolve] says.
     }
 
+    @status(422)
     @display("Not a kind")
     lens_not_a_kind: error("lens") {
       title = "{name} is a {kind}; a lens's {field} lists kinds and categories"
-      name: field(String)
-      kind: field(String)
-      field: field(String)
+      name: String
+      kind: String
+      field: String
       | Reported as [tools.docs.lenses.declaring.lists_name_kinds] says.
     }
 
+    @status(422)
     @display("Not an authored page")
     entry_not_a_page: error("lens") {
       title = "{name} is a {kind}; a lens's entry lists guides, how-tos, concepts and tutorials"
-      name: field(String)
-      kind: field(String)
+      name: String
+      kind: String
       | Reported as [tools.docs.lenses.declaring.entry_names_pages] says.
     }
 
+    @status(422)
     @display("No lens")
     no_lens: error("lens") {
       title = "the site builds no lens: name at least one in lenses"
       | Reported as [tools.docs.lenses.choosing.no_lens] says.
     }
 
+    @status(422)
     @display("One default lens")
     one_default_lens: error("lens") {
       title = "a site has exactly one default lens; {count} of {names} set default = true"
-      count: field(String)
-      names: field(String)
+      count: String
+      names: String
       | Set `default = true` on the lens the site's root serves, and on no other lens of the list.
       | Reported as [tools.docs.lenses.choosing.one_default] says.
     }
 
+    @status(422)
     @display("Bad prefix")
     bad_prefix: error("lens") {
       title = "{lens}: {reason}"
-      lens: field(String)
-      reason: field(String)
+      lens: String
+      reason: String
       | A prefix is `""` or one lower-case path segment, and only the default lens is written at the root.
       | Reported as [tools.docs.lenses.choosing.empty_prefix_only_default] and [tools.docs.lenses.declaring.prefix_form] say.
     }
 
+    @status(422)
     @display("Prefix taken")
     prefix_taken: error("lens") {
       title = "{lens} and {other} are both served under {prefix}/"
-      lens: field(String)
-      other: field(String)
-      prefix: field(String)
+      lens: String
+      other: String
+      prefix: String
       | Reported as [tools.docs.lenses.choosing.distinct_prefixes] says.
     }
   }

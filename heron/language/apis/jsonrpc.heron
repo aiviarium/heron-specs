@@ -1,5 +1,5 @@
 @display("JSON-RPC")
-jsonrpc: section {
+jsonrpc: feature {
   | `@jsonrpc` of `std/jsonrpc` binds ops to JSON-RPC 2.0 methods: on an api for every op of
   | it, or on one op alone, with the method's name as its first argument. A request is an
   | object with `jsonrpc`, `id`, `method` and `params`, and its response has the request's
@@ -37,8 +37,9 @@ jsonrpc: section {
 
   @display("JSON-RPC code")
   jsonrpc_code: term {{
-    The [RPC code](#language.apis.rpc.rpc_code) of `std/jsonrpc`, `@code(-32004)`, an
-    integer that the error object's `code` carries. JSON-RPC reserves -32768 to -32000: the
+    The [RPC code](#language.apis.rpc.rpc_code) of an error over JSON-RPC, an integer that
+    the error object's `code` carries: the one its `@status` [derives](#language.specifications.contract.codes.jsonrpc_derived),
+    or the one `@code(-32602)` of `std/jsonrpc` sets. JSON-RPC reserves -32768 to -32000: the
     predefined codes -32700 and -32600 to -32603, and -32099 to -32000 for servers' own.
   }}
 
@@ -78,7 +79,7 @@ jsonrpc: section {
     }
 
     batches: rule {
-      where {{ an api's `@jsonrpc` sets `batch = true` }}
+      while {{ an api's `@jsonrpc` sets `batch = true` }}
       must {{ accept an array of requests as one message, and answer it with an array of their responses, [notifications](#language.apis.jsonrpc.jsonrpc_notification) left out }}
     }
   }
@@ -90,12 +91,12 @@ jsonrpc: section {
     }
 
     by_position: rule {
-      where {{ an op's or its api's `@jsonrpc` sets `params = by_position` }}
+      while {{ an op's or its api's `@jsonrpc` sets `params = by_position` }}
       must {{ send its parameters as an array in the order written, leaving out only trailing optional ones that are unset }}
     }
 
     whole_params: rule {
-      where {{ an op's parameter is marked `@params` }}
+      while {{ an op's parameter is marked `@params` }}
       must {{ send that parameter's value as the whole of `params` }}
       example {{ `hover(@params p: HoverParams)` takes `"params": {"textDocument": …, "position": …}`, the fields of `HoverParams` }}
     }
@@ -130,7 +131,7 @@ jsonrpc: section {
     }
 
     uncoded_jsonrpc: rule(system.linter) {
-      if {{ a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method) throws an error with no `@code` of `std/jsonrpc` }}
+      if {{ a [JSON-RPC method](#language.apis.jsonrpc.jsonrpc_method) throws a type that implements `Error` with neither `@status` nor a `@code` of `std/jsonrpc` }}
       should {{ report uncoded JSON-RPC error at the error }}
     }
   }
@@ -182,61 +183,68 @@ jsonrpc: section {
   }
 
   errors: section {
+    @status(422)
     @display("Duplicate method")
     duplicate_method: error("jsonrpc") {
       title = "{op} is the JSON-RPC method {method}, which {other} already is"
       related = "the op that has the name first"
-      op: field(String)
-      other: field(String)
-      method: field(String)
+      op: String
+      other: String
+      method: String
       | Reported as [language.apis.jsonrpc.methods.unique_methods] says.
     }
 
+    @status(422)
     @display("JSON-RPC argument misplaced")
     jsonrpc_argument_misplaced: error("jsonrpc") {
       title = "@jsonrpc on {kind} doesn't take {argument}"
-      kind: field(String)
-      argument: field(String)
+      kind: String
+      argument: String
       | Reported as [language.apis.jsonrpc.methods.jsonrpc_arguments] says.
     }
 
+    @status(422)
     @display("Stream over JSON-RPC")
     jsonrpc_stream: error("jsonrpc") {
       title = "{op} streams, and a JSON-RPC method answers once"
-      op: field(String)
+      op: String
       | Reported as [language.apis.jsonrpc.methods.no_streams] says.
     }
 
+    @status(422)
     @display("Notification throws")
     notification_throws: error("jsonrpc") {
       title = "{op} is a notification, which is never answered, so it can't throw {error}"
-      op: field(String)
-      error: field(String)
+      op: String
+      error: String
       | Reported as [language.apis.jsonrpc.methods.notifications_throw_nothing] says.
     }
 
+    @status(422)
     @display("Params not alone")
     params_not_alone: error("jsonrpc") {
       title = "@params {param} must be the only parameter of {op}, of a record type"
-      op: field(String)
-      param: field(String)
+      op: String
+      param: String
       | Reported as [language.apis.jsonrpc.params.params_alone] says.
     }
 
+    @status(422)
     @display("Reserved error code")
     @severity(warning)
     reserved_error_code: error("rpc-code") {
       title = "{code} is in JSON-RPC's reserved range: use a code outside -32768 to -32000, or a server code from -32099 to -32000"
-      code: field(String)
+      code: String
       | Reported as [language.apis.jsonrpc.error_objects.reserved_codes] says.
     }
 
+    @status(422)
     @display("Uncoded JSON-RPC error")
     @severity(warning)
     uncoded_jsonrpc_error: error("rpc-code") {
-      title = "{error} is thrown by {op}, a JSON-RPC method, and has no @code"
-      error: field(String)
-      op: field(String)
+      title = "{error} is thrown by {op}, a JSON-RPC method, and has neither @status nor @code"
+      error: String
+      op: String
       | Reported as [language.apis.jsonrpc.error_objects.uncoded_jsonrpc] says.
     }
   }

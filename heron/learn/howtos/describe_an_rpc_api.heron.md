@@ -31,11 +31,11 @@ never changes the wire. Each method's [request](#language.apis.grpc.request_mess
 </step>
 
 <step id="give_errors_codes">
-Give each error the code it travels with on each binding, beside its HTTP status:
-`@code(NOT_FOUND)` of `std/proto` for gRPC and Connect, and `@code(-32004)` of
-`std/jsonrpc` for JSON-RPC. In a file that imports both packages, write them as
-`@proto.code` and `@jsonrpc.code`. ${cli.lint.name} warns about an error a method throws
-without a code for its binding.
+Give each error its HTTP status, `@status(404)`: the code it travels with on every other
+binding is [derived](#language.specifications.contract.codes.derived_code) from it, as
+`NOT_FOUND` for gRPC and Connect and -32004 for JSON-RPC. Only where a [derived code](#heron.language.specifications.contract.codes.derived_code) doesn't
+fit, override it with `@proto.status(…)` or `@jsonrpc.code(…)`. ${cli.lint.name} warns about
+an override that sets the code its status derives anyway.
 </step>
 
 <step id="add_jsonrpc">
@@ -83,8 +83,6 @@ Parcel: type {
 }
 
 @status(404)
-@proto.code(NOT_FOUND)
-@jsonrpc.code(-32004)
 ParcelNotFound: type(Error) {
   message: String = "No parcel has this id."
 }

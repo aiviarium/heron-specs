@@ -27,11 +27,12 @@ streaming for a streamed parameter, and bidirectional for both.
 </term>
 
 <term id="rpc_code" @display="RPC code">
-An error's projection on an RPC binding, as `@status` is its projection on HTTP: a gRPC
-status code from `std/proto`, `@code(NOT_FOUND)`, a JSON-RPC error code from
-`std/jsonrpc`, `@code(-32004)`, or a Sparrow core status code from `std/sparrow`,
-`@code(not_found)`. It stands on a type that implements `Error` or on an
-`error` node, so the error keeps one identity on every binding.
+An error's code on an RPC binding: a gRPC status code, a JSON-RPC error code or a Sparrow
+core status code, each [derived](#language.specifications.contract.codes.derived_code) from
+its `@status`, so the error keeps one identity on every binding. Where the [derived code](#heron.language.specifications.contract.codes.derived_code)
+doesn't fit, an override of the binding's package sets it, on a type that implements
+`Error` or on an `error` node: `@proto.status(NOT_FOUND)`, `@jsonrpc.code(-32004)` or
+`@sparrow.status(not_found)`.
 </term>
 
 <term id="server_url" @display="Server URL">
@@ -50,8 +51,8 @@ written once for every binding, and more than once for more than one server.
 </rule>
 
 <rule id="qualified_codes" refs="actors.author">
-<where>a file imports more than one of `std/proto`, `std/jsonrpc` and `std/sparrow`</where>
-<must>write each [RPC code](#language.apis.rpc.rpc_code) qualified by its package, as `@proto.code(NOT_FOUND)`, `@jsonrpc.code(-32004)` and `@sparrow.code(not_found)`, and likewise `@proto.reserved` and `@sparrow.reserved`, since an unqualified `@code` is ambiguous between the [annotations](#language.core_format.nodes.annotations.annotation_term) of those packages</must>
+<while>a file imports more than one of `std/proto`, `std/jsonrpc` and `std/sparrow`</while>
+<must>write each override of an [RPC code](#language.apis.rpc.rpc_code) qualified by its package, as `@proto.status(NOT_FOUND)`, `@jsonrpc.code(-32004)` and `@sparrow.status(not_found)`, and likewise `@proto.reserved` and `@sparrow.reserved`, since an unqualified `@status` is the core's and an unqualified `@reserved` is ambiguous between the [annotations](#language.core_format.nodes.annotations.annotation_term) of those packages</must>
 </rule>
 
 <rule id="servers_shown" refs="system.docs_generator">
@@ -118,8 +119,6 @@ Instruction: type {
 }
 
 @status(404)
-@proto.code(NOT_FOUND)
-@jsonrpc.code(-32004)
 ParcelNotFound: type(Error) {
   message: String = "No parcel has this id."
   id: String

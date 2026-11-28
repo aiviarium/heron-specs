@@ -1,5 +1,5 @@
 @display("std/grammar")
-grammar: part {
+grammar: feature {
   | A language's grammar as a surface of the contract [layer](#heron.language.specifications.layers.layer): its productions and tokens, in a notation whose operators are `|`, `?`, `*`, `+` and grouping. A spec that describes a language imports it; the core kinds of a spec don't need it.
   |
   | | Kind                        | Holds                                     |
@@ -23,7 +23,7 @@ grammar: part {
   }
 
   grammar_source: rule(system.docs_generator) {
-    where {{ a grammar names a `source` }}
+    while {{ a grammar names a `source` }}
     must {{ fail the spec's grammar test unless the grammar's productions and tokens equal the source's }}
   }
 }
