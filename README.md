@@ -34,3 +34,7 @@ Every `example` node's code block is a complete tree or file. The implementation
 its parser and checker fixtures from the package's examples, so changing an example
 changes what the implementation is tested against. Nothing in this repository checks them
 against a copy.
+
+## License
+
+Dual-licensed under MIT (`LICENSE-MIT`) or Apache-2.0 (`LICENSE-APACHE`), at your option.
