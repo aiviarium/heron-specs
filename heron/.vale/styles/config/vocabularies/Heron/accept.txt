@@ -37,3 +37,4 @@ gRPC
 Lucide
 [Ss]igils?
 [Ss]tructs?
+VSCodium

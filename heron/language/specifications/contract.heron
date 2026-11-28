@@ -1,7 +1,7 @@
 @display("Contract")
 contract: section {
   | The contract [layer](#heron.language.specifications.layers.layer) says exactly what a consumer can observe and rely on: the entries of the
-  | product's [surfaces](#heron.tools.frontend.design_system.surfaces), the errors they report, the types they exchange and examples of each.
+  | product's [surfaces](#heron.tools.docs.design_system.surfaces), the errors they report, the types they exchange and examples of each.
   | It's still a requirement, never a design: it pins what a consumer relies on and nothing
   | inside. Every entry names the rules and use case steps it exists for in its constructor. An
   | error is a result, not an entry that solves anything: its prose links the rule that says when

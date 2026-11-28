@@ -1,0 +1,17 @@
+// The VS Code extension: its language client, the languages it
+// contributes, the live preview, the commands it runs, how it's packaged,
+// and the errors it shows.
+include = [
+  "./client.heron.md",
+  "./languages.heron.md",
+  "./preview.heron.md",
+  "./commands.heron.md",
+  "./package.heron.md",
+  "./fixing.heron.md",
+  "./errors.heron",
+]
+
+| [The editor extension](#system.editor_extension) brings Heron to VS Code and the editors built on it,
+| such as Cursor and VSCodium. It's a client of [the language server](#system.language_server):
+| everything it knows about a tree comes from `heron lsp`, so the editor never disagrees with
+| `heron check` and `heron lint`. It ships as one `.vsix` file.

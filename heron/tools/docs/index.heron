@@ -1,5 +1,6 @@
 // The docs generator: the site it writes, the lenses it's read through, how
-// each page is laid out and rendered, and the parts a tree extends.
+// each page is laid out and rendered, the parts a tree extends, and the
+// design system, the writing and the reference screens its pages follow.
 include = [
   "./site.heron.md",
   "./lenses.heron",
@@ -16,6 +17,9 @@ include = [
   "./diagrams.heron.md",
   "./versions.heron.md",
   "./audiences.heron",
+  "./design_system.heron",
+  "./writing.heron.md",
+  "./screens/",
 ]
 
 | What the docs generator makes of a checked tree: a documentation site of plain files that

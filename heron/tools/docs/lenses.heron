@@ -225,7 +225,7 @@ lenses: section {
 
     task_nav: rule(system.docs_generator) {
       where {{ a lens's `nav` is `LensNav.TASK` }}
-      must {{ list in its navigation the pages its `entry` names, then its other [authored pages](#language.markup.authored_pages.authored_page) grouped by kind as guides, tutorials, how-tos and concepts, each group in the order the tree writes it, then a group of the reference: every other page the lens keeps, in the order of the tree, then its diagnostics page, titled with the [string catalogue](#tools.frontend.writing.string_catalogue)'s word for errors, and its glossary }}
+      must {{ list in its navigation the pages its `entry` names, then its other [authored pages](#language.markup.authored_pages.authored_page) grouped by kind as guides, tutorials, how-tos and concepts, each group in the order the tree writes it, then a group of the reference: every other page the lens keeps, in the order of the tree, then its diagnostics page, titled with the [string catalogue](#tools.docs.writing.string_catalogue)'s word for errors, and its glossary }}
     }
 
     task_reference_once: rule(system.docs_generator) {

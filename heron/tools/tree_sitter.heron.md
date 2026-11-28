@@ -38,7 +38,7 @@ A TextMate grammar for [Heron files](#language.core_format.files.heron_file) and
 such as VS Code and the editors built on it, published with the tree-sitter grammar.
 
 <rule id="textmate_published" refs="system.editor_grammar">
-<must>publish `heron.tmLanguage.json`, scope `source.heron`, and `heron-md.tmLanguage.json`, scope `text.heron.markdown`, generated from the same token kinds as the editor's static grammar, and keep the published files equal to what the generator writes</must>
+<must>publish `heron.tmLanguage.json`, scope `source.heron`, and `heron-md.tmLanguage.json`, scope `text.heron.markdown`, generated from one list of token kinds, each mapped to a standard scope name, and keep the published files equal to what the generator writes</must>
 </rule>
 
 <rule id="textmate_scopes" refs="system.editor_grammar">

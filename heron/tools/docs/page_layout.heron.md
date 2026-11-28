@@ -76,7 +76,7 @@ and a right [column](#heron.language.grammar.lexical.column).
 </rule>
 
 <rule id="controls_look_like_controls" refs="system.docs_generator">
-<must>make every control of the top bar read as one at rest, not only on hover: the [site areas](#tools.docs.site.site_area) as tabs with a mark in the [project colour](#tools.frontend.design_system.project_colour) under the current one, the lens switcher and the version switch as selects drawn in the theme, with a visible edge, that the keyboard opens and moves through, search as a field with a frame, a prompt and its shortcut in a key cap, and the theme switch as a button with a visible edge; and give each a focus ring on keyboard focus</must>
+<must>make every control of the top bar read as one at rest, not only on hover: the [site areas](#tools.docs.site.site_area) as tabs with a mark in the [project colour](#tools.docs.design_system.project_colour) under the current one, the lens switcher and the version switch as selects drawn in the theme, with a visible edge, that the keyboard opens and moves through, search as a field with a frame, a prompt and its shortcut in a key cap, and the theme switch as a button with a visible edge; and give each a focus ring on keyboard focus</must>
 </rule>
 
 <rule id="steps_joined" refs="system.docs_generator">

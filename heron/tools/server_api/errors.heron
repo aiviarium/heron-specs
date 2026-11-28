@@ -13,43 +13,7 @@ not_in_workspace: error("server.NOT_IN_WORKSPACE") {
 no_such_file: error("server.NO_SUCH_FILE") {
   title = "{path}: no such file"
   path: field(String)
-  | Reported as [tools.server.ops.file_changes] and [tools.server.ops.agent_export_op] say.
-}
-
-@status(409)
-file_exists: error("server.FILE_EXISTS") {
-  title = "{path} already exists"
-  path: field(String)
-  | Reported as [tools.server.ops.file_changes] says.
-}
-
-@status(412)
-file_changed: error("server.FILE_CHANGED") {
-  title = "{path} changed since it was read"
-  path: field(String)
-  | The file's entity tag isn't the one `if_match` names: someone else wrote it. The client
-  | reads it again and decides what to keep.
-  | Reported as [tools.server.ops.conditional_write] says.
-}
-
-@status(404)
-no_record: error("server.NO_RECORD") {
-  title = "no record {id}"
-  id: field(String)
-  | Reported as [tools.server.ops.run_results] says.
-}
-
-@status(409)
-already_running: error("server.ALREADY_RUNNING") {
-  title = "{path} is already running"
-  path: field(String)
-  | Reported as [tools.server.ops.task_runs_otherwise] says.
-}
-
-@status(503)
-no_language_server: error("server.NO_LANGUAGE_SERVER") {
-  title = "no language server is installed"
-  | Reported as [tools.server.serving.lsp_socket_otherwise] says.
+  | Reported as [tools.server.ops.agent_export_op] says.
 }
 
 @status(404)
@@ -64,7 +28,6 @@ no_op: error("server.NO_OP") {
 origin_not_allowed: error("server.ORIGIN_NOT_ALLOWED") {
   title = "{origin} may not call this server"
   origin: field(String)
-  | A request from a page of another origin than the server's, which `--allow-origin`
-  | doesn't name.
+  | A request from a page of another origin than the server's.
   | Reported as [tools.server.serving.same_origin] says.
 }

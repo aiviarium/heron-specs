@@ -5,8 +5,8 @@ system: section {
   | whose behaviour it states, its subject; a part is no architecture: how it's built is the implementation's
   | business, not the spec's.
   |
-  | Every part ships in the one `heron` command, so a laptop, a CI job and an agent run the same
-  | parts at the same version.
+  | Every part but the editor extension ships in the one `heron` command, so a laptop, a CI job
+  | and an agent run the same parts at the same version; the extension runs that command.
 
   command_line: part {{
     The `heron` command: it reads its arguments, finds the [entry point](#language.core_format.files.entry_point), runs the commands
@@ -63,12 +63,14 @@ system: section {
   }}
 
   server: part {{
-    Serves a workspace over HTTP: the API, the spec browser
-    and the language server's socket.
+    Serves a workspace over HTTP: the spec browser, the same tree as Markdown files for agents,
+    and the API's preview.
   }}
 
-  editor: part {{
-    The browser editor and its app shell: files, live preview, diagnostics in place and the
-    panels and commands its parts hang on it.
+  @display("VS Code extension")
+  editor_extension: part {{
+    The extension for VS Code and the editors built on it: it starts `heron lsp` as its
+    language client, colours Heron before the server answers, shows the live preview beside
+    the code and runs the `heron` commands.
   }}
 }

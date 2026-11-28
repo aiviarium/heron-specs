@@ -5,7 +5,7 @@ include = [
   "./define_an_api.heron.md",
   "./describe_an_rpc_api.heron.md",
   "./run_a_task.heron.md",
-  "./use_the_editor.heron.md",
+  "./edit_in_vs_code.heron.md",
   "./give_agents_the_spec.heron.md",
   "./split_spec_and_implementation.heron.md",
   "./version_a_product.heron.md",

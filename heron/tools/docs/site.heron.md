@@ -54,10 +54,10 @@ Reference when the tree has an api or a type, and Glossary when it has a term.
 </rule>
 
 <rule id="pages_follow_tree" refs="system.docs_generator">
-<must>render features with their rules, terms with hover cards wherever a term is used, qualities with their metrics, and APIs and types as the [reference screens](#tools.frontend.screens) say, all cross-linked</must>
+<must>render features with their rules, terms with hover cards wherever a term is used, qualities with their metrics, and APIs and types as the [reference screens](#tools.docs.screens) say, all cross-linked</must>
 </rule>
 
 <rule id="sentences_from_spec" refs="system.docs_generator">
 <mustNot>add a sentence of its own to a page</mustNot>
-<instead>add headings, labels, navigation and values from the [string catalogue](#tools.frontend.writing.string_catalogue), and show a kind with no prose as its structure alone</instead>
+<instead>add headings, labels, navigation and values from the [string catalogue](#tools.docs.writing.string_catalogue), and show a kind with no prose as its structure alone</instead>
 </rule>

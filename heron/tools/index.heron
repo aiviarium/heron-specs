@@ -1,6 +1,6 @@
 // The development tools' behaviour: the language server and its API, prose
 // linting, the editor grammar, the docs, the server, the descriptions
-// generated for outside tooling and the frontend.
+// generated for outside tooling and the VS Code extension.
 include = [
   "./lsp.heron.md",
   "./lsp_api/",
@@ -13,7 +13,7 @@ include = [
   "./proto.heron.md",
   "./openrpc.heron.md",
   "./sparrow.heron.md",
-  "./frontend/",
+  "./vscode/",
 ]
 
 @display("Server API")
@@ -22,8 +22,11 @@ server_api {}
 @display("Language server API")
 lsp_api {}
 
+@display("VS Code extension")
+vscode {}
+
 | What the development tools do, as their users see it: the language server, prose linting,
-| the editor grammar, the docs, the server and the frontend.
+| the editor grammar, the docs, the server and the VS Code extension.
 
 tools_agree: goal(measure = "Editor, CI and docs report the same problems.") {{
   Every tool around the tree, the editor, the linter, the docs and the server, answers from the same checked tree, so they never disagree.

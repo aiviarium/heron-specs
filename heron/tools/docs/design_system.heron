@@ -3,8 +3,8 @@ design_system: section {
   | Compact and quietly polished: the density and calm of Linear in the tools, and the finish
   | of Fumadocs and Mintlify in the docs. One set of tokens, declared once in `tokens.json`, holds
   | the colours, type, sizes, radii, spacing and motion, generated to CSS variables
-  | (`--h-<name>`) and the other languages the tools are built in, and used by the app, the editor and the docs alike.
-  | The rules on the tokens bind [the editor](#system.editor) and the docs alike; the rules on
+  | (`--h-<name>`) and the other languages the tools are built in, and used by the docs and
+  | their islands. The rules on the tokens bind [the docs generator](#system.docs_generator); the rules on
   | composing them bind whoever builds a view.
 
   surfaces: term {{
@@ -35,30 +35,30 @@ design_system: section {
   }}
 
   tokens: section {
-    one_source: rule(system.editor) {
+    one_source: rule(system.docs_generator) {
       must {{ generate `tokens.css` and every other language's tokens from `tokens.json` alone, and keep the committed outputs equal to what generation writes }}
     }
 
-    readable_contrast: scenario(tools.frontend.design_system.readable) {
+    readable_contrast: scenario(tools.docs.design_system.readable) {
       stimulus =| a reader reads a text level or a mark colour, other than a mark colour on `bg-highlight` or the level `text-decor`
-      environment =| each of the four [surfaces](#heron.tools.frontend.design_system.surfaces), in both themes
+      environment =| each of the four [surfaces](#heron.tools.docs.design_system.surfaces), in both themes
       response =| the colour stands out from its surface
       measure =| a WCAG contrast ratio of at least 4.5:1
     }
 
-    untinted: rule(system.editor) {
+    untinted: rule(system.docs_generator) {
       must {{ keep every surface, text, border and `bg-` colour neutral, its red, green and blue equal, in both themes }}
     }
 
-    compact_sizes: rule(system.editor) {
+    compact_sizes: rule(system.docs_generator) {
       must {{ size controls at 24, 28 and 32 px, rows at 28 px, and the top bar at 44 px; give marks and inline code a radius of 4 px, controls 6 px, cards and code 8 px and overlays 10 px; and keep every spacing step on a 4 px grid }}
     }
 
-    type_scale: rule(system.editor) {
+    type_scale: rule(system.docs_generator) {
       must {{ set the interface at 13 px, docs prose at 15 px growing with the window to 17 px with lines of about 72 to 90 characters, code, paths, identifiers, field names and numbers in the mono at 12.5 px, and group labels at 11 px }}
     }
 
-    quiet_motion: rule(system.editor) {
+    quiet_motion: rule(system.docs_generator) {
       must {{ keep every duration between 120 and 200 ms }}
     }
   }
@@ -69,7 +69,7 @@ design_system: section {
     | scans past.
 
     sentences_at_full_strength: rule(system.docs_generator) {
-      must {{ set every sentence that comes from the spec, a rule's, the sentences of steps, [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) and diagnostic messages included, in the body face at the docs prose size of the type scale of the [design tokens](#tools.frontend.design_system.tokens) and the `text` level }}
+      must {{ set every sentence that comes from the spec, a rule's, the sentences of steps, [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) and diagnostic messages included, in the body face at the docs prose size of the type scale of the [design tokens](#tools.docs.design_system.tokens) and the `text` level }}
     }
 
     prose_in_code: rule(system.docs_generator) {
@@ -84,7 +84,7 @@ design_system: section {
   }
 
   composing: section {
-    | These bind whoever builds a view of the app or the docs, and the reviewer of it.
+    | These bind whoever builds a view of the docs, and the reviewer of it.
 
     dark_first: rule(actors.implementer) {
       must {{ design the dark theme first, and the light theme alongside it rather than inverted from it }}
@@ -106,15 +106,15 @@ design_system: section {
     }
 
     overlays_cast_shadows: rule(actors.implementer) {
-      may {{ give an overlay the `shadow-overlay` shadow, such as a menu, a popover or the command palette }}
+      may {{ give an overlay the `shadow-overlay` shadow, such as a menu, a popover or the search palette }}
     }
 
     project_colour_never_fills: rule(actors.implementer) {
-      mustNot {{ fill a button, card, callout, code block or cell with the [project colour](#tools.frontend.design_system.project_colour) }}
+      mustNot {{ fill a button, card, callout, code block or cell with the [project colour](#tools.docs.design_system.project_colour) }}
     }
 
     status_colours_mean: rule(actors.implementer) {
-      mustNot {{ use a [status colour](#tools.frontend.design_system.status_colours) for anything but what it means }}
+      mustNot {{ use a [status colour](#tools.docs.design_system.status_colours) for anything but what it means }}
     }
 
     no_filled_pills: rule(actors.implementer) {
@@ -131,7 +131,7 @@ design_system: section {
     }
 
     polish_from_detail: rule(actors.implementer) {
-      mustNot {{ use gradients on text or [surfaces](#tools.frontend.design_system.surfaces), glow, emoji or illustrations }}
+      mustNot {{ use gradients on text or [surfaces](#tools.docs.design_system.surfaces), glow, emoji or illustrations }}
       instead {{ polish through detail: a translucent top bar with backdrop blur, a faint dot grid behind diagrams, focus rings on keyboard focus only, syntax colours from the same tokens, and code blocks with a title bar and a copy button }}
     }
 
@@ -141,20 +141,20 @@ design_system: section {
     }
 
     keyboard_first: rule(actors.implementer) {
-      must {{ offer a command palette on ⌘K in every tool and on the docs, shortcuts for every frequent action, and focus that's always visible }}
+      must {{ offer the search palette on ⌘K on the docs, shortcuts for every frequent action, and focus that's always visible }}
     }
 
     ui_sdk_base: rule(actors.implementer) {
-      must {{ compose components from the [UI SDK](#tools.frontend.design_system.ui_sdk)'s behaviours in the shared component package, rather than writing popups, selection, typeahead, roving focus, reordering, resizing or virtual lists by hand }}
+      must {{ compose the islands' components from the [UI SDK](#tools.docs.design_system.ui_sdk)'s behaviours, rather than writing popups, selection, typeahead, roving focus, reordering, resizing or virtual lists by hand }}
       then {{ accessibility comes with the behaviours rather than being added per component }}
     }
   }
 
   @display("UI SDK")
   ui_sdk: term {{
-    The base of the frontend: behaviours and primitives with Solid bindings, such as popups,
+    The base of the docs' islands: behaviours and primitives with Solid bindings, such as popups,
     selection, typeahead, roving focus, reordering, resizing and virtualized lists, which
-    the shared component library composes into the app's components. Its skill is part of the
+    the islands compose into their components. Its skill is part of the
     repository's generated agent files, so an agent composes from the same behaviours.
   }}
 }

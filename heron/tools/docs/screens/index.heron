@@ -1,0 +1,10 @@
+// The reference screens: the api page, the op page and the type page.
+include = [
+  "./api_page.heron",
+  "./op_page.heron",
+  "./type_page.heron",
+]
+
+| The reference screens of the docs' API reference: an op page and a type page, with the
+| api page they open from. Each is a screen of nested regions, with the rules on what each
+| region holds.

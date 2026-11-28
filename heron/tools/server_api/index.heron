@@ -1,13 +1,12 @@
 // The server's API: `spec_server`, its types and its errors. An
-// implementation generates its handlers and its client from this folder,
-// and every client, the frontend among them, reads the same description.
-import = ["std/types@1", "std/http@1", "std/ws@1"]
+// implementation generates its handlers from this folder, and every client
+// reads the same description.
+import = ["std/types@1", "std/http@1"]
 
 include = ["./types.heron", "./errors.heron"]
 
-| The API `heron serve` publishes: JSON over HTTP, its streams as server-sent events, and the
-| language server as JSON-RPC over a websocket. Every client uses it the same way, the
-| frontend included, through a client generated from this description.
+| The API `heron serve` publishes beside the spec browser: JSON over HTTP. Every client uses it
+| the same way, through this description.
 
 @display("Heron server API")
 @http(base_path = "/api/v1")
@@ -21,111 +20,10 @@ spec_server: api {
     | edited as typed.
   }
 
-  @http<get>("/results")
-  results(@query path: String): op(NodeResults, tools.server.ops.run_results) {
-    | The latest results of the nodes under a path, such as each task's last run.
-  }
-
-  @http<get>("/records/:id")
-  @throws(no_record)
-  get_record(@path id: String): op(Record, tools.server.ops.run_results) {
-    | One stored record, such as a run, by its id.
-  }
-
-  @ws("/lsp")
-  @throws(no_language_server)
-  lsp(messages: Stream(LspMessage)): op(Stream(LspMessage), tools.server.serving.lsp_socket) {
-    | The language server, one JSON-RPC message per websocket frame.
-  }
-
-  @http<get>("/workspace")
-  workspace(): op(Workspace, tools.lsp.extensions.workspace_uris) {
-    | The workspace: its [entry point](#language.core_format.files.entry_point), the files its tree reaches, its branch and the root URI
-    | the language server's URIs start with.
-  }
-
-  @http<get>("/files")
-  @throws(not_in_workspace)
-  list_files(@query dir?: String): op(FileList, tools.server.ops.file_listing) {
-    | Every file and folder under the workspace, or under one folder of it, whether the tree
-    | reaches it or not, with its size and the time it last changed.
-  }
-
-  @http<get>("/file")
-  @throws(not_in_workspace, no_such_file)
-  read_file(@query path: String, @query encoding?: String): op(FileContent, tools.server.ops.file_versions, tools.server.ops.binary_content) {
-    | A file's content, as text or, with `encoding` set to `base64`, as base64, with its size,
-    | modification time and entity tag.
-  }
-
-  @http<post>("/file")
-  @throws(not_in_workspace, file_changed)
-  write_file(@body request: WriteRequest): op(Saved, tools.server.ops.file_versions, tools.server.ops.conditional_write, tools.server.ops.binary_content) {
-    | Saves a file, creating its folders, and answers its new size, modification time and
-    | entity tag; with `if_match`, only while the file still has that tag.
-  }
-
-  @http<delete>("/file")
-  @throws(not_in_workspace, no_such_file)
-  delete_file(@query path: String): op(Removed, tools.server.ops.file_changes) {
-    | Removes a file, or an empty folder.
-  }
-
-  @http<post>("/file/rename")
-  @throws(not_in_workspace, no_such_file, file_exists)
-  rename_file(@body request: RenameRequest): op(Saved, tools.server.ops.file_changes) {
-    | Moves a file or a folder to another path of the workspace.
-  }
-
-  @http<post>("/dir")
-  @throws(not_in_workspace, file_exists)
-  make_dir(@body request: PathRequest): op(Saved, tools.server.ops.file_changes) {
-    | Creates a folder and the folders above it.
-  }
-
-  @http<get>("/events")
-  watch(): op(Stream(WorkspaceEvent), tools.server.ops.workspace_events) {
-    | A stream of what changes in the workspace while the client listens: files written,
-    | created or removed, by anyone, the tree's problems and the nodes' results.
-  }
-
-  @http<get>("/std")
-  std_files(): op(StdFiles, tools.server.ops.std_sources) {
-    | The files of the standard packages built into the server.
-  }
-
-  @http<get>("/std/file")
-  @throws(no_such_file)
-  std_source(@query path: String): op(FileContent, tools.server.ops.std_sources) {
-    | A standard file's text, read-only, by its path as `std_files` lists it.
-  }
-
-  @http<post>("/problems")
-  problems(@body request: TreeRequest): op(Problems, tools.server.ops.unsaved_texts) {
-    | Every diagnostic of the tree with the given unsaved texts, with what reported it.
-  }
-
-  @http<post>("/run")
-  @throws(already_running)
-  run_task(@body request: RunRequest): op(Stream(RunEvent), tools.server.ops.task_runs) {
-    | Runs a task and streams its output, then its result.
-  }
-
-  @http<post>("/outline")
-  @throws(not_in_workspace)
-  outline(@body request: OutlineRequest): op(Outline, tools.server.ops.unsaved_texts) {
-    | The nodes a file declares, which of them run, and the lines they span.
-  }
-
   @http<get>("/agents")
   @throws(no_such_file)
   agent_export(@query path?: String): op(GeneratedFiles, tools.server.ops.agent_export_op) {
     | The tree's [agent export](#tools.docs.agents.agent_export) as `heron generate agents` writes it: every file, or the one at
     | `path`, as `INDEX.md`.
-  }
-
-  @http<post>("/generated")
-  generated(@body request: TreeRequest): op(GeneratedFiles, tools.server.ops.unsaved_texts) {
-    | The files generation would write, without writing them.
   }
 }

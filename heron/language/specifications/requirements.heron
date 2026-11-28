@@ -151,7 +151,7 @@ requirements: section {
   }
 
   examples_after_sentence: rule(system.docs_generator) {
-    must {{ follow a rule's sentence, in the same paragraph, with each of its examples as a sentence of its own after the word the [string catalogue](#tools.frontend.writing.string_catalogue) holds for an example, and each condition another package adds as a sentence after its kind's [display name](#language.core_format.naming.display_name) }}
+    must {{ follow a rule's sentence, in the same paragraph, with each of its examples as a sentence of its own after the word the [string catalogue](#tools.docs.writing.string_catalogue) holds for an example, and each condition another package adds as a sentence after its kind's [display name](#language.core_format.naming.display_name) }}
   }
 
   scenario_view: rule(system.docs_generator) {

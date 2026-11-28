@@ -2,9 +2,9 @@
 api_page: screen(route = "/<api>.html") {
   | An api's landing page in the API reference: what it is, how it travels on the wire, and
   | every op grouped by the surface it belongs to, one line each, so a reader finds an op
-  | without opening each one. The top bar and the sidebar are the [op page](#tools.frontend.screens.op_page)'s.
+  | without opening each one. The top bar and the sidebar are the [op page](#tools.docs.screens.op_page)'s.
 
-  lead: region(tools.frontend.screens.api_page.lead.api_facts) {
+  lead: region(tools.docs.screens.api_page.lead.api_facts) {
     | The api's prose, its base path and its wire format.
 
     api_facts: rule(system.docs_generator) {
@@ -12,7 +12,7 @@ api_page: screen(route = "/<api>.html") {
     }
   }
 
-  service: region(tools.frontend.screens.api_page.service.service_lead, tools.frontend.screens.api_page.service.methods_grouped, tools.frontend.screens.api_page.service.signature_each, tools.frontend.screens.api_page.service.facts_by_binding) {
+  service: region(tools.docs.screens.api_page.service.service_lead, tools.docs.screens.api_page.service.methods_grouped, tools.docs.screens.api_page.service.signature_each, tools.docs.screens.api_page.service.facts_by_binding) {
     | An api bound to a gRPC service, to JSON-RPC or to a [Sparrow facet](#language.apis.sparrow.sparrow_facet) reads as a service: its
     | name, its protocols, and its methods by their signatures.
 
@@ -41,7 +41,7 @@ api_page: screen(route = "/<api>.html") {
     }
   }
 
-  ops: region(tools.frontend.screens.api_page.ops.ops_grouped, tools.frontend.screens.api_page.ops.one_line_each) {
+  ops: region(tools.docs.screens.api_page.ops.ops_grouped, tools.docs.screens.api_page.ops.one_line_each) {
     | The ops, grouped.
 
     ops_grouped: rule(system.docs_generator) {
@@ -53,7 +53,7 @@ api_page: screen(route = "/<api>.html") {
     }
   }
 
-  types: region(tools.frontend.screens.api_page.types.types_listed) {
+  types: region(tools.docs.screens.api_page.types.types_listed) {
     | The types and errors the api's ops name.
 
     types_listed: rule(system.docs_generator) {

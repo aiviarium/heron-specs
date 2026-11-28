@@ -1,14 +1,14 @@
 # Writing in the interface {#writing}
 
 Pages and tools carry labels, values and structure, not explanations. Every sentence a
-reader meets comes from a spec; what the tools add is a label from [the catalogue](#tools.frontend.writing.string_catalogue).
+reader meets comes from a spec; what the tools add is a label from [the catalogue](#tools.docs.writing.string_catalogue).
 Some rules bind the tools, which a reader can check on every page; the rest bind the
 implementer who writes the view and the reviewer of it.
 
 <term id="string_catalogue" aliases={["string catalogue"]}>
 The catalogue of every string the tools show that doesn't come from a spec, in
-`strings.json`, keyed `<tool>.<group>.<name>`: the docs read `docs.*`, their islands
-`docs.island.*`, and the app `app.*`.
+`strings.json`, keyed `<tool>.<group>.<name>`: the docs read `docs.*` and their islands
+`docs.island.*`.
 </term>
 
 ## Visible text {#visible_text}
@@ -17,23 +17,14 @@ The catalogue of every string the tools show that doesn't come from a spec, in
 <must>show on a docs page only words that come from the spec (its files, or the standard packages its kinds are declared in) or from the catalogue, besides numbers and punctuation</must>
 </rule>
 
-<rule id="app_text_sourced" refs="system.editor">
-<must>show on the editor screen only text from the spec of the served tree and the standard packages it uses, or from the catalogue, in every label, input hint and title a person reads, the palette and the problems panel included</must>
-<while>the shell itself draws the text, outside the code in the editor and Monaco's own widgets, such as the find widget's labels</while>
-</rule>
-
-<rule id="tools_text_in_widgets" refs="system.editor">
-<must>take what the tools put into Monaco's widgets from the spec or the catalogue: hover contents, diagnostics, code action titles, completion items and the problem hover, with Monaco's extra links removed from it</must>
-</rule>
-
 ## Catalogue wording {#catalogue_wording}
 
-<rule id="labels_not_sentences" refs="system.editor">
+<rule id="labels_not_sentences" refs="system.docs_generator">
 <mustNot>hold an entry that ends with a full stop</mustNot>
-<then>the tools show no helper sentences, no intro lines saying what a page or panel shows, and no paragraphs in empty states</then>
+<then>the docs show no helper sentences, no intro lines saying what a page or panel shows, and no paragraphs in empty states</then>
 </rule>
 
-<rule id="no_generated_tells" refs="system.editor">
+<rule id="no_generated_tells" refs="system.docs_generator">
 <mustNot>hold "seamless", "powerful", "effortless", "Let's", "Note that", "Learn more", "Powered by", "Auto-generated", "New", an exclamation mark, a question mark, an emoji or a sparkle</mustNot>
 </rule>
 

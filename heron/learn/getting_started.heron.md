@@ -4,7 +4,7 @@ minutes and four steps.
 
 <step id="install">
 Heron is one command, `heron`, with the checker, the formatter, the linter, the task
-runner, the docs generator and the editor in it. Put the `heron` binary on your `PATH`,
+runner, the docs generator and the language server in it. Put the `heron` binary on your `PATH`,
 then run ${cli.help.name}: it lists the commands you have.
 </step>
 
@@ -45,6 +45,6 @@ Run ${cli.generate.name} with the target `docs`. It writes the documentation sit
 open `.heron/docs/index.html` in a browser. The pages are plain files, so they open
 from disk and can be published on any static host.
 
-To edit the tree with the pages updating as you type, [use_the_editor].
+To edit the tree with a preview that follows as you type, [edit_in_vs_code].
 </step>
 </tutorial>

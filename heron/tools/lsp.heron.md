@@ -1,8 +1,7 @@
 # LSP {#lsp}
 
 What [the language server](#system.language_server) answers: one [session](#tools.lsp.session.lsp_session) per client,
-over standard input and output from `heron lsp` and over the `/lsp` socket from
-[the server](#system.server). It answers from the same checked tree as `heron check`
+over standard input and output from `heron lsp`. It answers from the same checked tree as `heron check`
 and `heron lint`, so an editor never disagrees with them.
 
 ## Session {#session}
@@ -265,7 +264,7 @@ The legend's token types are `namespace`, `type`, `class`, `enum`, `interface`, 
 
 ## Extensions {#extensions}
 
-Beyond the protocol, a session answers one request and serves one URI scheme.
+Beyond the protocol, a session answers two requests and serves one URI scheme.
 
 <rule id="source_request" refs="system.language_server">
 <when>a client sends `heron/source` with a `uri`</when>
@@ -279,12 +278,25 @@ Beyond the protocol, a session answers one request and serves one URI scheme.
 <must>answer an invalid-parameters error "no file {uri}"</must>
 </rule>
 
+<rule id="preview_request" refs="system.language_server">
+<when>a client sends `heron/preview` with a document's `uri` and a `position`</when>
+<must>answer with the innermost node declared at the position, or the file's top-level nodes when there is none, rendered from the open documents as typed by the renderer of `heron generate docs`, as its page in the docs shows it: the page's content when it has a page, its own view otherwise; with the node's path, empty for the file, and the docs' stylesheet as `styles` when the request asks for it</must>
+<while>the render succeeds</while>
+<then>a client previews a node as the docs show it without a server of its own</then>
+</rule>
+
+<rule id="preview_request_otherwise" refs="system.language_server">
+<if>the render fails</if>
+<must>answer with the error as `error` and no `html`</must>
+<then>the client keeps the last page and shows the error above it</then>
+</rule>
+
 <rule id="std_scheme" refs="system.language_server">
 <must>name a standard package's embedded file `heron:/std/<package>/<file>`, and read `heron:std/<path>` as the same file</must>
 </rule>
 
 <rule id="workspace_uris" refs="system.language_server">
-<must>name each file of the workspace by its `file:` URI under the workspace's root URI, which the server API's `workspace` answers as `root_uri`, in every location and diagnostic it sends, each standard file by its `heron:/std/` URI, and a workspace file in hover text by its path relative to the workspace</must>
+<must>name each file of the workspace by its `file:` URI under the workspace's root URI in every location and diagnostic it sends, each standard file by its `heron:/std/` URI, and a workspace file in hover text by its path relative to the workspace</must>
 <then>a client maps a URI to the file's workspace path by taking the root URI off it, and needs no copy of the server's folders</then>
 </rule>
 

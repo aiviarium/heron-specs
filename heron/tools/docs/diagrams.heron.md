@@ -8,7 +8,7 @@ from the theme's tokens, so they work without a script.
 </rule>
 
 <rule id="diagram_style" refs="system.docs_generator">
-<must>draw states as bordered boxes on the raised colour, mark initial and final states by their shape, label transitions with their name and the op that performs them in the [project colour](#tools.frontend.design_system.project_colour), and mark a transition nothing performs in the warning colour</must>
+<must>draw states as bordered boxes on the raised colour, mark initial and final states by their shape, label transitions with their name and the op that performs them in the [project colour](#tools.docs.design_system.project_colour), and mark a transition nothing performs in the warning colour</must>
 </rule>
 
 <rule id="table_view" refs="system.docs_generator">

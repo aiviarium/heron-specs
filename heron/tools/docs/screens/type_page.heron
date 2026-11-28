@@ -1,8 +1,8 @@
-type_page: screen(route = "/<type>.html", tools.frontend.screens.type_page.type_cards) {
+type_page: screen(route = "/<type>.html", tools.docs.screens.type_page.type_cards) {
   | A type's page in the API reference: its definition, its fields, its rules, its
-  | [lifecycles](#language.specifications.lifecycles.lifecycle) and where it's used. The top bar and the sidebar are the [op page](#tools.frontend.screens.op_page)'s.
+  | [lifecycles](#language.specifications.lifecycles.lifecycle) and where it's used. The top bar and the sidebar are the [op page](#tools.docs.screens.op_page)'s.
 
-  signature: region(tools.frontend.screens.type_page.signature.definition_first, tools.frontend.screens.type_page.signature.proto_definition) {
+  signature: region(tools.docs.screens.type_page.signature.definition_first, tools.docs.screens.type_page.signature.proto_definition) {
     | The definition as a Heron signature in a code block titled with its file.
 
     definition_first: rule(system.docs_generator) {
@@ -15,7 +15,7 @@ type_page: screen(route = "/<type>.html", tools.frontend.screens.type_page.type_
     }
   }
 
-  fields: region(tools.frontend.screens.type_page.fields.field_table, tools.frontend.screens.type_page.fields.variants_listed) {
+  fields: region(tools.docs.screens.type_page.fields.field_table, tools.docs.screens.type_page.fields.variants_listed) {
     | A bordered [table](#heron.language.markup.components.table) of the fields.
 
     field_table: rule(system.docs_generator) {
@@ -27,19 +27,19 @@ type_page: screen(route = "/<type>.html", tools.frontend.screens.type_page.type_
     }
   }
 
-  rules: region(tools.frontend.screens.type_page.rules.rules_as_properties) {
+  rules: region(tools.docs.screens.type_page.rules.rules_as_properties) {
     rules_as_properties: rule(system.docs_generator) {
       must {{ show the rules that target the type as its state properties, each with its strength, its conditions and its metrics }}
     }
   }
 
-  lifecycles: region(tools.frontend.screens.type_page.lifecycles.lifecycle_switch) {
+  lifecycles: region(tools.docs.screens.type_page.lifecycles.lifecycle_switch) {
     lifecycle_switch: rule(system.docs_generator) {
       must {{ show each [lifecycle](#language.specifications.lifecycles.lifecycle) a field of the type moves through as a state diagram, with a switch to its [table](#heron.language.markup.components.table) }}
     }
   }
 
-  used_by: region(tools.frontend.screens.type_page.used_by.backlinks) {
+  used_by: region(tools.docs.screens.type_page.used_by.backlinks) {
     backlinks: rule(system.docs_generator) {
       must {{ link back to the ops, fields and types that refer to the type }}
     }

@@ -9,7 +9,7 @@ import = ["std/types@1", "std/jsonrpc@1"]
 @display("Heron language server")
 @jsonrpc(framing = content_length)
 language_server: api {
-  | The methods a client sends `heron lsp`, or the `/lsp` socket of [the server](#system.server), beside the protocol's.
+  | The methods a client sends `heron lsp` beside the protocol's.
 
   @jsonrpc("heron/source")
   @throws(errors.no_file)
@@ -27,6 +27,48 @@ language_server: api {
       throws = errors.no_file
     }
   }
+
+  @jsonrpc("heron/preview")
+  @throws(errors.no_file)
+  preview(@params request: PreviewParams): op(PreviewPage, tools.lsp.extensions.preview_request, tools.lsp.extensions.preview_request_otherwise) {
+    | The node at a position of an open document rendered as its docs page shows it, from the
+    | text as typed, which an editor shows beside the code.
+
+    on_a_rule: example {
+      request = PreviewParams(uri = "file:///work/pets/index.heron", position = Position(line = 4, character = 2))
+      returns = PreviewPage(path = "pets.adopt", html = "Adopt a pet once its owner signs.")
+    }
+  }
+}
+
+/// What `heron/preview` asks for.
+PreviewParams: type {
+  /// The document's `file:` URI.
+  uri: String
+  /// The cursor, as the protocol counts it.
+  position: Position
+  /// Whether to answer the docs' stylesheet too, which a client asks for once.
+  styles?: Bool
+}
+
+/// A place in a document as the protocol counts it.
+Position: type {
+  /// 0-based.
+  line: Int
+  /// 0-based, in UTF-16 code units.
+  character: Int
+}
+
+/// A node rendered as its docs page shows it.
+PreviewPage: type {
+  /// The node's path in the tree; empty for the file itself.
+  path: String
+  /// The rendered markup, styled by `styles`; empty when the render failed.
+  html: String
+  /// The error that stopped the render.
+  error?: String
+  /// The docs' stylesheet, when the request asked for it.
+  styles?: String
 }
 
 /// What `heron/source` asks for.
