@@ -1,5 +1,4 @@
-@realizes(cli.lint.any_finding_fails)
-lint: command("heron lint") {
+lint: command("heron lint", cli.lint.any_finding_fails) {
   usage = ["heron lint [--json] [--fix] [entry points…]"]
 
   | Checks each [entry point](#language.core_format.files.entry_point), loads what its extensions implement, and runs every
@@ -18,8 +17,7 @@ lint: command("heron lint") {
     | `code`, `message`, `related`, `fixes`, `line` and `column`.
   }
 
-  @realizes(cli.lint.fix_applies_no_guess, cli.lint.fix_in_place, cli.lint.fix_no_overlap)
-  fix: option("--fix", type = Bool, default = false) {
+  fix: option("--fix", cli.lint.fix_applies_no_guess, cli.lint.fix_in_place, cli.lint.fix_no_overlap, type = Bool, default = false) {
     | Applies each finding's first fix that isn't a suggestion, writes `heron lint: applied
     | ‹n› fixes` to standard error, and reports the findings it didn't fix. A suggestion is
     | a guess among others, such as a spelling correction, which only the editor offers, as
@@ -39,26 +37,22 @@ lint: command("heron lint") {
 
   example {{ `heron lint --fix spec` rewrites what the prose lints can fix with certainty and lists the rest, such as unknown words, for an author to decide. }}
 
-  @by(system.command_line)
-  any_finding_fails: rule {
+  any_finding_fails: rule(system.command_line) {
     must {{ exit with status 1 when any diagnostic or finding is left, whatever its severity }}
   }
 
-  @by(system.command_line)
-  fix_applies_no_guess: rule {
+  fix_applies_no_guess: rule(system.command_line) {
     mustNot {{ apply a fix marked as a suggestion }}
     instead {{ leave the finding reported, for the editor to offer its suggestions as code actions }}
   }
 
-  @by(system.command_line)
-  fix_no_overlap: rule {
+  fix_no_overlap: rule(system.command_line) {
     if {{ the edits of a fix overlap an edit already taken, or start at the same offset }}
     mustNot {{ apply it }}
     instead {{ leave its finding reported, so the next `heron lint --fix` can apply it to the changed text }}
   }
 
-  @by(system.command_line)
-  fix_in_place: rule {
+  fix_in_place: rule(system.command_line) {
     must {{ apply each file's edits from its end backwards, so earlier offsets stay valid, and keep the file's permissions }}
   }
 

@@ -10,29 +10,21 @@ recovery: section {
     tokens reproduces the file.
   }}
 
-  @by(system.parser)
-  @targets(lossless_tree)
-  lossless: rule {
+  lossless: rule(system.parser) {
     must {{ build a [lossless tree](#language.grammar.recovery.lossless_tree) for every input, valid or not, with every token's text equal to the source at its span and the tokens contiguous }}
     then {{ formatting, fixes and the language server edit tokens in place, and no parse loses text }}
   }
 
-  @by(system.parser)
-  @targets(lossless_tree)
-  never_fails: rule {
+  never_fails: rule(system.parser) {
     must {{ return a tree and a list of diagnostics for any input, without failing, and in time linear in its length }}
   }
 
-  @by(system.parser)
-  @targets(lossless_tree)
-  syntax_errors: rule {
+  syntax_errors: rule(system.parser) {
     must {{ report every syntax error as an error coded `syntax` at the offset where the parser expected something else, with a message saying what it expected }}
     while {{ the message differs from the one before it at the same offset }}
   }
 
-  @by(system.checker)
-  @targets(lossless_tree)
-  checking_goes_on: rule {
+  checking_goes_on: rule(system.checker) {
     must {{ check a file with syntax errors as far as its tree goes, reading each `ErrorNode` as nothing }}
     then {{ a typo on one line doesn't hide the diagnostics of the rest of the file }}
   }
@@ -41,22 +33,19 @@ recovery: section {
     | Structure and code recover at line ends: a member or statement whose line has more
     | on it than it can read ends there.
 
-    @by(system.parser)
-    rest_of_line: rule {
+    rest_of_line: rule(system.parser) {
       if {{ a member or statement is complete but its line goes on }}
       must {{ report end of line and keep the rest of the line in an `ErrorNode` }}
       example {{ `a = 1 b`: the set `a = 1`, then an error at `b` }}
     }
 
-    @by(system.parser)
-    no_member: rule {
+    no_member: rule(system.parser) {
       if {{ a line in structure starts with none of the forms a member starts with }}
       must {{ report no member and keep the line in an `ErrorNode` }}
       example {{ `= 1`; a `}` with no body open }}
     }
 
-    @by(system.parser)
-    progress: rule {
+    progress: rule(system.parser) {
       if {{ a member or statement consumed nothing }}
       must {{ keep one character in an `ErrorNode` and go on after it }}
       then {{ every pass of the loop moves forward, so the parse ends }}
@@ -67,33 +56,27 @@ recovery: section {
     | A missing part is reported where it should stand, and the node is built without it.
     | The [diagnostics](#language.grammar.recovery.errors) list each part's message.
 
-    @by(system.parser)
-    @targets(lossless_tree)
-    missing_parts: rule {
+    missing_parts: rule(system.parser) {
       if {{ a construct lacks a part one of the [diagnostics](#language.grammar.recovery.errors) names }}
       must {{ report that diagnostic at the offset where the part belongs, and build the construct without it }}
     }
   }
 
   lists: section {
-    @by(system.parser)
-    list_entries: rule {
+    list_entries: rule(system.parser) {
       if {{ an entry of an argument, parameter or array list isn't followed by `,` or the closing bracket }}
       must {{ report argument list, or array list in an array, and skip to the next `,` or closing bracket, keeping nested brackets and strings balanced }}
       example {{ `f(a b)`: the argument `a`, then an error holding `b` }}
     }
 
-    @by(system.parser)
-    map_entries: rule {
+    map_entries: rule(system.parser) {
       if {{ a map entry doesn't start with a path, or its path isn't followed by `=` }}
       must {{ report map entry or map equals, and skip to the next `,` or the closing brace }}
     }
   }
 
   depth: section {
-    @by(system.parser)
-    @targets(lossless_tree)
-    nesting_limit: rule {
+    nesting_limit: rule(system.parser) {
       if {{ members, expressions, statements or tags nest more than 256 deep }}
       must {{ report too deep and keep the rest of that line, or that expression, in an `ErrorNode` }}
       then {{ a hostile input can't exhaust the stack }}

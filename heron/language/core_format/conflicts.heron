@@ -4,31 +4,23 @@ conflicts: section {
   | Repeated things, such as `example(…)` written more than once, are child nodes of their
   | own and never conflict.
 
-  @by(system.checker)
-  @targets(language.core_format.conflicts)
-  set_once: rule {
+  set_once: rule(system.checker) {
     if {{ a field is set twice in one body }}
     must {{ report set twice at the second setting }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.conflicts)
-  unordered_conflict: rule {
+  unordered_conflict: rule(system.checker) {
     if {{ two files set the same path and neither includes the other, directly or through other files }}
     must {{ report set in two files at the later setting }}
     while {{ the two files are unrelated by includes }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.conflicts)
-  unordered_conflict_otherwise: rule {
+  unordered_conflict_otherwise: rule(system.checker) {
     where {{ one of the two files includes the other }}
     must {{ let the including file's setting win without a report }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.conflicts)
-  conflicts_keep_first: rule {
+  conflicts_keep_first: rule(system.checker) {
     when {{ a conflict is reported }}
     must {{ keep the first declaration or setting in the tree and check the rest of the tree as if the later one weren't there }}
   }

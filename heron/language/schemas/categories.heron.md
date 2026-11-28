@@ -9,22 +9,23 @@ A node of kind `category`, as `block: category`, that kinds join with `in` and b
 accept with `accept(category = …)`.
 </term>
 
-<rule id="joining" @targets="category_term" @by="system.checker">
+<rule id="joining" refs="system.checker">
 <must>put a kind in each category its `in` argument names, and in no other</must>
 <example>`note(kind: NoteKind = NoteKind.NOTE): kind(in = [block])` is a block wherever `std/doc` is imported</example>
 </rule>
 
-<rule id="open_sets" @targets="category_term" @by="system.checker">
+<rule id="open_sets" refs="system.checker">
 <must>admit, through a category entry, a kind of any package in `import` that joins the category, the importing tree's own kinds included</must>
 </rule>
 
 `std/doc` declares the categories prose and documentation are built from: `block`, for
 what stands on a line of its own or as a block tag, and `inline`, for what stands inside
-a sentence. `std/spec` adds `strength` and `condition`, and `serving`, `realizing`, `revised`
-and `sourced`, through which other packages' kinds take its links. `std/schema` declares `flow` and
+a sentence. `std/spec` adds `strength` and `condition`, and `revised`, through which other
+packages' kinds take `@rev`, and `std/types` adds `realized`, the spec kinds a contract
+surface's references may name. `std/schema` declares `flow` and
 `phrasing`, the sketch's names for the same two sets, which no standard kind joins.
 
-<rule id="builtin_categories" @targets="category_term" @by="actors.author">
+<rule id="builtin_categories" refs="actors.author">
 <shouldNot>put a kind in `schema.flow` or `schema.phrasing`</shouldNot>
 <instead>put block kinds in `doc.block` and inline kinds in `doc.inline`, which every documentation body accepts</instead>
 </rule>

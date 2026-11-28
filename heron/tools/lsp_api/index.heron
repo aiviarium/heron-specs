@@ -11,10 +11,9 @@ import = ["std/types@1", "std/jsonrpc@1"]
 language_server: api {
   | The methods a client sends `heron lsp`, or the `/lsp` socket of [the server](#system.server), beside the protocol's.
 
-  @realizes(tools.lsp.extensions.source_request, tools.lsp.extensions.source_request_otherwise)
   @jsonrpc("heron/source")
   @throws(errors.no_file)
-  source(@params request: SourceParams): op(SourceText) {
+  source(@params request: SourceParams): op(SourceText, tools.lsp.extensions.source_request, tools.lsp.extensions.source_request_otherwise) {
     | A file's current text by its URI, such as a standard package's embedded file, which an
     | editor opens read-only.
 

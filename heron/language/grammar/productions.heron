@@ -13,21 +13,17 @@ productions: section {
   | production lists what a node can hold, not the order of the text: the rules beside
   | each production say how the text is read.
 
-  @by(system.parser)
-  ungram_is_the_spec: rule {
+  ungram_is_the_spec: rule(system.parser) {
     must {{ keep the `ungrammar` file equal to the tree productions and tokens of this spec: the same token kinds, the same productions, and each production's expression the same up to layout }}
     then {{ a node kind is added in the spec and the grammar file in one change, and the kinds and views are regenerated from the file }}
   }
 
-  @by(actors.author)
-  @targets(ungram_is_the_spec)
-  grammar_per_concern: rule {
-    must {{ hold each concern's tree productions in a `tech.grammar` of its own in that concern's file, every one naming `grammar/heron.ungram` as its `@source` }}
+  grammar_per_concern: rule(actors.author) {
+    must {{ hold each concern's tree productions in a `tech.grammar` of its own in that concern's file, every one naming `grammar/heron.ungram` as its `source` }}
     then {{ the grammars with that source are together the file, and a production written in two of them fails the test that keeps them equal }}
   }
 
-  @by(system.parser)
-  surface_is_the_design: rule {
+  surface_is_the_design: rule(system.parser) {
     must {{ accept the text the surface grammar describes, and build for it the nodes the tree productions name }}
   }
 

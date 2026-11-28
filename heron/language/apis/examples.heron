@@ -10,41 +10,29 @@ examples: section {
     example may also be only prose, `told: example {{ … }}`.
   }}
 
-  @by(system.checker)
-  @targets(op_example)
-  example_fields: rule {
+  example_fields: rule(system.checker) {
     must {{ check an example's fields as the op's parameters, against their types }}
     example {{ `other = 1` in an example of `put(thing: Thing)` reports "store.put.e (a example) has no field other", and `thing = 1` reports "expected Thing, got a number" }}
   }
 
-  @by(system.checker)
-  @targets(op_example)
-  one_outcome_each: rule {
+  one_outcome_each: rule(system.checker) {
     must {{ report set twice in one body at a second `returns` or a second `throws` in one example }}
   }
 
-  @by(system.checker)
-  @targets(op_example)
-  one_outcome: rule {
+  one_outcome: rule(system.checker) {
     if {{ an example sets both `returns` and `throws` }}
     must {{ report two outcomes at the second }}
   }
 
-  @by(system.checker)
-  @targets(op_example)
-  outcome_types: rule {
+  outcome_types: rule(system.checker) {
     must {{ check `returns` against the op's [result type](#language.apis.responses.result_type) and `throws` against the errors the op and its api declare with `@throws` }}
   }
 
-  @by(system.docs_generator)
-  @targets(op_example)
-  examples_rendered: rule {
+  examples_rendered: rule(system.docs_generator) {
     must {{ show each example of an op as its request, written as a `curl` call, a Heron call and the raw HTTP request when the op is bound to HTTP, and its response with the status of its outcome }}
   }
 
-  @by(system.generator)
-  @targets(op_example)
-  examples_checked: rule {
+  examples_checked: rule(system.generator) {
     must {{ put [op examples](#language.apis.examples.op_example) into generated OpenAPI, serve them as mock responses, and run them against a running service as contract checks }}
   }
 

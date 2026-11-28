@@ -5,42 +5,30 @@ preview: section {
   | the same renderer as the generated docs: a section with its rules and terms, an api with
   | its operations and examples, a [lifecycle](#language.specifications.lifecycles.lifecycle) as a diagram.
 
-  @by(system.editor)
-  @targets(tools.frontend.preview)
-  live_preview: rule {
+  live_preview: rule(system.editor) {
     when {{ the text or the node under the cursor changes }}
     must {{ ask the server's `preview` with the unsaved texts on the next animation frame, and show the answer unless a newer one was asked for }}
   }
 
-  @by(system.docs_generator)
-  @targets(tools.frontend.preview)
-  same_as_docs: rule {
+  same_as_docs: rule(system.docs_generator) {
     must {{ render the previewed node as its page in the docs shows it: the page's content when it has a page, its own view otherwise }}
   }
 
-  @by(system.editor)
-  @targets(tools.frontend.preview)
-  error_in_place: rule {
+  error_in_place: rule(system.editor) {
     if {{ a render fails }}
     must {{ keep the last page and show the error in place above it }}
   }
 
-  @by(system.editor)
-  @targets(tools.frontend.preview)
-  slow_analyses: rule {
+  slow_analyses: rule(system.editor) {
     when {{ the text changes }}
     must {{ ask for the problems, the outline and the results 150 ms after the last change }}
   }
 
-  @by(system.editor)
-  @targets(tools.frontend.preview)
-  results_in_place: rule {
+  results_in_place: rule(system.editor) {
     must {{ show below the preview and in the gutter the latest results of each node, from every result provider the server holds, and stream a run started from the gutter into the same place }}
   }
 
-  @by(system.editor)
-  @targets(tools.frontend.preview)
-  generated_preview: rule {
+  generated_preview: rule(system.editor) {
     must {{ show a generated file, chosen from the file tree, as it would be written, before anything is generated }}
   }
 
@@ -48,8 +36,7 @@ preview: section {
     An author sees what a change does as they type.
   }}
 
-  @serves(tools.frontend.preview.fast_preview)
-  preview_done: scenario {
+  preview_done: scenario(tools.frontend.preview.fast_preview) {
     stimulus =| an author changes a rule or an api
     environment =| the editor open on a tree, `heron serve` running
     response =| the preview shows the change, rendered as in the docs, with the latest records beside each node

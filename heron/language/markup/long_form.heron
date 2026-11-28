@@ -8,23 +8,17 @@ long_form: section {
   |
   | [A prose file](#language.markup.long_form.markup_prose_file) and [the same page in structure](#language.markup.long_form.markup_page_structure) build the same tree.
 
-  @by(system.checker)
-  @targets(language.core_format.prose_layer.prose_file)
-  heading_extent: rule {
+  heading_extent: rule(system.checker) {
     must {{ run a heading's section to the next heading of the same or a higher level, and nest a deeper heading's section inside it }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.prose_layer.prose_file)
-  heading_names: rule {
+  heading_names: rule(system.checker) {
     must {{ name a heading's section by its `{#name}`, and report heading needs a name at a heading without one }}
     example {{ `## Limits {#refund_limits}` declares `refund_limits`; `## Before you start` alone is reported }}
     then {{ the heading text is the section's [display name](#language.core_format.naming.display_name) }}
   }
 
-  @by(actors.author)
-  @targets(language.markup.writing.prose_text)
-  sections_are_structure: rule {
+  sections_are_structure: rule(actors.author) {
     mustNot {{ give prose outside a [prose file](#language.core_format.prose_layer.prose_file) headings of its own }}
     instead {{ title a part with a section node, whose [display name](#language.core_format.naming.display_name) is its heading and whose nesting sets the level }}
   }

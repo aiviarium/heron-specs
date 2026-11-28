@@ -1,8 +1,8 @@
 @display("std/spec")
 spec: part {
-  | The kinds a specification is written in, this one included, in its three [layers](#language.specifications.layers.layer): the intent, the specification and the contract, with the links between them, projects, [lifecycles](#language.specifications.lifecycles.lifecycle) and planning.
+  | The kinds a specification is written in, this one included, in its three [layers](#language.specifications.layers.layer): the intent, the specification and the contract, with the references between them, projects, [lifecycles](#language.specifications.lifecycles.lifecycle) and planning.
   | It's part of the core: like `std/core`, every tree sees it without an import, as the [prelude](#language.core_format.imports.packages.prelude) says, and its kinds keep their paths, as `spec.rule`.
-  | It names no package outside the core: a kind of another package joins one of its annotations by standing in the category that annotation's `on` lists, as `std/project`'s `story` stands in `serving` for `@serves`.
+  | It names no package outside the core: a kind of another package joins one of its annotations by standing in the category that annotation's `on` lists, as `std/project`'s `proves` stands in `revised` for `@rev`.
   |
   | Its surface is declared in `std/spec/package.heron`, whose types the API
   | reference renders; each export is specified where its behaviour is:
@@ -12,13 +12,12 @@ spec: part {
   | | `project`, `<external>`, `<shared>`, `Source`, `git`                          | [Projects](#language.specifications.projects)             |
   | | `Versioning`, `Bumps`, `FromSpec`, `Releases`                                 | [Projects](#language.specifications.projects)             |
   | | `goal`, `ActorKind`, `actor`, `persona`, `nongoal`, `assumption`, `quality`   | [Intent](#language.specifications.intent)                 |
-  | | `rule`, `strength`, `condition`, `must` … `instead`, `constraint`, `part`     | [Requirements](#language.specifications.requirements)     |
+  | | `rule`, `strength`, `condition`, `must` … `instead`, `rationale`, `constraint`, `part` | [Requirements](#language.specifications.requirements) |
   | | `scenario`, `given`                                                           | [Requirements](#language.specifications.requirements.scenario_kind) |
   | | `usecase`, `UseCaseLevel`                                                     | [Use cases](#language.specifications.usecases)            |
   | | `error`, `field`, `Severity`, `@status`, `@exit`, `@severity`, `example`, `command`, `argument`, `option`, `screen`, `region` | [Contract](#language.specifications.contract) |
-  | | `@by`, `@targets`, `@serves`, `@derives`, `@relies`, `@illustrates`, `@refines`, `@realizes`, `@rev`, `@source`, `@rationale`, `@owner` | [Links](#language.specifications.layers.links) |
-  | | `serving`, `realizing`, `revised`, `sourced`                                  | [Links](#language.specifications.layers.links)            |
-  | | `states`, `transition`, `@performs`                                           | [Lifecycles](#language.specifications.lifecycles)         |
+  | | `@touch`, `@see`, `@rev`, `revised`                                           | [References](#language.specifications.layers.references)  |
+  | | `states`, `transition`                                                        | [Lifecycles](#language.specifications.lifecycles)         |
   | | `<security>`, `<privacy>`, `<operations>`, `guidance`                         | [Context](#language.specifications.context)               |
   | | `open`                                                                        | [Open questions](#language.specifications.planning)       |
 }

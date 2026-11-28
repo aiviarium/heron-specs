@@ -23,26 +23,18 @@ include = [
 | what people read and what they edit never look different; and the [agent export](#tools.docs.agents.agent_export), the
 | same tree as Markdown files for agents.
 
-@source("readers")
-tasks_first: goal {{ A [reader](#actors.reader) gets something done with the product without reading its spec: the docs open on the tasks they can do. }}
+tasks_first: goal(actors.reader) {{ A [reader](#actors.reader) gets something done with the product without reading its spec: the docs open on the tasks they can do. }}
 
-@source("readers")
-pages_stay_true: goal {{ What a [reader](#actors.reader) copies from the docs works: every example and fact on a page matches the product they have. }}
+pages_stay_true: goal(actors.reader) {{ What a [reader](#actors.reader) copies from the docs works: every example and fact on a page matches the product they have. }}
 
-@source("authors")
-write_for_readers: goal {{ An [author](#actors.author) writes guides, how-tos, concepts and tutorials in the tree they explain, so readers get pages written for them that can't drift from the spec. }}
+write_for_readers: goal(actors.author) {{ An [author](#actors.author) writes guides, how-tos, concepts and tutorials in the tree they explain, so readers get pages written for them that can't drift from the spec. }}
 
-@source("authors")
-read_by_topic: goal {{ An [author](#actors.author) finds the form they need by topic and sees it used before reading its rules. }}
+read_by_topic: goal(actors.author) {{ An [author](#actors.author) finds the form they need by topic and sees it used before reading its rules. }}
 
-@source("authors")
-own_lenses: goal {{ An organization's docs show each of its audiences what it needs, through lenses it declares or changes. }}
+own_lenses: goal(actors.author) {{ An organization's docs show each of its audiences what it needs, through lenses it declares or changes. }}
 
-@source("implementers")
-full_view: goal {{ Nothing another lens leaves out is hidden from an [implementer](#actors.implementer): one view shows every node with its formal parts. }}
+full_view: goal(actors.implementer) {{ Nothing another lens leaves out is hidden from an [implementer](#actors.implementer): one view shows every node with its formal parts. }}
 
-@source("implementers")
-agents_read_the_spec: goal(measure = "An agent answers a question about a requirement from the index and one file.") {{ An [implementer](#actors.implementer) that's an agent reads the spec as plain files sized for it: an index first, then the one file its task needs. }}
+agents_read_the_spec: goal(actors.implementer, measure = "An agent answers a question about a requirement from the index and one file.") {{ An [implementer](#actors.implementer) that's an agent reads the spec as plain files sized for it: an index first, then the one file its task needs. }}
 
-@source("implementers")
-same_node_everywhere: goal {{ An [implementer](#actors.implementer) can send a reader of another lens to what they mean: a link leads to the same node in every lens. }}
+same_node_everywhere: goal(actors.implementer) {{ An [implementer](#actors.implementer) can send a reader of another lens to what they mean: a link leads to the same node in every lens. }}

@@ -13,50 +13,36 @@ accept: section {
   | | `accept(binding = b)`          | a child bound to `b`, a parameter or result of the kind's `fields_from` node         |
   | | `max = n` on any entry         | at most `n` of what the entry admits                                                |
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  child_kinds: rule {
+  child_kinds: rule(system.checker) {
     must {{ admit a child of a node when an entry of the node's kind names the child's kind, or a category the child's kind is in }}
   }
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  not_children: rule {
+  not_children: rule(system.checker) {
     must {{ leave out of the count fields, typed members and calls, and accept every member of a package's body }}
   }
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  first_entry_counts: rule {
+  first_entry_counts: rule(system.checker) {
     must {{ count each child against the first entry, in declaration order, that admits it }}
     example {{ `rule` accepts `kind = when, max = 1` before `category = condition`, so a second `when` reports "rule accepts at most 1 when", though `when` is also a condition }}
   }
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  max_bound: rule {
+  max_bound: rule(system.checker) {
     where {{ an entry has `max = n` }}
     must {{ report accepts at most once, at the first child past the bound, counting every kind of a category entry together }}
     example {{ `rule` accepts `category = strength, max = 1`, so a rule with `must` and `should` reports "rule accepts at most 1 strength node" }}
   }
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  unaccepted_child: rule {
+  unaccepted_child: rule(system.checker) {
     if {{ no entry admits a child }}
     must {{ report doesn't accept at the child, listing the kinds and categories the kind does accept }}
   }
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  prose_and_code: rule {
+  prose_and_code: rule(system.checker) {
     if {{ a node has prose its kind doesn't accept with `accept(prose)` or `accept(text = …)`, or a `do` block it doesn't accept with `accept(code)` }}
     must {{ report takes no prose or takes no do block at the node's name }}
   }
 
-  @by(system.checker)
-  @targets(language.schemas.accept)
-  verbatim_text: rule {
+  verbatim_text: rule(system.checker) {
     where {{ a kind accepts `text = Verbatim` }}
     must {{ keep its prose exactly as written, with no inserts, links, tags or emphasis read in it }}
     example {{ a grammar's `production` and a component's `surface` hold their text verbatim }}

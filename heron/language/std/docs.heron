@@ -16,15 +16,11 @@ docs: part {
   | | `authored`, `guide`, `howto`, `step`, `concept`, `tutorial` | [authored pages](#language.markup.authored_pages)  |
   | | `renderers` modules                                         | [renderers](#tools.docs.renderers)                 |
 
-  @by(system.checker)
-  @targets(language.std.docs)
-  standard_lenses_in_std: rule {
+  standard_lenses_in_std: rule(system.checker) {
     must {{ resolve `user`, `developer`, `explore` and `agent` in a tree that imports `std/docs` as the lens nodes `std/docs` declares, unless the tree declares its own of that name }}
   }
 
-  @by(system.checker)
-  @targets(language.std.docs)
-  lens_mark_from_doc: rule {
+  lens_mark_from_doc: rule(system.checker) {
     must {{ resolve `@lens` as `std/doc`'s annotation, whose names are references to `std/docs`'s lens nodes or a tree's own }}
     then {{ the annotation and the kind are both called `lens`, each declared once in its own package }}
   }

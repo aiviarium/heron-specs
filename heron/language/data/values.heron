@@ -45,31 +45,23 @@ values: section {
     `u8` to `u64`, `i8` to `i64`, `f32` and `f64`.
   }}
 
-  @by(system.checker)
-  @targets(absence)
-  required_members: rule {
+  required_members: rule(system.checker) {
     if {{ a [record value](#language.data.values.record_value) leaves out a member that has no `?` and no default }}
     must {{ report missing member }}
   }
 
-  @by(system.interpreter)
-  @targets(absence)
-  absent_read: rule {
+  absent_read: rule(system.interpreter) {
     if {{ code reads a member that is absent }}
     must {{ throw, naming the member }}
     example {{ code checks presence first with `payment.has(note)` }}
   }
 
-  @by(system.interpreter)
-  @targets(absence)
-  defaults_present: rule {
+  defaults_present: rule(system.interpreter) {
     where {{ a member has a default, as in `currency: String = "EUR"` }}
     must {{ treat it as optional on input and present, with its default, on every value read }}
   }
 
-  @by(system.checker)
-  @targets(scalar)
-  sized_numbers: rule {
+  sized_numbers: rule(system.checker) {
     if {{ an integer literal doesn't fit the `bits` and `signed` of the `Int` expected }}
     must {{ report out of range }}
     example {{ `-1` where a `u8` is expected, and `256` where one is }}

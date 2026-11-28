@@ -28,17 +28,13 @@ implementations: section {
   }}
 
   sealed: section {
-    @by(system.checker)
-    @targets(sealed_package)
-    sealed_locked: rule {
+    sealed_locked: rule(system.checker) {
       if {{ a tree that imports a [sealed package](#language.specifications.implementations.sealed_package) amends, scopes or sets into one of its nodes }}
       must {{ report sealed at the path }}
       then {{ an implementation can't change what the spec states, and a change to the behaviour is made in the spec first }}
     }
 
-    @by(system.checker)
-    @targets(implements_kind)
-    spec_kinds_in_spec: rule {
+    spec_kinds_in_spec: rule(system.checker) {
       if {{ a tree whose root holds an [implements](#language.specifications.implementations.implements_kind) declares a goal, a rule, a scenario, a use case, a term, a quality, a [lifecycle](#language.specifications.lifecycles.lifecycle), an actor, a persona, a grammar, a command, a screen, an error or an api }}
       must {{ report spec content at the outermost such node }}
     }
@@ -49,38 +45,28 @@ implementations: section {
     | them and adds its own after them, so a version of the implementation always says which
     | spec it builds.
 
-    @by(system.checker)
-    @targets(implements_kind)
-    spec_version_form: rule {
+    spec_version_form: rule(system.checker) {
       if {{ an [implements](#language.specifications.implementations.implements_kind)'s `at` isn't three numbers `SM.Sm.Sp`, or differs from the version of the spec package the tree imports }}
       must {{ report spec version at the `implements` }}
     }
 
-    @by(system.checker)
-    @targets(implementation_version)
-    version_starts_with_spec: rule {
+    version_starts_with_spec: rule(system.checker) {
       if {{ a project's `version` doesn't start with the spec version its `at` names, or doesn't have the form of its scheme }}
       must {{ report project version at the version }}
       example {{ `0.2.0+build1` implements `0.2.0`; `0.2.1+build1` at `"0.2.0"` and `0.2.0.1` without the four-number scheme are reported }}
     }
 
-    @by(system.checker)
-    @targets(implementation_version)
-    schemes: rule {
+    schemes: rule(system.checker) {
       if {{ a project's `versioning` sets a `scheme` other than `"SM.Sm.Sp"`, the default, or `"SM.Sm.Sp.IP"` }}
       must {{ report project version at the scheme, naming the two }}
     }
 
-    @by(system.interpreter)
-    @targets(implementation_version)
-    build_order: rule {
+    build_order: rule(system.interpreter) {
       must {{ order two versions of an implementation by their spec version, then their implementation patch, then their build number, and start the build number and the patch again from 1 and 0 when the spec version changes }}
       then {{ `0.2.0+build2` follows `0.2.0+build1`, though semantic versioning gives `+` metadata no order }}
     }
 
-    @by(system.interpreter)
-    @targets(implementation_version)
-    release_tags: rule {
+    release_tags: rule(system.interpreter) {
       must {{ record a release of version ‹version› with the git tag `v‹version›`, as `v0.2.0+build1` }}
     }
   }
@@ -132,9 +118,7 @@ implementations: section {
     |   shopper: actor {{ Someone who buys from the shop. }}
     |
     |   checkout: section {
-    |     @by(shopper)
-    |     @targets(checkout)
-    |     totals: rule {
+    |     totals: rule(shopper) {
     |       must {{ see the order's total before paying }}
     |     }
     |   }

@@ -19,50 +19,36 @@ files: section {
     included file's root joins the root or the scope that includes it.
   }}
 
-  @by(system.checker)
-  @targets(language.core_format)
-  no_core_kinds: rule {
+  no_core_kinds: rule(system.checker) {
     mustNot {{ define a kind of its own in the core format }}
     instead {{ leave every kind to the packages in `import`, with the core's own names declared in the prelude package `std/core` that every tree sees without importing it }}
   }
 
-  @by(system.checker)
-  @targets(heron_file)
-  file_kinds: rule {
+  file_kinds: rule(system.checker) {
     must {{ read a file ending in `.heron.md` as a [prose file](#language.core_format.prose_layer.prose_file) and any other file as structure }}
   }
 
-  @by(system.checker)
-  @targets(entry_point)
-  entry_from_folder: rule {
+  entry_from_folder: rule(system.checker) {
     must {{ read a folder given as the [entry point](#language.core_format.files.entry_point) as its `index.heron` }}
     then {{ `heron check spec` and `heron check spec/index.heron` check the same tree }}
   }
 
-  @by(system.checker)
-  @targets(heron_file)
-  one_identity: rule {
+  one_identity: rule(system.checker) {
     must {{ identify a file on disk by its cleaned absolute path with symbolic links resolved, and a file of a standard package by `std:` and its path, so every spelling of one file is one file }}
     then {{ a path that doesn't exist yet is identified through its nearest existing parent, so an editor's unsaved file has its identity before it's written }}
   }
 
-  @by(system.checker)
-  @targets(entry_point)
-  one_tree: rule {
+  one_tree: rule(system.checker) {
     must {{ resolve references within the entry point's tree and combine amends across its files }}
     then {{ [entry points](#language.core_format.files.entry_point) can share files, so one repository holds more than one tree, and a file checks differently in each tree that reaches it }}
   }
 
-  @by(system.linter)
-  @targets(entry_point)
-  unreachable_file: rule {
+  unreachable_file: rule(system.linter) {
     if {{ a `.heron` file in the project is reached by no [entry point](#language.core_format.files.entry_point) }}
     should {{ report unreachable file, since nothing checks it }}
   }
 
-  @by(system.checker)
-  @targets(entry_point)
-  directives: rule {
+  directives: rule(system.checker) {
     if {{ `include` or `import` is set to anything but a list of plain strings }}
     must {{ report not a list, or not a plain string at an entry that's interpolated or not a string, and skip the entry }}
   }

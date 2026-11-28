@@ -4,16 +4,12 @@ extensions: section {
   | declares. The declaration is the extension's manifest: its command, its limits and its
   | pin, read before it ever runs.
 
-  @by(actors.author)
-  @targets(language.schemas.extensions)
-  heron_packages_first: rule {
+  heron_packages_first: rule(actors.author) {
     should {{ add kinds, types, flags, defaults, lints, tasks, funcs and macros as Heron source in a package }}
     while {{ Heron's own `do` blocks can express the behaviour }}
   }
 
-  @by(actors.author)
-  @targets(language.schemas.extensions)
-  heron_packages_first_otherwise: rule {
+  heron_packages_first_otherwise: rule(actors.author) {
     where {{ the behaviour needs code Heron's own `do` blocks can't express, such as a library of another language }}
     may {{ declare an extension that implements it }}
   }
@@ -35,22 +31,16 @@ extensions: section {
     | | `version`  | `String`       | none    | The version `heron run setup` installs and `heron.lock` pins  |
     | | `checksum` | `String`       | none    | The checksum of what's installed, pinned with the version     |
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    one_declaration: rule {
+    one_declaration: rule(system.extension_host) {
       must {{ start an extension only from an `extension(…)` declaration, and bind `@extern(e)` only to such a declaration }}
       then {{ every external program has one declaration with its limits and pin, whatever language it's written in, and a TS module is an extension whose `command` runs it, as `extension(command = ["node", "compliance.js"])` }}
     }
 
-    @by(system.checker)
-    @targets(extension_process)
-    schema_keeps_types: rule {
+    schema_keeps_types: rule(system.checker) {
       must {{ check, complete and document everything an extension implements against the package's declarations, as for built-in parts }}
     }
 
-    @by(system.interpreter)
-    @targets(extension_process)
-    pinned: rule {
+    pinned: rule(system.interpreter) {
       must {{ install an extension at its declared `version`, check it against its `checksum`, and record both in `heron.lock` }}
     }
   }
@@ -60,81 +50,59 @@ extensions: section {
     | environment does. What's enforced depends on the platform, and what isn't is said
     | each time, never silently allowed.
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    sandboxed: rule {
+    sandboxed: rule(system.extension_host) {
       where {{ Linux user, filesystem and network namespaces are available }}
       must {{ run each extension in new user and filesystem namespaces, with every file read-only but its declared `files` and the run's temp directory, with only its declared `commands` on PATH, and in a network namespace with no interfaces when it declares no `network` hosts }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    unsandboxed: rule {
+    unsandboxed: rule(system.extension_host) {
       where {{ namespaces aren't available }}
       must {{ run the extension without them and report limits not enforced }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    hosts_not_filtered: rule {
+    hosts_not_filtered: rule(system.extension_host) {
       when {{ an extension that declares `network` hosts starts }}
       must {{ report any host, since declared hosts aren't filtered one by one }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    trust_first_run: rule {
+    trust_first_run: rule(system.extension_host) {
       when {{ an extension is about to run for the first time on a machine, keyed by a hash of its command and limits }}
       must {{ ask on the terminal, remember the answer in `.heron/trusted-extensions`, and refuse to run it with not trusted where there's no terminal }}
       while {{ `HERON_TRUST_EXTENSIONS` is unset }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    trust_first_run_otherwise: rule {
+    trust_first_run_otherwise: rule(system.extension_host) {
       where {{ `HERON_TRUST_EXTENSIONS=1` is set }}
       must {{ approve the extension without asking }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    js_host_unlimited: rule {
+    js_host_unlimited: rule(system.extension_host) {
       mustNot {{ limit the [JS host](#language.interop.host.js_host), which runs the project's own modules }}
       instead {{ treat the project's modules as its own code, trusted as its build scripts are }}
     }
   }
 
   lifecycle: section {
-    @by(system.extension_host)
-    @targets(extension_process)
-    handshake: rule {
+    handshake: rule(system.extension_host) {
       when {{ an extension starts }}
       must {{ negotiate the protocol version and what the extension implements, and report doesn't implement for every declaration bound to it that it doesn't }}
       then {{ a mismatch with the [schema](#language.schemas.kinds.schema) is a check error, not a runtime surprise }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    start_failure: rule {
+    start_failure: rule(system.extension_host) {
       if {{ an extension's command can't start }}
       must {{ report can't start for each declaration bound to it }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    one_process: rule {
+    one_process: rule(system.extension_host) {
       must {{ start one process per extension per tree, on first use, and restart it after a crash, failing the calls in flight }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    run_id_on_requests: rule {
+    run_id_on_requests: rule(system.extension_host) {
       must {{ carry the run id on every request, and count calls into an extension toward the gas and timeouts of the node that made them }}
     }
 
-    @by(system.extension_host)
-    @targets(extension_process)
-    builtins_same_contract: rule {
+    builtins_same_contract: rule(system.extension_host) {
       must {{ register built-in funcs, macros, transports, resource drivers and generation adapters by the path of the declaration they implement, the same way an extension's are }}
       then {{ a later registration under a path replaces an earlier one, so an external part can replace a built-in one }}
     }

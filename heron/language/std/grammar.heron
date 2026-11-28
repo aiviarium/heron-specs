@@ -4,31 +4,26 @@ grammar: part {
   |
   | | Kind                        | Holds                                     |
   | | --------------------------- | ----------------------------------------- |
-  | | `grammar(notation)`         | `start`, productions and tokens, and the file `@source` keeps it equal to |
+  | | `grammar(…, notation, source)` | `start`, productions and tokens, and the file `source` keeps it equal to |
   | | `production`                | a named rule and its expression, verbatim |
   | | `token`                     | a terminal, by its pattern or literal      |
 
   grammar_kind: term {{
-    `@source("…") name: grammar(notation = …) { … }`, a language's syntax as productions
-    and tokens whose text is kept verbatim. `@source` names a file the grammar is kept equal to.
+    `name: grammar(notation = …, source = "…") { … }`, a language's syntax as productions
+    and tokens whose text is kept verbatim. `source` is the path of a file the grammar is kept
+    equal to.
   }}
 
-  @by(system.checker)
-  @targets(grammar_kind)
-  grammar_layer: rule {
+  grammar_layer: rule(system.checker) {
     must {{ give `grammar`, `production` and `token` the `CONTRACT` [layer](#language.specifications.layers.layer), each production and token an entry of the grammar's surface }}
   }
 
-  @by(system.docs_generator)
-  @targets(grammar_kind)
-  grammar_view: rule {
+  grammar_view: rule(system.docs_generator) {
     must {{ show each production with every name in its text linked to the production or token it names, and under each the productions that use it }}
   }
 
-  @by(system.docs_generator)
-  @targets(grammar_kind)
-  grammar_source: rule {
-    where {{ a grammar names a `@source` }}
+  grammar_source: rule(system.docs_generator) {
+    where {{ a grammar names a `source` }}
     must {{ fail the spec's grammar test unless the grammar's productions and tokens equal the source's }}
   }
 }

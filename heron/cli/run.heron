@@ -1,5 +1,4 @@
-@realizes(cli.run.every_run_recorded, cli.run.failure_stops, cli.run.install_before_check, cli.run.needs_once_in_order)
-run: command("heron run") {
+run: command("heron run", cli.run.every_run_recorded, cli.run.failure_stops, cli.run.install_before_check, cli.run.needs_once_in_order) {
   usage = ["heron run [--json] [--yes] [--undo-on-failure] [--entry file] <task> [--param value…]"]
 
   | Runs a task of the tree by its path, with its parameters as options. It checks the tree,
@@ -15,8 +14,7 @@ run: command("heron run") {
     | that node is `std/repo`'s `Repository`, so `heron run setup` runs `repository.setup`.
   }
 
-  @realizes(cli.run.missing_without_terminal, cli.run.missing_asked)
-  params: argument("--param value", type = String, optional = true, variadic = true) {
+  params: argument("--param value", cli.run.missing_without_terminal, cli.run.missing_asked, type = String, optional = true, variadic = true) {
     | The task's parameters, as `--name value` or `--name=value`, a dash in the name read
     | as an underscore. A `Bool` given with no value is `true`. A `List` or `Set` takes the
     | option repeated or comma-separated values; an `Int`, a `Float` or `Decimal`, and a
@@ -55,37 +53,31 @@ run: command("heron run") {
 
   example {{ `heron run seed_local --count 20 --kinds cat,dog` passes `count` as an Int and `kinds` as a list of two. }}
 
-  @by(system.command_line)
-  missing_asked: rule {
+  missing_asked: rule(system.command_line) {
     when {{ a required parameter isn't given and standard input is a terminal }}
     must {{ ask for it on standard error as `‹name› (‹Type›): `, again until the answer parses as its type }}
   }
 
-  @by(system.command_line)
-  missing_without_terminal: rule {
+  missing_without_terminal: rule(system.command_line) {
     when {{ a required parameter isn't given and standard input isn't a terminal }}
     must {{ fail with status 2 before any task runs, naming the option, as `‹task› needs --‹name› (‹Type›)` }}
   }
 
-  @by(system.command_line)
-  needs_once_in_order: rule {
+  needs_once_in_order: rule(system.command_line) {
     must {{ run every task `@needs` names, transitively, each once and before the tasks that need it, and the task asked for last }}
   }
 
-  @by(system.command_line)
-  failure_stops: rule {
+  failure_stops: rule(system.command_line) {
     when {{ a task fails }}
     must {{ stop, print `heron run: ‹path› failed: ‹error›` on standard error and exit with status 1, running no task after it }}
   }
 
-  @by(system.command_line)
-  install_before_check: rule {
+  install_before_check: rule(system.command_line) {
     when {{ `heron run setup` runs in a repository whose tree imports a package from git that isn't installed }}
     must {{ install the git packages `heron.lock` pins before the tree is checked, from the lock alone, so the tree that imports them then checks and its `setup` task runs }}
   }
 
-  @by(system.command_line)
-  every_run_recorded: rule {
+  every_run_recorded: rule(system.command_line) {
     must {{ write a `run` record for every run that started its first task, succeeded or not, with its task, entry, arguments, the tasks it ran with their roles, its steps, processes, logs, calls and resources, and its result or error and exit status }}
   }
 

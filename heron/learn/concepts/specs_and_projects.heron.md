@@ -5,7 +5,7 @@ and versioned on its own.
 
 A project is code with a path, declared with `project` or, for an implementation of a
 spec, with `implements`. A project's tree holds what's about the code: the components
-that realize the spec's parts, the tests that prove its rules, what's still planned,
+that implement the spec's parts, the tests that prove its rules, what's still planned,
 and its releases.
 
 The two can share a repository or live apart. Apart, the spec is a [sealed_package] that

@@ -50,74 +50,54 @@ types: section {
     `update_refund(id: String, changes: Patch(RefundRequest)): op(Refund)`.
   }}
 
-  @by(system.checker)
-  @targets(type_kind)
-  closed_records: rule {
+  closed_records: rule(system.checker) {
     if {{ a constructor call or a [record value](#language.data.values.record_value) sets a member its type doesn't declare }}
     must {{ report no member with the closest member }}
     while {{ the type is closed, as every type without `<open>` is }}
   }
 
-  @by(system.checker)
-  @targets(patch_type)
-  patch_concretized: rule {
+  patch_concretized: rule(system.checker) {
     must {{ read each use of `Patch(T)` as an ordinary record type with every member of `T` optional }}
     then {{ encodings and generated code see a normal type }}
   }
 
-  @by(system.checker)
-  @targets(generic_type)
-  generics_checked: rule {
+  generics_checked: rule(system.checker) {
     must {{ check a type argument against its parameter's guard, and the members of `Page(Refund)` with `T` read as `Refund` }}
   }
 
-  @by(system.checker)
-  @targets(error_type)
-  only_errors_thrown: rule {
+  only_errors_thrown: rule(system.checker) {
     if {{ a type that doesn't implement `Error` is thrown or named in `@throws` }}
     must {{ report not an error }}
     then {{ `@throws(RefundError)` covers every type that implements it, and a caught error is matched by type, `result.error.is(RefundWindowExpired)` }}
   }
 
-  @by(system.checker)
-  @targets(error_type)
-  errors_never_enums: rule {
+  errors_never_enums: rule(system.checker) {
     mustNot {{ accept an enum as an error, in `@throws` or a `throw` }}
     instead {{ report not an error, since an error carries a message and an enum variant doesn't }}
   }
 
-  @by(system.checker)
-  @targets(interface_kind)
-  structural_satisfaction: rule {
+  structural_satisfaction: rule(system.checker) {
     must {{ let any type with an interface's members satisfy it where it's expected, while only `implements` brings its members, defaults and funcs in }}
     then {{ satisfying an interface never changes what's encoded }}
   }
 
-  @by(system.checker)
-  @targets(interface_kind)
-  restating_members: rule {
+  restating_members: rule(system.checker) {
     if {{ two interfaces a type implements provide the same member with different types or defaults }}
     must {{ report member to restate unless the type restates the member }}
     example {{ a type may also restate a member with the same type to change its default, or a func to replace its body }}
   }
 
-  @by(system.checker)
-  @targets(interface_kind)
-  interfaces_for_all_variants: rule {
+  interfaces_for_all_variants: rule(system.checker) {
     where {{ an enum or a union implements an interface }}
     must {{ check the interface against every variant }}
   }
 
-  @by(system.checker)
-  @targets(interface_kind)
-  no_interface_fields: rule {
+  no_interface_fields: rule(system.checker) {
     mustNot {{ accept an interface as the type of a member of encoded data }}
     instead {{ require a `union` there; an interface can still be a parameter's type }}
   }
 
-  @by(system.generator)
-  @targets(type_kind)
-  codegen: rule {
+  codegen: rule(system.generator) {
     must {{ generate each format from what its package defines: OpenAPI from `std/http`, [`JSON Schema`](https://json-schema.org) from the types alone }}
     then {{ scenarios use the same definitions, so an op call in a step is typed end to end }}
   }

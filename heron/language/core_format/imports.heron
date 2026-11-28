@@ -19,48 +19,34 @@ imports: section {
   }}
 
   includes: section {
-    @by(system.checker)
-    @targets(include_term)
-    include_order: rule {
+    include_order: rule(system.checker) {
       must {{ use include order as the document order when rendering and as the layering order for amends }}
     }
 
-    @by(system.checker)
-    @targets(include_term)
-    include_paths: rule {
+    include_paths: rule(system.checker) {
       must {{ resolve an include entry relative to the file that writes it }}
     }
 
-    @by(system.checker)
-    @targets(include_term)
-    missing_include: rule {
+    missing_include: rule(system.checker) {
       if {{ no file or folder is at an include entry's path }}
       must {{ report no such include and include nothing for the entry }}
     }
 
-    @by(system.checker)
-    @targets(include_term)
-    includes_are_guarded: rule {
+    includes_are_guarded: rule(system.checker) {
       when {{ a file is included a second time, by any spelling }}
       mustNot {{ copy it or declare anything twice }}
       instead {{ only let the file see that scope too }}
     }
 
-    @by(system.checker)
-    @targets(include_term)
-    include_cycles: rule {
+    include_cycles: rule(system.checker) {
       must {{ accept includes that reach each other in a cycle, reading each file once }}
     }
 
-    @by(system.checker)
-    @targets(include_term)
-    globs_are_deterministic: rule {
+    globs_are_deterministic: rule(system.checker) {
       must {{ use the matches of a glob in path order, include a file matched twice once, keep the place of a file listed explicitly, and drop the files a `!` entry matches }}
     }
 
-    @by(system.checker)
-    @targets(include_term)
-    rounds: rule {
+    rounds: rule(system.checker) {
       must {{ resolve names declared further down or in a later include }}
       then {{ ordering matters only where two amends set the same path, and then the later one wins }}
     }
@@ -71,55 +57,39 @@ imports: section {
     | [standard packages](#language.std) are built into the binary; the registry, npm and git
     | are sources `heron run setup` installs from.
 
-    @by(system.checker)
-    @targets(import_term)
-    imports_are_scoped: rule {
+    imports_are_scoped: rule(system.checker) {
       must {{ make a package imported in a file visible there and in everything that file includes, and nowhere else }}
     }
 
-    @by(system.checker)
-    @targets(import_term)
-    package_versions: rule {
+    package_versions: rule(system.checker) {
       must {{ resolve a package by its name and major version, and report an entry it can't resolve with one of the import [diagnostics](#language.core_format.imports.errors) }}
       example {{ `std/ci@1`: the newest `1.x` }}
     }
 
-    @by(system.interpreter)
-    @targets(import_term)
-    lock_pins: rule {
+    lock_pins: rule(system.interpreter) {
       must {{ write `heron.lock` with the exact version and checksum of every package and extension `heron run setup` installs }}
     }
 
-    @by(system.interpreter)
-    @targets(import_term)
-    branch_pins: rule {
+    branch_pins: rule(system.interpreter) {
       where {{ `heron.lock` pins a package from git at a branch with its commit, as a package is pinned before its first release }}
       must {{ install it from that commit and keep the pin, asking the remote for no tag }}
     }
 
-    @by(system.checker)
-    @targets(import_term)
-    file_imports: rule {
+    file_imports: rule(system.checker) {
       must {{ resolve an entry that starts with `./` or `../` as a file or folder relative to the importing file, and a folder import as its `index.heron`, visible both directly and under the folder's name }}
     }
 
-    @by(system.checker)
-    @targets(import_term)
-    prelude: rule {
+    prelude: rule(system.checker) {
       must {{ make the core visible in every tree without an import: `std/core`, and `std/spec` in every tree but the packages the core is written with, `std/core`, `std/schema`, `std/types` and `std/doc`; and the primitive types `String`, `Bool`, `Int`, `Float`, `Decimal`, `Bytes`, `Any`, `Object`, `Null`, `Prose`, `List`, `Set`, `Map` and `Self` as the outermost scope }}
       then {{ a spec writes its rules, errors and their annotations with no import }}
     }
 
-    @by(system.checker)
-    @targets(import_term)
-    import_cycle: rule {
+    import_cycle: rule(system.checker) {
       if {{ imports form a cycle, other than the one among `std/core`, `std/schema` and `std/types`, which the format describes itself with }}
       must {{ report import cycle, naming each file of the cycle }}
     }
 
-    @by(system.linter)
-    @targets(import_term)
-    repeated_import: rule {
+    repeated_import: rule(system.linter) {
       if {{ a file imports a package that the scope it's included in already imports }}
       should {{ report repeated import }}
     }

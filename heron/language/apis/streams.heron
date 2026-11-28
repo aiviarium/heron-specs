@@ -17,23 +17,17 @@ streams: section {
     on one op. Each op becomes a message type on the socket.
   }}
 
-  @by(system.docs_generator)
-  @targets(stream_type)
-  stream_directions: rule {
+  stream_directions: rule(system.docs_generator) {
     where {{ an op streams its result, a parameter or both }}
     must {{ show its messages by direction, client to server for a streamed parameter and server to client for a streamed result, framed as server-sent events over HTTP, as WebSocket messages on a socket, and as stream messages of the method over gRPC and Connect }}
   }
 
-  @by(system.docs_generator)
-  @targets(ws_socket)
-  op_socket_overrides: rule {
+  op_socket_overrides: rule(system.docs_generator) {
     where {{ both an op and its api carry `@ws` }}
     must {{ open the op's socket at the op's path }}
   }
 
-  @by(system.checker)
-  @targets(stream_type)
-  no_streamed_http_params: rule {
+  no_streamed_http_params: rule(system.checker) {
     if {{ an op bound only to `std/http` takes a streamed parameter }}
     must {{ report streamed parameter over HTTP at the parameter }}
     then {{ server-sent events carry only results, and a client stream needs a socket or gRPC }}

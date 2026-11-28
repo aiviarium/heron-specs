@@ -20,16 +20,12 @@ nodes: section {
     `String(max = 500)`. The kind decides which arguments and children a node may have.
   }}
 
-  @by(system.checker)
-  @targets(language.core_format.nodes)
-  left_to_right: rule {
+  left_to_right: rule(system.checker) {
     must {{ decide what's valid on the right or below from what stands on the left or above }}
     then {{ the parent scope decides a name's flags, the kind its arguments and children, and `import` which annotations exist }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.nodes)
-  bodies_hold_members: rule {
+  bodies_hold_members: rule(system.checker) {
     must {{ configure a node only through its kind's arguments, fields and accepted children, never through free text }}
     then {{ the kind decides which members of its body are valid }}
   }
@@ -38,16 +34,12 @@ nodes: section {
     | `name: kind …` and `name: Type = value` declare a node. A name is declared once in its
     | scope; every other mention enters, sets or refers to it.
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.kind_slot)
-    declared_kinds: rule {
+    declared_kinds: rule(system.checker) {
       if {{ the [kind slot](#language.core_format.nodes.kind_slot) names nothing in scope, or something that's neither a kind nor a type }}
       must {{ report unknown kind or type with the closest name in scope, or not a kind or a type }}
     }
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.declaring)
-    declared_once: rule {
+    declared_once: rule(system.checker) {
       if {{ a name is declared a second time in the same scope }}
       must {{ report declared twice at the second declaration, with the first as its related site }}
     }
@@ -58,25 +50,19 @@ nodes: section {
     | repeated, so `development { … }` in the index and again in `settings.heron` amend the
     | same node, and a field a type declares is entered the same way.
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.entering)
-    enter_never_creates: rule {
+    enter_never_creates: rule(system.checker) {
       if {{ `name { … }` names no node that exists and no field its parent's type declares }}
       mustNot {{ create a node }}
       instead {{ report entering never creates with the closest field }}
       while {{ the parent is closed }}
     }
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.entering)
-    enter_never_creates_otherwise: rule {
+    enter_never_creates_otherwise: rule(system.checker) {
       where {{ the parent is open: the file root, a map or an untyped node }}
       must {{ create the node it enters }}
     }
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.entering)
-    enter_anywhere_in_order: rule {
+    enter_anywhere_in_order: rule(system.checker) {
       must {{ let a node be entered before or after its declaration, in any file of the tree }}
     }
   }
@@ -87,30 +73,29 @@ nodes: section {
     | `example {{ requested on day 30: accepted }}` creates an example, because a `{{ }}`
     | body never enters an existing node. Naming it is only a prefix.
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.creating)
-    calls_construct: rule {
+    calls_construct: rule(system.checker) {
       when {{ a body calls a kind with parentheses, or names a kind with a `{{ }}` body and no node of that name exists }}
       must {{ construct a new node of that kind }}
       then {{ a bare name before `{` always means the node that exists, so a kind instance with a structure body and no arguments is written with a name }}
     }
 
-    @by(system.interpreter)
-    @targets(language.core_format.nodes.creating)
-    calls_yield: rule {
+    calls_yield: rule(system.interpreter) {
       must {{ add to the body what a call in it yields: a kind call its node, a macro its members, and a func the nodes it returns }}
       then {{ a call that yields nothing just runs, at check time }}
     }
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.creating)
-    arguments: rule {
-      must {{ fill a kind's or call's parameters from its arguments: positional ones in declaration order, named ones by name }}
+    arguments: rule(system.checker) {
+      must {{ fill a kind's or call's parameters from its arguments: named ones by name, and positional ones, in declaration order, into the parameters no argument names }}
+      example {{ `screen(route = "/refunds", refund_window)` gives the route by name and fills the next parameter, the screen's references, with `refund_window` }}
     }
 
-    @by(system.checker)
-    @targets(language.core_format.nodes.creating)
-    argument_errors: rule {
+    optional_before_references: rule(system.checker) {
+      where {{ an optional parameter that takes no reference comes before a variadic one that takes references }}
+      must {{ pass over the optional parameter with a positional argument that's a path naming no type, which fills the references instead }}
+      example {{ `op(Refund, refund_window)` returns a `Refund` and references `refund_window`, and `op(refund_window)` only references it }}
+    }
+
+    argument_errors: rule(system.checker) {
       if {{ there are more positional arguments than parameters, a named argument names no parameter, or a required parameter has no argument }}
       must {{ report an argument past the last parameter, an unknown argument with the closest parameter, or a missing argument }}
     }
@@ -124,9 +109,7 @@ nodes: section {
     free-standing `( … )` in front of a value is a [cast](#language.grammar.code.expressions.cast), not a list.
   }}
 
-  @by(system.checker)
-  @targets(params_and_args)
-  variadic_params: rule {
+  variadic_params: rule(system.checker) {
     when {{ a parameter is flagged `<variadic>` }}
     must {{ accept any number of positional arguments for it, each of the parameter's type, or one list of them }}
     example {{ `type(Audited, Owned)` and `type([Audited, Owned])`: the same }}
@@ -140,17 +123,13 @@ nodes: section {
       arguments are ordinary arguments, as in `List(Payment)`.
     }}
 
-    @by(system.checker)
-    @targets(flag_term)
-    known_flags: rule {
+    known_flags: rule(system.checker) {
       if {{ a flag names no flag declared in scope }}
       must {{ report unknown flag with the closest flag in scope }}
       while {{ the flag is outside the core set the prelude `std/core` declares everywhere, `variadic` and `export` }}
     }
 
-    @by(system.linter)
-    @targets(flag_term)
-    flag_placement: rule {
+    flag_placement: rule(system.linter) {
       if {{ a flag declared with `on = […]` stands on a kind or annotation it doesn't attach to }}
       should {{ report flag placement }}
     }
@@ -163,25 +142,19 @@ nodes: section {
       Text goes in `///` lines, which become `@doc`, never in arguments.
     }}
 
-    @by(system.checker)
-    @targets(annotation_term)
-    annotations_resolve: rule {
+    annotations_resolve: rule(system.checker) {
       if {{ an annotation names nothing in scope, or something that isn't an annotation }}
       must {{ report unknown annotation with the closest annotation, or not an annotation }}
       while {{ the annotation is outside the prelude's, such as `@doc` and `@display`, which exist without an import }}
     }
 
-    @by(system.checker)
-    @targets(annotation_term)
-    ambiguous_annotations: rule {
+    ambiguous_annotations: rule(system.checker) {
       if {{ an annotation's name is unqualified and more than one package the file imports declares an annotation of that name }}
       must {{ report ambiguous annotation, naming each package's qualified form }}
       then {{ `@code` in a file that imports `std/proto` and `std/jsonrpc` is written `@proto.code` or `@jsonrpc.code` }}
     }
 
-    @by(system.linter)
-    @targets(annotation_term)
-    annotation_placement: rule {
+    annotation_placement: rule(system.linter) {
       if {{ an annotation stands where its declaration's `on` doesn't allow it, or twice on one node without being `<repeatable>` }}
       should {{ report annotation placement, naming where it attaches }}
     }
@@ -193,29 +166,21 @@ nodes: section {
       It's visible from its line down in its own body and all nested ones.
     }}
 
-    @by(system.checker)
-    @targets(local_term)
-    locals_visible_below: rule {
+    locals_visible_below: rule(system.checker) {
       must {{ make a local visible only below the line that binds it, in its body and the bodies nested in it }}
       example {{ a use above the line reports [unknown name](#language.core_format.naming.errors.unknown_name) }}
     }
 
-    @by(system.checker)
-    @targets(local_term)
-    locals_stay_out: rule {
+    locals_stay_out: rule(system.checker) {
       mustNot {{ emit, encode or expose a local by path to another file }}
     }
 
-    @by(system.checker)
-    @targets(local_term)
-    locals_never_change: rule {
+    locals_never_change: rule(system.checker) {
       mustNot {{ let a local be set }}
       instead {{ read `name = value` below a `let name` as setting a field of the node }}
     }
 
-    @by(system.linter)
-    @targets(local_term)
-    unused_locals: rule {
+    unused_locals: rule(system.linter) {
       if {{ nothing below a `let` uses it }}
       should {{ report unused let }}
     }

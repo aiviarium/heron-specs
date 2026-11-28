@@ -40,69 +40,49 @@ projects: section {
     source out at the project's path and `heron.lock` pins the commit.
   }}
 
-  @by(system.checker)
-  @targets(project_kind)
-  project_fields: rule {
+  project_fields: rule(system.checker) {
     must {{ check a project's fields against `project`'s declaration, and its references to other projects as names in scope }}
     example {{ `owner = "x"` reports "p (a project) has no field owner", and `depends_on = [nobody]` reports "unknown name nobody" }}
   }
 
-  @by(system.checker)
-  @targets(project_kind)
-  project_tasks: rule {
+  project_tasks: rule(system.checker) {
     must {{ accept tasks in a project's body, so the tasks that build and test a project live in it }}
   }
 
-  @by(system.docs_generator)
-  @targets(project_kind)
-  project_heading: rule {
+  project_heading: rule(system.docs_generator) {
     must {{ show a project with its path from the tree's entry file beside its name, and no path for a project at the entry file's folder or above it }}
     then {{ the root project's `"."` isn't shown, since it says nothing a reader needs }}
   }
 
-  @by(system.interpreter)
-  @targets(git_source)
-  lock_pins_sources: rule {
+  lock_pins_sources: rule(system.interpreter) {
     must {{ write each source's url, ref and the commit it resolved to into `heron.lock`, and read them back unchanged }}
   }
 
-  @by(actors.implementer)
-  @targets(external_project)
-  external_read_only: rule {
+  external_read_only: rule(actors.implementer) {
     mustNot {{ change the code of an [external project](#language.specifications.projects.external_project) }}
     while {{ the scope of the work at hand leaves the [external project](#heron.language.specifications.projects.external_project) out }}
   }
 
-  @by(actors.author)
-  @targets(project_kind)
-  spec_versioned_by_project: rule {
+  spec_versioned_by_project: rule(actors.author) {
     must {{ version a spec through the project that holds it, separately from the projects that implement it }}
     then {{ each release of an implementing project can record which spec version it implements }}
   }
 
-  @by(system.linter)
-  @targets(project_kind)
-  undeclared_dependency: rule {
+  undeclared_dependency: rule(system.linter) {
     if {{ a project's code imports another project's code that its `depends_on` doesn't name }}
     should {{ report undeclared dependency at the project }}
   }
 
-  @by(system.interpreter)
-  @targets(project_kind)
-  version_from_changelog: rule {
+  version_from_changelog: rule(system.interpreter) {
     must {{ take a project's version from its latest release in the changelog its `releases` names, never from its declaration }}
   }
 
-  @by(system.linter)
-  @targets(project_kind)
-  unversioned_change: rule {
+  unversioned_change: rule(system.linter) {
     if {{ a change alters a project's public surface and records no release that bumps its version }}
     should {{ report unversioned change }}
   }
 
-  @by(system.interpreter)
-  @targets(project_group)
-  group_defaults: rule {
+  group_defaults: rule(system.interpreter) {
     must {{ give each member of a group the group's `versioning` and `releases` as defaults it amends, and the group's one version where `versioning<shared>` is set }}
   }
 

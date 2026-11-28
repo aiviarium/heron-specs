@@ -15,115 +15,84 @@ quality_checks: section {
   | | Separated    | the layout's rule on planning, design words and delivery words                |
   | | Well formed  | compound rules, negations without a condition, long or scripted scenarios, missing measures |
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.rule_strength)
-  unambiguous_wording: rule {
+  unambiguous_wording: rule(system.prose_linter) {
     should {{ report weak modal where the text under `must` or `mustNot` says "should", "may", "might", "could" or "ideally", and vague word where a rule that serves no quality and stands beside no quality scenario uses a word such as "fast", "robust" or "several" }}
     while {{ the word is used rather than mentioned: unquoted, outside code and unmasked }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.context.term_kind)
-  nodes_linked: rule {
+  nodes_linked: rule(system.prose_linter) {
     should {{ report unlinked node where prose names a node of the tree by its identifier without linking it, and dead link where a link to a file has no target }}
     then {{ a fix offered with it links the name when one node has it }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.rule_strength)
-  double_negative: rule {
+  double_negative: rule(system.prose_linter) {
     if {{ the text under `mustNot` or `shouldNot` is itself negative }}
     should {{ report a double negative }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.rule_kind)
-  singular_check: rule {
+  singular_check: rule(system.prose_linter) {
     if {{ a rule's text joins two behaviours with "and" or "or" }}
     should {{ report it as not singular }}
   }
 
-  @by(system.linter)
-  @targets(language.specifications.requirements.rule_kind)
-  verifiable_check: rule {
+  verifiable_check: rule(system.linter) {
     if {{ nothing covers a `must` rule, or a bounded condition lacks an example on each side of the bound }}
     should {{ report it as not verifiable }}
   }
 
-  @by(system.prose_linter)
-  unlinked_node_fix: rule {
+  unlinked_node_fix: rule(system.prose_linter) {
     where {{ the name an unlinked node reports names one node of the tree }}
     must {{ offer a fix that wraps the name in brackets as a [short link](#language.markup.links.short_link), which `heron lint -fix` applies }}
   }
 
-  @by(system.linter)
-  @targets(language.specifications.requirements.rule_kind)
-  consistent_check: rule {
+  consistent_check: rule(system.linter) {
     if {{ rules on one target overlap in their conditions and oppose in polarity }}
     should {{ report them as inconsistent, found structurally and confirmed by a decider }}
   }
 
-  @by(system.linter)
-  @targets(language.specifications.planning.planning_tree)
-  separated_check: rule {
+  separated_check: rule(system.linter) {
     if {{ an `open` is reachable from the [entry point](#language.core_format.files.entry_point) of an implementer }}
     should {{ report it as not separated }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.rule_kind)
-  compound_rule: rule {
+  compound_rule: rule(system.prose_linter) {
     if {{ a rule's strength text joins two responses with "and" or "or", or a condition joins two triggers }}
     should {{ report compound rule at the joining word }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.rule_kind)
-  bare_negation: rule {
+  bare_negation: rule(system.prose_linter) {
     if {{ a rule says "not", "never" or "no" under a negative strength with no condition and no `instead` }}
     should {{ report negation without a condition at the word }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.rule_condition)
-  negated_condition: rule {
+  negated_condition: rule(system.prose_linter) {
     if {{ a condition says "not the case that", or negates twice in one clause, as `isn't … no` or `not … never` }}
     should {{ report a negated condition at the words }}
     then {{ a rule says the state it applies in, as the people who use the product would }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.layers.layer)
-  design_words: rule {
+  design_words: rule(system.prose_linter) {
     if {{ the text of an intent or specification node says a design word, `database`, `table`, `class`, `microservice`, `endpoint`, `column` or `schema migration`, and the tree declares no term of that name }}
     should {{ report a design word at the word, outside code spans, links and quotes }}
     then {{ a product whose domain has such things, as a document tool has its [tables](#heron.language.markup.components.table), declares them as terms }}
   }
 
-  @by(system.linter)
-  @targets(language.specifications.intent.quality_kind)
-  measure_missing: rule {
+  measure_missing: rule(system.linter) {
     if {{ a quality has no `measure` and no quality scenario serves it }}
     should {{ report measure missing at the quality }}
   }
 
-  @by(system.linter)
-  @targets(language.specifications.requirements.scenario_kind)
-  long_scenario: rule {
+  long_scenario: rule(system.linter) {
     if {{ an outcome scenario has more than five clauses }}
     should {{ report long scenario at the scenario }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.requirements.scenario_kind)
-  scripted_scenario: rule {
+  scripted_scenario: rule(system.prose_linter) {
     if {{ an outcome scenario's text says how a screen is driven: "click", "press", "type", "tap", "field" or "button" }}
     should {{ report scripted scenario at the word }}
   }
 
-  @by(system.prose_linter)
-  @targets(language.specifications.layers.layer)
-  delivery_words: rule {
+  delivery_words: rule(system.prose_linter) {
     if {{ the text of a node in any [layer](#heron.language.specifications.layers.layer) says a delivery word: "sprint", "milestone", "increment", "story points", "backlog" or "deadline" }}
     should {{ report delivery word at the word }}
   }

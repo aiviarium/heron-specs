@@ -3,41 +3,31 @@ annotations: section {
   | annotation takes, and its body may `accept` children, as a kind's does. Like a flag, it
   | names the kinds it attaches to from its own side. A category in `on` keeps the set open: a
   | kind of another package that joins the category takes the annotation too, so a core
-  | annotation such as `@serves`, `on = [rule, …, serving]`, reaches `std/project`'s `story`,
-  | declared `in = [block, serving]`, while the core never names `std/project`.
+  | annotation such as `@rev`, `on = [rule, …, revised]`, reaches `std/project`'s `proves`,
+  | declared `in = [block, revised]`, while the core never names `std/project`.
 
-  @by(system.checker)
-  @targets(language.core_format.nodes.annotations.annotation_term)
-  declaring_annotations: rule {
+  declaring_annotations: rule(system.checker) {
     must {{ check an annotation's arguments against its declaration's parameters, as a call's are }}
     example {{ the core declares `status(code: Int): annotation(on = [error, types.type])`, which takes `@status(404)` }}
   }
 
-  @by(system.linter)
-  @targets(language.core_format.nodes.annotations.annotation_term)
-  annotation_on: rule {
+  annotation_on: rule(system.linter) {
     where {{ an annotation is declared with `on`, a list of kinds and categories }}
     should {{ report annotation placement where it stands on a node whose kind fits none of them }}
     while {{ the annotation's `on` lists kinds or categories }}
   }
 
-  @by(system.linter)
-  @targets(language.core_format.nodes.annotations.annotation_term)
-  annotation_on_params: rule {
+  annotation_on_params: rule(system.linter) {
     where {{ an annotation stands on a parameter, as `get_one(@path id: String): op` }}
     should {{ report annotation on a parameter unless its `on` names a kind of typed members that parameters are, such as `types.param` }}
   }
 
-  @by(system.linter)
-  @targets(language.core_format.nodes.annotations.annotation_term)
-  repeatable: rule {
+  repeatable: rule(system.linter) {
     if {{ an annotation stands twice on one node and its declaration isn't flagged `annotation<repeatable>` }}
     should {{ report annotation repeated at the second }}
   }
 
-  @by(system.extension_host)
-  @targets(language.core_format.nodes.annotations.annotation_term)
-  extern: rule {
+  extern: rule(system.extension_host) {
     must {{ bind a declaration annotated `@extern(e)` to the [extension](#language.schemas.extensions.extension_process) `e`, which implements it }}
     example {{ `@extern(compliance) redact(text: String): func(String)` }}
   }

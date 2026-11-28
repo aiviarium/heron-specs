@@ -7,67 +7,54 @@ delivery: section {
   |
   | | Kind                          | Holds                                                                   |
   | | ----------------------------- | ----------------------------------------------------------------------- |
-  | | `component(path, lang)`       | `uses`, responsibilities and `exports`, with `@realizes` naming the parts it builds |
-  | | `story(adds, changes)`        | the spec items it adds and changes, the goal its `@serves` names and its `done` |
+  | | `component(path, …, lang)`    | `uses`, responsibilities and `exports`, its references naming the parts it builds |
+  | | `story(refs…, adds, changes)` | the goals it advances, the spec items it adds and changes, and its `done` |
   | | `increment(delivers)`         | the stories a shippable slice delivers, and its `done`                  |
   | | `milestone(reached_by)`       | what a point in time is measured against, and its `done`                |
   | | `done`                        | the delivery-only items the work is accepted by, as prose               |
 
   component_kind: term {{
-    `name: component(path = "internal/parser", lang = "go") { … }`, a unit of the
-    implementation's code with one contract, at a path from the repository's root. `uses` lists
-    the components it may import, an `exports` holds part of its exported interface verbatim,
-    and `@realizes` names the spec's parts it builds. It's architecture, never a spec kind.
+    `name: component("internal/parser", parser, lang = "go") { … }`, a unit of the
+    implementation's code with one contract, at a path from the repository's root. Its
+    references after the path name the spec's parts, actors or sections it builds, `uses` lists
+    the components it may import, and an `exports` holds part of its exported interface
+    verbatim. It's architecture, never a spec kind.
   }}
 
   story_kind: term {{
-    `@serves(goal) name: story(adds = [items], changes = [items]) { … }`, one change to the
-    spec, small enough to build in one `increment`: the requirements it adds and changes, the goal
-    `@serves` names, and a `done` for what delivery alone needs. It's accepted when the items it
+    `name: story(goal, adds = [items], changes = [items]) { … }`, one change to the spec, small
+    enough to build in one `increment`: the goals and qualities its references name, the
+    requirements it adds and changes, and a `done` for what delivery alone needs. It's accepted when the items it
     lists are proven at their current [revisions](#heron.language.specifications.layers.revisions.revision).
   }}
 
-  @by(system.checker)
-  @targets(delivery)
-  delivery_kinds_in_project: rule {
+  delivery_kinds_in_project: rule(system.checker) {
     must {{ declare `component`, `story`, `increment`, `milestone`, `done` and the delivery flags in `std/project`, with no [layer](#heron.language.specifications.layers.layer) }}
   }
 
-  @by(system.checker)
-  @targets(story_kind)
-  story_lists_items: rule {
+  story_lists_items: rule(system.checker) {
     if {{ a story holds a `given`, a `when`, a `then` or a strength node }}
     must {{ report it as an error at the node: a story lists spec items and states no behaviour }}
   }
 
-  @by(system.interpreter)
-  @targets(story_kind)
-  story_accepted: rule {
+  story_accepted: rule(system.interpreter) {
     must {{ count a story as accepted when every item it adds or changes is proven at its current [revision](#heron.language.specifications.layers.revisions.revision), and list the rest under it in the conformance report }}
   }
 
-  @by(system.docs_generator)
-  @targets(story_kind)
-  story_view: rule {
+  story_view: rule(system.docs_generator) {
     must {{ show a story with the goal it advances and the items it adds and changes, each linked and with its proof status, then its `done` }}
   }
 
-  @by(system.linter)
-  @targets(language.specifications.traceability.status_flag)
-  one_status_each: rule {
+  one_status_each: rule(system.linter) {
     if {{ a node carries two flags of the group `"status"` }}
     must {{ report the second as an error of the flag's group }}
   }
 
-  @by(system.docs_generator)
-  @targets(component_kind)
-  component_view: rule {
-    must {{ show a component with its path, the parts it realizes, the components it uses and those that use it under "Used by", and its exports }}
+  component_view: rule(system.docs_generator) {
+    must {{ show a component with its path, the parts it implements, the components it uses and those that use it under "Used by", and its exports }}
   }
 
-  @by(system.linter)
-  @targets(component_kind)
-  uses_enforced: rule {
+  uses_enforced: rule(system.linter) {
     if {{ a component's code imports a component its `uses` doesn't list }}
     should {{ report it as a warning at the component }}
   }
@@ -103,8 +90,7 @@ delivery: section {
     |   must {{ reject a refund after the window }}
     | }
     |
-    | @serves(self_service)
-    | refund_window: story(adds = [late_rejected]) {
+    | refund_window: story(self_service, adds = [late_rejected]) {
     |   done {{ The support team has seen the new message. }}
     | }
     |

@@ -1,5 +1,4 @@
-@realizes(cli.lsp.answers_lsp)
-lsp: command("heron lsp") {
+lsp: command("heron lsp", cli.lsp.answers_lsp) {
   usage = ["heron lsp [--debounce duration] [--stdio]"]
 
   | Serves the language server over standard input and output, for an editor to start. It
@@ -27,8 +26,7 @@ lsp: command("heron lsp") {
 
   example {{ An editor's client starts `heron lsp --stdio` in the project's folder and speaks LSP over the pipe. }}
 
-  @by(system.language_server)
-  answers_lsp: rule {
+  answers_lsp: rule(system.language_server) {
     must {{ answer the Language Server Protocol over standard input and output until the client exits }}
   }
 }

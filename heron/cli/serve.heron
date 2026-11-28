@@ -1,5 +1,4 @@
-@realizes(cli.serve.serves_workspace)
-serve: command("heron serve") {
+serve: command("heron serve", cli.serve.serves_workspace) {
   usage = ["heron serve [--addr host:port] [entry point]"]
 
   | Serves the spec browser, the editor and the language server for one tree, plus what
@@ -28,8 +27,7 @@ serve: command("heron serve") {
 
   example {{ `heron serve --addr 127.0.0.1:0 petstore` serves a sample tree on a free port and prints its URL. }}
 
-  @by(system.server)
-  serves_workspace: rule {
+  serves_workspace: rule(system.server) {
     must {{ serve the workspace and its spec browser over HTTP until it's stopped }}
   }
 }

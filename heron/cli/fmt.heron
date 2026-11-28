@@ -1,5 +1,4 @@
-@realizes(cli.fmt.check_changes_nothing)
-fmt: command("heron fmt") {
+fmt: command("heron fmt", cli.fmt.check_changes_nothing) {
   usage = ["heron fmt [--check] [--stdout] [paths…]"]
 
   | Formats [Heron files](#language.core_format.files.heron_file) in place from their [lossless tree](#language.grammar.recovery.lossless_tree), as [the formatter](#system.formatter) lays
@@ -12,8 +11,7 @@ fmt: command("heron fmt") {
     | directly is formatted whatever its extension.
   }
 
-  @realizes(cli.fmt.check_changes_nothing)
-  check: option("--check", type = Bool, default = false) {
+  check: option("--check", cli.fmt.check_changes_nothing, type = Bool, default = false) {
     | Changes nothing, and prints the path of every file that isn't formatted, relative to
     | the working folder, one per line.
   }
@@ -35,8 +33,7 @@ fmt: command("heron fmt") {
 
   example {{ `heron fmt --check fixtures spec std` lists the files a commit would leave unformatted, as CI runs it. }}
 
-  @by(system.command_line)
-  check_changes_nothing: rule {
+  check_changes_nothing: rule(system.command_line) {
     mustNot {{ write any file }}
   }
 

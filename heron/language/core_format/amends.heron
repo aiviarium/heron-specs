@@ -10,39 +10,29 @@ amends: section {
     creates that field.
   }}
 
-  @by(system.checker)
-  @targets(language.core_format.amends)
-  set_declared_fields: rule {
+  set_declared_fields: rule(system.checker) {
     if {{ `=` or an entered body in a typed node names a field its type doesn't declare }}
     must {{ report no field with the closest field }}
     while {{ the node is closed }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.amends)
-  set_one_field: rule {
+  set_one_field: rule(system.checker) {
     must {{ set only the field a path names, keeping the node's other fields, and replace the whole value when the path names the node itself }}
     example {{ `ci.retries.staging = 0` after `ci.{ retries = { main = 0 } }`: both keys are set }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.amends)
-  flag_as_boolean: rule {
+  flag_as_boolean: rule(system.checker) {
     where {{ the node has no field of that name but its kind declares the flag }}
     must {{ read `name = true` as setting the flag and `name = false` as clearing it }}
     example {{ `development.work.selection.speculative = true`: the same as `selection<speculative>` }}
   }
 
-  @by(system.interpreter)
-  @targets(language.core_format.amends)
-  lists_change_by_calls: rule {
+  lists_change_by_calls: rule(system.interpreter) {
     mustNot {{ concatenate or merge a list implicitly }}
     instead {{ replace it on assignment, and change it in place only through calls such as `requires.add(checks.e2e)`, `steps.remove(test_first)` and `types.insert(after = "fix", "perf")` }}
   }
 
-  @by(system.checker)
-  @targets(language.core_format.amends)
-  reading_order: rule {
+  reading_order: rule(system.checker) {
     must {{ apply settings top to bottom and left to right within a file, and a file on top of the files it includes, in include order }}
     then {{ an amend in a file wins over the same path set in a file it includes }}
   }

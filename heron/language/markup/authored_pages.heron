@@ -38,35 +38,25 @@ authored_pages: section {
   }}
 
   pages: section {
-    @by(system.docs_generator)
-    @targets(authored_page)
-    authored_are_pages: rule {
+    authored_are_pages: rule(system.docs_generator) {
       must {{ give every [authored page](#language.markup.authored_pages.authored_page) a page of its own, at any depth, titled by its [display name](#language.core_format.naming.display_name) }}
     }
 
-    @by(system.docs_generator)
-    @targets(step_kind)
-    steps_numbered: rule {
+    steps_numbered: rule(system.docs_generator) {
       must {{ number the steps of a how-to or a tutorial from 1 in the order written, and render each as its number and [display name](#language.core_format.naming.display_name) as a heading one level below the page's, with its prose and examples under it }}
     }
 
-    @by(system.docs_generator)
-    @targets(step_kind)
-    step_anchors: rule {
+    step_anchors: rule(system.docs_generator) {
       must {{ give each step an anchor at its path }}
       then {{ a link can name the step a reader is at, as `#getting_started.check` }}
     }
 
-    @by(system.checker)
-    @targets(step_kind)
-    steps_only_in_tasks: rule {
+    steps_only_in_tasks: rule(system.checker) {
       if {{ a `step` of `std/docs` stands anywhere but in a how-to or a tutorial }}
       must {{ report that the parent doesn't accept it, as for any kind its parent doesn't accept }}
     }
 
-    @by(system.docs_generator)
-    @targets(authored_page)
-    unmarked_in_every_lens: rule {
+    unmarked_in_every_lens: rule(system.docs_generator) {
       where {{ an [authored page](#language.markup.authored_pages.authored_page) carries no [lens mark](#tools.docs.lenses.lens_mark) }}
       must {{ render it in every lens whose lists keep it }}
     }
@@ -78,23 +68,17 @@ authored_pages: section {
     | line of a larger file, goes in a code block outside an example, which is shown and
     | not checked.
 
-    @by(system.checker)
-    @targets(authored_page)
-    examples_checked: rule {
+    examples_checked: rule(system.checker) {
       must {{ check each code block marked `heron` of an `example` that stands in an [authored page](#language.markup.authored_pages.authored_page) as the [entry point](#language.core_format.files.entry_point) of a tree of its own, in a folder with no other file, where only the standard packages resolve }}
     }
 
-    @by(system.checker)
-    @targets(authored_page)
-    example_errors: rule {
+    example_errors: rule(system.checker) {
       if {{ a checked example's tree has an error }}
       must {{ report example doesn't check at the code block, with the first error's message and its line in the block }}
       then {{ `heron check` fails until the example is fixed, so a page can't show code that no longer works }}
     }
 
-    @by(system.checker)
-    @targets(authored_page)
-    other_blocks_shown: rule {
+    other_blocks_shown: rule(system.checker) {
       mustNot {{ check a code block outside an `example`, or one marked with a language other than `heron` }}
     }
   }
@@ -104,23 +88,17 @@ authored_pages: section {
     | that states it, rather than copying it: `${cli.serve.addr.default}` shows the
     | default as the spec has it, and stops the check when the spec no longer has it.
 
-    @by(system.checker)
-    @targets(language.markup.inserts.insertion)
-    insert_arguments: rule {
+    insert_arguments: rule(system.checker) {
       must {{ resolve an [insertion](#language.markup.inserts.insertion) whose last name is a parameter of the kind of the node before it, as `${cli.serve.addr.default}`, to the argument the node passes for it, or to the parameter's default when it passes none }}
     }
 
-    @by(system.checker)
-    @targets(language.markup.inserts.insertion)
-    inserted_facts_required: rule {
+    inserted_facts_required: rule(system.checker) {
       if {{ an [insertion](#language.markup.inserts.insertion) on an [authored page](#language.markup.authored_pages.authored_page) names a node, a field or an argument that isn't there, as after the node is renamed or removed }}
       must {{ report unknown name at the [insertion](#language.markup.inserts.insertion), as an error }}
       then {{ a page can't go on stating a fact the spec has dropped }}
     }
 
-    @by(system.docs_generator)
-    @targets(language.markup.inserts.insertion)
-    inserted_strings: rule {
+    inserted_strings: rule(system.docs_generator) {
       where {{ an [insertion](#language.markup.inserts.insertion) resolves to a string }}
       must {{ render the string's text without its quotes, as inline code }}
       example {{ `${cli.check.name}` renders `heron check` }}
@@ -128,15 +106,11 @@ authored_pages: section {
   }
 
   links: section {
-    @by(system.checker)
-    @targets(authored_page)
-    links_checked: rule {
+    links_checked: rule(system.checker) {
       must {{ resolve every `#path` link of an [authored page](#language.markup.authored_pages.authored_page) in the tree, and report one that resolves nowhere as broken link, as an error }}
     }
 
-    @by(system.linter)
-    @targets(authored_page)
-    file_links_checked: rule {
+    file_links_checked: rule(system.linter) {
       if {{ a link of an [authored page](#language.markup.authored_pages.authored_page) is a relative path to a file that doesn't exist }}
       should {{ report dead link at the link }}
     }

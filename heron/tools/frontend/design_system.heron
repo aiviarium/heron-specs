@@ -35,41 +35,30 @@ design_system: section {
   }}
 
   tokens: section {
-    @by(system.editor)
-    @targets(tools.frontend.design_system.tokens)
-    one_source: rule {
+    one_source: rule(system.editor) {
       must {{ generate `tokens.css` and every other language's tokens from `tokens.json` alone, and keep the committed outputs equal to what generation writes }}
     }
 
-    @serves(tools.frontend.design_system.readable)
-    readable_contrast: scenario {
+    readable_contrast: scenario(tools.frontend.design_system.readable) {
       stimulus =| a reader reads a text level or a mark colour, other than a mark colour on `bg-highlight` or the level `text-decor`
       environment =| each of the four [surfaces](#heron.tools.frontend.design_system.surfaces), in both themes
       response =| the colour stands out from its surface
       measure =| a WCAG contrast ratio of at least 4.5:1
     }
 
-    @by(system.editor)
-    @targets(surfaces)
-    untinted: rule {
+    untinted: rule(system.editor) {
       must {{ keep every surface, text, border and `bg-` colour neutral, its red, green and blue equal, in both themes }}
     }
 
-    @by(system.editor)
-    @targets(tools.frontend.design_system.tokens)
-    compact_sizes: rule {
+    compact_sizes: rule(system.editor) {
       must {{ size controls at 24, 28 and 32 px, rows at 28 px, and the top bar at 44 px; give marks and inline code a radius of 4 px, controls 6 px, cards and code 8 px and overlays 10 px; and keep every spacing step on a 4 px grid }}
     }
 
-    @by(system.editor)
-    @targets(tools.frontend.design_system.tokens)
-    type_scale: rule {
+    type_scale: rule(system.editor) {
       must {{ set the interface at 13 px, docs prose at 15 px growing with the window to 17 px with lines of about 72 to 90 characters, code, paths, identifiers, field names and numbers in the mono at 12.5 px, and group labels at 11 px }}
     }
 
-    @by(system.editor)
-    @targets(tools.frontend.design_system.tokens)
-    quiet_motion: rule {
+    quiet_motion: rule(system.editor) {
       must {{ keep every duration between 120 and 200 ms }}
     }
   }
@@ -79,22 +68,16 @@ design_system: section {
     | body face at full strength, and the small and faint levels kept for what a reader
     | scans past.
 
-    @by(system.docs_generator)
-    @targets(text_levels)
-    sentences_at_full_strength: rule {
-      must {{ set every sentence that comes from the spec, a rule's, the sentences of steps, [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) and diagnostic messages included, in the body face at the docs prose size of the [type scale](#tools.frontend.design_system.tokens.type_scale) and the `text` level }}
+    sentences_at_full_strength: rule(system.docs_generator) {
+      must {{ set every sentence that comes from the spec, a rule's, the sentences of steps, [summary lines](#tools.docs.lenses.what_a_lens_shows.summary_line) and diagnostic messages included, in the body face at the docs prose size of the type scale of the [design tokens](#tools.frontend.design_system.tokens) and the `text` level }}
     }
 
-    @by(system.docs_generator)
-    @targets(text_levels)
-    prose_in_code: rule {
+    prose_in_code: rule(system.docs_generator) {
       must {{ colour the text of a `{{ }}` body and of a `|` line in a code block at the `text` level, as prose outside code is, and keep the faint levels for comments alone }}
       then {{ the sentences of an example read as sentences, and only a `//` or `///` comment reads as an aside }}
     }
 
-    @by(system.docs_generator)
-    @targets(text_levels)
-    small_text_for_facts: rule {
+    small_text_for_facts: rule(system.docs_generator) {
       mustNot {{ set a sentence from the spec in `text-faint`, in `text-decor` or below the docs prose size }}
       instead {{ keep `text-secondary` and the smaller sizes for labels, breadcrumbs, facts lines and captions }}
     }
@@ -103,93 +86,65 @@ design_system: section {
   composing: section {
     | These bind whoever builds a view of the app or the docs, and the reviewer of it.
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    dark_first: rule {
+    dark_first: rule(actors.implementer) {
       must {{ design the dark theme first, and the light theme alongside it rather than inverted from it }}
     }
 
-    @by(actors.implementer)
-    @targets(surfaces)
-    hairlines_not_shadows: rule {
+    hairlines_not_shadows: rule(actors.implementer) {
       mustNot {{ separate things with shadows }}
       instead {{ separate them with hairline borders in three strengths, `border-faint`, `border` and `border-strong` }}
     }
 
-    @by(actors.implementer)
-    @targets(surfaces)
-    flows_without_hairlines: rule {
+    flows_without_hairlines: rule(actors.implementer) {
       mustNot {{ draw a hairline between consecutive items of one flow, such as rules, terms, steps or diagnostics }}
       instead {{ separate them by space, and keep hairlines for the edges of regions, the rows of [tables](#heron.language.markup.components.table) and code blocks; the line that joins the numbers of a stepper's steps is part of its marks, not a separator }}
     }
 
-    @by(actors.implementer)
-    @targets(surfaces)
-    one_level_of_indent: rule {
+    one_level_of_indent: rule(actors.implementer) {
       mustNot {{ nest a bordered box inside another, or indent content more than one level from its [column](#heron.language.grammar.lexical.column) }}
       instead {{ show hierarchy with headings, their levels and the navigation }}
     }
 
-    @by(actors.implementer)
-    @targets(surfaces)
-    overlays_cast_shadows: rule {
+    overlays_cast_shadows: rule(actors.implementer) {
       may {{ give an overlay the `shadow-overlay` shadow, such as a menu, a popover or the command palette }}
     }
 
-    @by(actors.implementer)
-    @targets(project_colour)
-    project_colour_never_fills: rule {
+    project_colour_never_fills: rule(actors.implementer) {
       mustNot {{ fill a button, card, callout, code block or cell with the [project colour](#tools.frontend.design_system.project_colour) }}
     }
 
-    @by(actors.implementer)
-    @targets(status_colours)
-    status_colours_mean: rule {
+    status_colours_mean: rule(actors.implementer) {
       mustNot {{ use a [status colour](#tools.frontend.design_system.status_colours) for anything but what it means }}
     }
 
-    @by(actors.implementer)
-    @targets(status_colours)
-    no_filled_pills: rule {
+    no_filled_pills: rule(actors.implementer) {
       mustNot {{ show a status or kind colour as a filled pill }}
       instead {{ show it as coloured text or a 1 px outline }}
     }
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    buttons: rule {
+    buttons: rule(actors.implementer) {
       must {{ give buttons grey fills with no outline, one primary button per view filled with the text colour, and icon buttons a transparent fill until hovered }}
     }
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    headings: rule {
+    headings: rule(actors.implementer) {
       must {{ set headings in semibold with the `tracking-heading` letter spacing, and group labels in the faintest readable level }}
     }
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    polish_from_detail: rule {
+    polish_from_detail: rule(actors.implementer) {
       mustNot {{ use gradients on text or [surfaces](#tools.frontend.design_system.surfaces), glow, emoji or illustrations }}
       instead {{ polish through detail: a translucent top bar with backdrop blur, a faint dot grid behind diagrams, focus rings on keyboard focus only, syntax colours from the same tokens, and code blocks with a title bar and a copy button }}
     }
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    motion_explains: rule {
+    motion_explains: rule(actors.implementer) {
       may {{ animate a change that motion explains, such as a panel opening, a row expanding or a result arriving }}
       while {{ the reader allows motion }}
     }
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    keyboard_first: rule {
+    keyboard_first: rule(actors.implementer) {
       must {{ offer a command palette on ⌘K in every tool and on the docs, shortcuts for every frequent action, and focus that's always visible }}
     }
 
-    @by(actors.implementer)
-    @targets(tools.frontend.design_system.composing)
-    ui_sdk_base: rule {
+    ui_sdk_base: rule(actors.implementer) {
       must {{ compose components from the [UI SDK](#tools.frontend.design_system.ui_sdk)'s behaviours in the shared component package, rather than writing popups, selection, typeahead, roving focus, reordering, resizing or virtual lists by hand }}
       then {{ accessibility comes with the behaviours rather than being added per component }}
     }

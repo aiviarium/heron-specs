@@ -50,75 +50,60 @@ grpc: section {
   }}
 
   service: section {
-    @by(system.checker)
-    @targets(proto_service)
-    proto_ops: rule {
+    proto_ops: rule(system.checker) {
       must {{ bind every op of an api that carries `@proto` with a `package` to a method of its [service](#language.apis.grpc.proto_service), and report proto outside a service at an op's `@proto` when its api carries none }}
     }
 
-    @by(system.checker)
-    @targets(proto_service)
-    proto_arguments: rule {
+    proto_arguments: rule(system.checker) {
       must {{ report proto argument misplaced at `package`, `service` or `protocols` in an op's `@proto`, and at `method`, `idempotency` or `timeout` in an api's }}
       then {{ the service is named once, on the api, and each method on its op }}
     }
 
-    @by(system.checker)
-    @targets(proto_service)
-    package_names: rule {
+    package_names: rule(system.checker) {
       if {{ a `package` isn't lower-case identifiers joined by dots }}
       must {{ report invalid proto package at it }}
       example {{ `@proto("Acme-Parcels")` reports "Acme-Parcels isn't a protobuf package: write lower-case words joined by dots, as acme.parcels.v1" }}
     }
 
-    @targets(proto_service)
     service_name: rule {
       must {{ name the service by `@proto`'s `service`, or else by the api's name in upper camel case followed by `Service`, unless it ends in `Service` already }}
       example {{ `parcels: api` is `ParcelsService`, and `@proto("acme.parcels.v1", service = "Tracking")` is `Tracking` }}
     }
 
-    @targets(language.apis.rpc.rpc_method)
     method_name: rule {
       must {{ name a method by its op's `@proto(method = …)`, or else by the op's name in upper camel case }}
       example {{ `get_parcel` is `GetParcel` }}
     }
 
-    @targets(proto_protocol)
     default_protocol: rule {
       must {{ serve a [service](#language.apis.grpc.proto_service) over the [protocols](#language.apis.grpc.proto_protocol) its `@proto(protocols = […])` lists, and over gRPC alone where it lists none }}
     }
   }
 
   messages: section {
-    @targets(request_message)
     request_fields: rule {
       must {{ make the [request message](#language.apis.grpc.request_message) from the op's parameters in the order written, leaving out those that travel as [metadata](#language.apis.grpc.proto_metadata), with each field named after its parameter, and a streamed parameter as one field of the stream's element type }}
       then {{ each message of a client stream carries one element }}
       example {{ `get_parcel(@path id: String)` takes `GetParcelRequest { string id = 1; }` }}
     }
 
-    @targets(response_message)
     response_field: rule {
       must {{ give the [response message](#language.apis.grpc.response_message) one field, numbered 1, of the [result type](#language.apis.responses.result_type), or of its element type for a streamed result, named after that type in snake case where it's a record, a union or an enum, `items` for a list or a set, `entries` for a map, and `value` for anything else }}
       then {{ an op with no result, or a `Null` one, answers with an empty message }}
       example {{ `get_parcel(…): op(Parcel)` answers `GetParcelResponse { Parcel parcel = 1; }`, and `watch_parcel` streams `WatchParcelResponse { ParcelEvent parcel_event = 1; }` }}
     }
 
-    @targets(request_message)
     message_names_taken: rule {
       where {{ a type the service reaches already has the name `<Method>Request` or `<Method>Response` }}
       must {{ name the method's message with the service's name before it, as `<Service><Method>Request` }}
     }
 
-    @targets(request_message)
     type_messages: rule {
       must {{ make a message of every record, union and [error type](#language.data.types.error_type) a method's messages reach, named as the type, and of an instance of a [generic type](#language.data.types.generic_type) named after the type and then its arguments }}
       example {{ `Page(Parcel)` is the message `PageParcel` }}
     }
 
-    @by(system.checker)
-    @targets(request_message)
-    client_stream_alone: rule {
+    client_stream_alone: rule(system.checker) {
       if {{ an op takes a streamed parameter and another parameter that doesn't travel as [metadata](#language.apis.grpc.proto_metadata) }}
       must {{ report stream with fields at the other parameter }}
       then {{ what a client stream needs once is metadata, sent before the first message }}
@@ -130,38 +115,29 @@ grpc: section {
     | its fields are written in. Adding a field at the end keeps every number; moving one
     | changes them, so a service that's deployed numbers its fields.
 
-    @targets(field_number)
     auto_numbers: rule {
       must {{ number a message's fields by their `@field(n)`, or, where none of them carries one, 1, 2, 3 and on in the order written, skipping the numbers the type's `@reserved` names }}
       example {{ a type with `@reserved(2)` and the fields `id` and `status` numbers them 1 and 3 }}
     }
 
-    @by(system.checker)
-    @targets(field_number)
-    all_or_none: rule {
+    all_or_none: rule(system.checker) {
       if {{ some fields of a message carry `@field` and others don't }}
       must {{ report mixed numbering at the first field without one }}
       then {{ a number is never half written and half derived }}
     }
 
-    @by(system.checker)
-    @targets(field_number)
-    unique_numbers: rule {
+    unique_numbers: rule(system.checker) {
       if {{ two fields of a message, or two values of an enum, have one number }}
       must {{ report number used twice at the second }}
     }
 
-    @by(system.checker)
-    @targets(field_number)
-    number_range: rule {
+    number_range: rule(system.checker) {
       if {{ a field's number is below 1, above 536870911 or from 19000 to 19999, or an enum value's is below 1 }}
       must {{ report number out of range at it }}
       then {{ 0 stays every enum's unspecified value }}
     }
 
-    @by(system.checker)
-    @targets(field_number)
-    reserved_numbers: rule {
+    reserved_numbers: rule(system.checker) {
       if {{ a field's number is one its type's `@reserved` names }}
       must {{ report reserved number at it }}
     }
@@ -183,36 +159,29 @@ grpc: section {
     | | `T \| Null`, of a primitive `T`     | `google.protobuf.StringValue` and the other wrappers | the value or `null`  |
     | | an enum, a union, a record         | an enum, a message with a `oneof`, a message | a string, an object          |
 
-    @targets(field_number)
     scalar_mapping: rule {
       must {{ map each field's type to protobuf and to JSON by the [table](#heron.language.markup.components.table), and every other type of `std/types`, such as `Money`, to a message of the service's package like the tree's own }}
     }
 
-    @targets(field_number)
     int_encodings: rule {
       where {{ an integer field's `@field` is flagged `<sint>` or `<fixed>` }}
       must {{ encode it as `sint32` or `sint64`, or as `fixed32`, `fixed64`, `sfixed32` or `sfixed64` by its size and sign }}
     }
 
-    @targets(field_number)
     enum_values: rule {
       must {{ map an enum to a protobuf enum of its name whose values are the enum's name and the value's in upper snake case, after a zero value `<ENUM>_UNSPECIFIED`, numbered by their `@field` or from 1 in the order written }}
       then {{ JSON writes a value as its protobuf name, as `"PARCEL_STATUS_IN_TRANSIT"` }}
     }
 
-    @targets(field_number)
     union_oneof: rule {
       must {{ map a union to a message with one `oneof`, named after the union in snake case, whose fields are its variants numbered like a message's }}
     }
 
-    @targets(json_name)
     json_names: rule {
       must {{ name each field in JSON by its [JSON name](#language.apis.grpc.json_name), and leave a field out of JSON where it has its default and no presence }}
     }
 
-    @by(system.checker)
-    @targets(field_number)
-    unmappable_types: rule {
+    unmappable_types: rule(system.checker) {
       if {{ a type a method reaches has no protobuf form: a list or map of lists or maps, a map keyed by anything but a string, an integer or a boolean, a list or map as a union's variant, or a union expression other than `T | Null` of a primitive type }}
       must {{ report no protobuf mapping at the type, saying why }}
     }
@@ -239,22 +208,18 @@ grpc: section {
       gRPC's canonical status codes but `OK`, from its `Code` enum.
     }}
 
-    @targets(grpc_code)
     error_status: rule {
       when {{ a method fails with an error it declares }}
       must {{ answer with a gRPC status of the error's [code](#language.apis.grpc.status_codes.grpc_code), its message, and one detail: for a type, the type's own message, and for an `error` node, a `google.rpc.ErrorInfo` with the error's id as `reason`, the service's package as `domain` and its fields as `metadata` }}
       then {{ a client reads which error it got from the detail, never from the message }}
     }
 
-    @targets(grpc_code)
     connect_errors: rule {
       where {{ a service is served over Connect }}
       must {{ answer an error with the HTTP status of the [table](#heron.language.markup.components.table) and a JSON body of its Connect `code`, its `message` and its `details`, each with its `type`, its `value` and its fields as `debug` }}
     }
 
-    @by(system.linter)
-    @targets(grpc_code)
-    uncoded_errors: rule {
+    uncoded_errors: rule(system.linter) {
       if {{ an op bound to a [service](#language.apis.grpc.proto_service) throws an error with no `@code` of `std/proto` }}
       should {{ report uncoded gRPC error at the error }}
       then {{ the docs show the error as `UNKNOWN`, the code a server sends for a failure it doesn't name }}
@@ -262,31 +227,26 @@ grpc: section {
   }
 
   calls: section {
-    @targets(proto_metadata)
     metadata_params: rule {
       must {{ send a parameter marked `@metadata` as the metadata its name gives, or the parameter's name, and a parameter marked `@header` of an op bound to HTTP too as the metadata named after its header in lower case, a `Bytes` value base64-encoded under a name ending `-bin` }}
       example {{ `@header("Tenant") tenant?: String` travels as `tenant` }}
     }
 
-    @targets(language.apis.rpc.rpc_method)
     idempotency_level: rule {
       where {{ an op's `@proto` sets `idempotency`, `no_side_effects` or `idempotent` }}
       must {{ give its method that idempotency level, which marks it safe to retry, and serve a `no_side_effects` method over Connect with GET as well as POST }}
     }
 
-    @targets(language.apis.rpc.rpc_method)
     default_deadline: rule {
       where {{ an op's `@proto` sets `timeout` }}
       must {{ end each of its calls after that time unless the caller sets another }}
     }
 
-    @targets(proto_protocol)
     connect_unary: rule {
       where {{ a unary method is served over Connect }}
       must {{ take it as POST to `/<package>.<Service>/<Method>` with the [request message](#language.apis.grpc.request_message)'s JSON as the body and `application/json` as its type, and, for a `no_side_effects` method, as GET with the query `encoding=json`, `message` and `connect=v1` }}
     }
 
-    @targets(proto_protocol)
     connect_streams: rule {
       where {{ a streaming method is served over Connect }}
       must {{ frame each message as `application/connect+json`: a flags byte, a 4-byte big-endian length and the message's JSON, with an end-of-stream message flagged `2` last, holding the error, if any }}

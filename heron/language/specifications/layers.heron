@@ -12,8 +12,8 @@ layers: section {
   | | `SPECIFICATION` | what must hold, from outside, in domain words  | `rule`, `constraint`, `part`, `term`, `scenario`, `usecase`     |
   | | `CONTRACT`      | the exact technical contract                   | `op` and `api`, `command`, `screen`, `error`, `example`, types  |
   |
-  | Links run up: a lower node names the higher node it exists for, and the docs walk them in
-  | reverse to show, under each node, what realizes, illustrates or serves it.
+  | References run up or across: a lower node names the higher node it exists for, and the docs
+  | walk them in reverse to show, under each node, the nodes that reference it, by their kind.
 
   layer: term {{
     One of `std/schema`'s `Layer` values, `INTENT`, `SPECIFICATION` or `CONTRACT`, in that
@@ -24,119 +24,176 @@ layers: section {
 
   extends_kind: term {{
     The core kind a custom kind names with `kind(extends = rule)`: the custom kind takes its
-    parameters, fields and body, its [layer](#heron.language.specifications.layers.layer) unless it declares one, its renderer, and its place
-    in the links and the [coverage](#heron.language.specifications.traceability.coverage) checks, as if its nodes were of the core kind.
+    parameters, fields and body, its [layer](#heron.language.specifications.layers.layer) unless it declares one, the kinds its references may
+    name unless it declares its own, its renderer, and its place in the
+    [coverage](#heron.language.specifications.traceability.coverage) checks, as if its nodes were of the core kind.
   }}
 
   layer_reference: term {{
-    A reference a node in a [layer](#heron.language.specifications.layers.layer) makes in its own text or arguments: a link, a [short link](#heron.language.markup.links.short_link), a
-    `<ref>` element or a reference-typed argument. References made by its children are theirs.
+    A reference a node in a [layer](#heron.language.specifications.layers.layer) makes in its own text, arguments or annotations: a link, a
+    [short link](#heron.language.markup.links.short_link), a `<ref>` element, a reference-typed argument, a
+    [hard reference](#language.specifications.layers.references.hard_reference) or a
+    [soft reference](#language.specifications.layers.references.soft_reference). References
+    made by its children are theirs, apart from its strength, conditions and rationale, which
+    are its own text.
   }}
 
   derived_list: term {{
-    A list the docs compute under a node by walking references to it in reverse: what
-    realizes it, what illustrates it, what serves it, what refines it and what relies on it.
+    A list the docs compute under a node by walking references to it in reverse: the nodes
+    of one kind whose [hard references](#language.specifications.layers.references.hard_reference)
+    name it, the errors whose prose links it among them, labelled by the kind, as "Ops" or
+    "Commands", or the nodes whose `@see` names it, labelled "See also". The rules whose
+    subject a node is aren't listed under it: each rule's sentence names its subject.
   }}
 
   @display("References never point down")
-  @by(system.checker)
-  @targets(layer_reference)
-  @rationale("A higher layer stays true while the layers below it change, so it never depends on them.")
-  references_point_up: rule {
+  references_point_up: rule(system.checker) {
     if {{ a node's [layer reference](#language.specifications.layers.layer_reference) names a node in a lower [layer](#language.specifications.layers.layer) than its own }}
     must {{ report the reference as an error at it }}
     then {{ a contract entry may name a rule or a goal, and a rule a goal, while no goal names a rule and no rule names an error or an op }}
+    rationale {{ A higher [layer](#language.specifications.layers.layer) stays true while the [layers](#language.specifications.layers.layer) below it change, so it never depends on them. }}
   }
 
-  @by(system.checker)
-  @targets(layer_reference)
-  same_layer_free: rule {
+  same_layer_free: rule(system.checker) {
     mustNot {{ report a reference between two nodes of one [layer](#language.specifications.layers.layer), or from or to a node of a kind with no [layer](#heron.language.specifications.layers.layer) }}
   }
 
-  @by(system.checker)
-  @targets(layer)
-  layer_declared: rule {
+  layer_declared: rule(system.checker) {
     must {{ read a kind's [layer](#language.specifications.layers.layer) from its `layer` argument, or else from the kind it extends, and give a kind with neither no [layer](#heron.language.specifications.layers.layer) }}
   }
 
-  @by(system.checker)
-  @targets(extends_kind)
-  extends_inherits: rule {
+  extends_inherits: rule(system.checker) {
     must {{ give a kind that extends another its parameters, fields, body and [layer](#language.specifications.layers.layer), and read its nodes as nodes of the extended kind wherever a link's target or a [coverage](#heron.language.specifications.traceability.coverage) check names that kind }}
   }
 
-  @by(system.docs_generator)
-  @targets(extends_kind)
-  extends_rendered: rule {
+  extends_rendered: rule(system.docs_generator) {
     must {{ render a node of a kind that extends a core kind with the core kind's renderer, unless a renderer is registered for its own kind }}
   }
 
-  @by(system.checker)
-  @targets(layers)
-  links_on_lower_node: rule {
-    must {{ store every link on the lower or later node, as an argument or annotation of that node, and accept none in the other direction }}
-    then {{ adding a contract entry never edits the rule it realizes }}
+  links_on_lower_node: rule(system.checker) {
+    must {{ store every reference on the lower or later node, as an argument, an annotation or a link of that node, and accept none in the other direction }}
+    then {{ adding a contract entry never edits the rule it implements }}
   }
 
-  @by(system.docs_generator)
-  @targets(derived_list)
-  derived_lists_shown: rule {
-    must {{ show under each node its [derived lists](#language.specifications.layers.derived_list), "Realized by", "Illustrated by", "Served by", "Refined by" and "Relied on by", each entry a link, and mark the lists as derived from links written elsewhere }}
+  derived_lists_shown: rule(system.docs_generator) {
+    must {{ show under each node its [derived lists](#language.specifications.layers.derived_list), one per referencing kind, labelled by the kind in the plural, with no verb, the core kinds' in the order of the contract, the specification and the intent and a custom kind's after them by name, and "See also" last, each entry a link, and mark the lists as derived from references written elsewhere }}
+    example {{ under a rule: "Ops: `create_order` · Commands: `heron check` · Scenarios: `late_rejected`" }}
   }
 
-  @by(system.docs_generator)
-  @targets(derived_list)
-  derived_lists_exported: rule {
+  derived_lists_exported: rule(system.docs_generator) {
     must {{ write the [derived lists](#language.specifications.layers.derived_list) into the [agent export](#tools.docs.agents.agent_export) of each node, marked as derived }}
   }
 
-  links: section {
-    | A link is an annotation of the node it starts from, written above it, and always points
-    | up or across. `proves`, the link from a test, lives in the implementation's project. The
-    | links are core annotations, with no import; a kind of another package that takes one stands
-    | in the core category its `on` lists: `serving` for `@serves`, `realizing` for `@realizes`,
-    | `revised` for `@rev` and `sourced` for `@source`.
-    | An error takes none of these links: it's a result, not a surface, so its prose links the rule
-    | that says when it's reported, and it never names who reports it.
+  references: section {
+    | A node references what it states a fact about. A reference is hard or soft, and each one
+    | means what the kind it names makes it mean: `rule(desk, self_service)` binds the part
+    | `desk` and serves the goal `self_service` because of the kinds they are.
     |
-    | | Link           | From                                             | To                                    |
-    | | -------------- | ------------------------------------------------ | ------------------------------------- |
-    | | `@serves`      | a rule, constraint, use case or quality scenario | a goal or a quality                   |
-    | | `@derives`     | a rule                                           | the rule it's derived from            |
-    | | `@illustrates` | an outcome scenario                              | one rule, or one path of a use case   |
-    | | `@realizes`    | a [surface entry](#heron.language.specifications.contract.surface_entry) that solves them: an op, a command, a screen, … | rules, use cases, steps or extensions |
-    | | `@refines`     | an example                                       | an outcome scenario                   |
-    | | `@relies`      | a rule or a use case                             | assumptions                           |
-    | | `proves`       | a test, in a project                             | any requirement, at a [revision](#heron.language.specifications.layers.revisions.revision) |
+    | [Hard references](#language.specifications.layers.references.hard_reference) are written in the constructor, as positional arguments after the
+    | kind's main positional parameters: the normal way, which every example uses. `@touch`
+    | writes them as an annotation, beside or instead of the constructor's, for whoever
+    | prefers to split them out, and for a kind whose constructor takes none, as a type, whose
+    | constructor names the interfaces it implements. The gap checks and [coverage](#heron.language.specifications.traceability.coverage) count both.
+    | `@see` writes the rare [soft reference](#language.specifications.layers.references.soft_reference), for documentation: the docs show it as "See also"
+    | and [coverage](#heron.language.specifications.traceability.coverage) ignores it. Prose links come first; `@see` is for a reference the prose
+    | can't carry.
+    |
+    | A [term](#heron.language.specifications.context.term_kind) is vocabulary: a node
+    | mentions it in its prose and never references it, and a mention counts for the
+    | glossary, the term's "used in" and the unlinked-term lint, never for the reference
+    | graph. A rule is a leaf: it states one fact about its subject, the goals and qualities
+    | it serves and the assumptions it relies on, and never references another rule, in its
+    | signature or its prose. An error takes no reference: it's a result, not a surface, so
+    | its prose links the rule that says when it's reported, and it never names who reports
+    | it. `proves`, the reference from a test, lives in the implementation's project. The
+    | annotations are core, with no import.
+    |
+    | | Constructor                                   | Its references name                                                    | Meaning                                          |
+    | | --------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------ |
+    | | `rule(subject?, …)`                           | at most one actor or part; goals and qualities; assumptions           | its subject; what it serves; what it relies on   |
+    | | `constraint(…, reason = …)`                   | goals and qualities; assumptions; actors and personas                 | what it serves; what it relies on; who asked     |
+    | | `usecase(actor, …)`                           | goals and qualities; assumptions                                       | what it serves; what it relies on                |
+    | | `goal(…)`                                     | actors and personas                                                    | who asked for it                                 |
+    | | `scenario(…)`, an outcome scenario            | one rule, use case, step or extension                                  | the case it describes                            |
+    | | `scenario(…)`, a quality scenario             | the quality                                                            | what it measures                                 |
+    | | `example(…)`                                  | one outcome scenario                                                   | the case it pins down                            |
+    | | `op(result?, …)`, `command(name, …)`, `screen(route?, …)`, `api(…)`, `region(…)`, `argument(name, …)`, `option(name, …)`, `grammar(…)`, `production(…)`, `token(…)` | the kinds in `types.realized`: rules, constraints, use cases, steps, extensions, parts, [lifecycles](#heron.language.specifications.lifecycles.lifecycle) and transitions | what it carries out; a transition, what an op performs |
+    | | `@touch(…)` on a type, an enum, a union or an interface | the kinds in `types.realized`                                | what it carries out                              |
+    | | `@see(…)` on any node                         | any node but a term                                                    | what it's about                                  |
+    | | `proves(…)`, in a project                     | any requirement, at a [revision](#heron.language.specifications.layers.revisions.revision) | what it proves                                   |
 
-    @by(system.checker)
-    @targets(layers.links)
-    link_kinds: rule {
-      if {{ a link names a node of a kind its [table](#heron.language.markup.components.table) row doesn't allow }}
-      must {{ report the link as an error at the target, naming the kinds it takes }}
-      example {{ `@serves(checker)` on a rule reports that `@serves` takes a goal or a quality }}
+    hard_reference: term {{
+      A reference [coverage](#heron.language.specifications.traceability.coverage) and the gap checks count: a positional argument a kind's variadic
+      reference parameter takes, written after its main positional parameters, or an argument
+      of `@touch`, which means the same.
+    }}
+
+    soft_reference: term {{
+      An argument of `@see`: a reference for documentation, which the docs show as "See also"
+      and [coverage](#heron.language.specifications.traceability.coverage) and the gap checks don't count.
+    }}
+
+    reference_kind_list: term {{
+      A kind's `references`, `kind(references = [actor, part, goal])`: the kinds, and the
+      categories of kinds, its [hard references](#language.specifications.layers.references.hard_reference)
+      may name. A kind that extends another takes its list unless it declares its own, so a
+      custom kind can widen or narrow what its nodes reference. `std/types` declares
+      `realized`, the category of the spec kinds a contract surface carries out, and
+      `std/spec`'s `rule`, `constraint`, `usecase`, `part`, `states` and `transition` join it.
+    }}
+
+    reference_kinds: rule(system.checker) {
+      if {{ a [hard reference](#language.specifications.layers.references.hard_reference) names a node whose kind is none of its kind's [reference kind list](#language.specifications.layers.references.reference_kind_list), nor in a category on it, nor a kind that extends one }}
+      must {{ report the reference as an error at it, naming the kinds it takes }}
+      example {{ `rule(checker_rule)` where `checker_rule` is a rule reports that a rule references only an actor, a part, a goal, a quality or an assumption }}
     }
 
-    @by(system.checker)
-    @targets(layers.links)
-    realizes_annotation: rule {
-      must {{ accept `@realizes(targets…)` on a [surface entry](#heron.language.specifications.contract.surface_entry) of the `CONTRACT` [layer](#language.specifications.layers.layer) and on a kind in the `realizing` category, as a grammar or a project's component, never on an error, and read a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
+    op_result_first: rule(system.checker) {
+      must {{ read an op's first positional argument as its [result type](#heron.language.apis.responses.result_type) when it names a type, and as its first reference otherwise, and accept the type by name too, as `returns = Order` }}
+      example {{ `op(Order, place_order.3)` returns an `Order` and carries out step 3 of `place_order`; `op(place_order.3)` returns nothing }}
     }
 
-    @by(system.checker)
-    @targets(layers.links)
-    area_goals: rule {
-      where {{ a rule, a constraint or a use case names no goal with `@serves` }}
+    term_not_referenced: rule(system.checker) {
+      if {{ a [hard](#language.specifications.layers.references.hard_reference) or [soft reference](#language.specifications.layers.references.soft_reference) names a [term](#heron.language.specifications.context.term_kind) }}
+      must {{ report it as an error at the reference, saying to mention the term in the prose }}
+    }
+
+    one_subject: rule(system.checker) {
+      if {{ a rule's [hard references](#language.specifications.layers.references.hard_reference) name more than one actor, persona or part }}
+      must {{ report the second as an error at it }}
+      then {{ a rule binds one subject, and a rule that references none binds the system }}
+    }
+
+    no_rule_to_rule: rule(system.checker) {
+      if {{ a rule's strength, conditions, rationale or `@see` link another rule }}
+      must {{ report the link as an error at it }}
+      then {{ a rule states its own fact and links the term, part or section it shares with another, while an error or a scenario below it may link it }}
+    }
+
+    references_acyclic: rule(system.checker) {
+      if {{ the references of the layered nodes, in their constructors, annotations and prose, the [terms](#heron.language.specifications.context.term_kind) they mention left out, come back to a node }}
+      must {{ report the cycle as an error at the reference that closes it }}
+      then {{ with every reference pointing up or across, the references form a graph with no cycle }}
+    }
+
+    touch_annotation: rule(system.checker) {
+      must {{ accept `@touch(targets…)` on a node of any kind and read its targets as [hard references](#language.specifications.layers.references.hard_reference) of the node, checked against its kind's [reference kind list](#language.specifications.layers.references.reference_kind_list), and on a kind with no list against the kinds in `types.realized`, reading a target written `usecase.2` or `usecase.2a` as that step or extension of the use case }}
+      example {{ `@touch(refund_window) Refund: type { … }` and `@touch(refund_window) create(): op(Refund)` are accepted; `@touch(self_service)` above a type is reported }}
+    }
+
+    listed_twice: rule(system.checker) {
+      if {{ a node names one target both in its constructor and in its `@touch` }}
+      must {{ report the `@touch` target as an error at it, saying it's listed twice }}
+    }
+
+    see_annotation: rule(system.checker) {
+      must {{ accept `@see(targets…)` on a node of any kind, naming any node but a term, and check its targets for direction and cycles as any reference, while [coverage](#heron.language.specifications.traceability.coverage) and the gap checks leave them out }}
+    }
+
+    area_goals: rule(system.checker) {
+      where {{ a rule, a constraint or a use case references no goal or quality }}
       must {{ read it as serving the goals declared in the nearest section above it that declares any, the package's own included }}
-      then {{ an area that opens with its goals motivates the requirements in it, and a requirement names a goal of its own only where it serves another }}
-    }
-
-    @by(system.checker)
-    @targets(layers.links)
-    derives_acyclic: rule {
-      if {{ a rule's `@derives` chain comes back to the rule }}
-      must {{ report the cycle as an error at the first link of it }}
+      then {{ an area that opens with its goals motivates the requirements in it, and a requirement references a goal of its own only where it serves another }}
     }
   }
 
@@ -150,23 +207,19 @@ layers: section {
       a scenario, a use case, a contract entry or an error.
     }}
 
-    @by(actors.author)
-    @targets(revision)
-    @rationale("A wording fix keeps the revision; a change of behaviour doesn't.")
-    revision_bump: rule {
+    revision_bump: rule(actors.author) {
       when {{ a change alters what a requirement means, so a proof of the old meaning may no longer prove it }}
       must {{ raise its [revision](#language.specifications.layers.revisions.revision) by one in the same change }}
+      rationale {{ A wording fix keeps the [revision](#language.specifications.layers.revisions.revision); a change of behaviour doesn't. }}
     }
 
-    @by(system.checker)
-    @targets(revision)
-    revision_positive: rule {
+    revision_positive: rule(system.checker) {
       if {{ a `@rev` is less than 1 }}
       must {{ report it as an error at the value }}
     }
   }
 
-  @display("A goal, a rule and the op that realizes it")
+  @display("A goal, a rule and the op that implements it")
   layers_example: example {
     | ```heron
     | import = ["std/doc@1", "std/types@1", "std/apis@1", "std/http@1"]
@@ -179,17 +232,14 @@ layers: section {
     |
     | desk: part {{ The support console. }}
     |
-    | @by(desk)
-    | @serves(self_service)
-    | refund_in_window: rule {
+    | refund_in_window: rule(desk, self_service) {
     |   when {{ a [customer] asks for a refund inside the refund window }}
     |   must {{ refund the amount asked for }}
     | }
     |
     | payments: api {
-    |   @realizes(refund_in_window)
     |   @http<post>("/refunds")
-    |   create_refund(amount: Int): op(Int)
+    |   create_refund(amount: Int): op(Int, refund_in_window)
     | }
     | ```
   }
@@ -202,26 +252,50 @@ layers: section {
       kind: field(String)
       to: field(String)
       from: field(String)
-      | A goal linking a rule, or a rule linking an op or an error. The fix is a link on the lower node: `@serves`, `@realizes`, `@illustrates`, or a link to the rule in the error's prose.
+      | A goal linking a rule, or a rule linking an op or an error. The fix is a reference on the lower node: a reference in its constructor or `@touch`, or a link to the rule in the error's prose.
       | Reported as [layers.references_point_up] says.
     }
 
-    @display("Wrong link target")
-    wrong_link_target: error("link") {
-      title = "{link} takes {kinds}, and {name} is a {kind}"
-      link: field(String)
-      kinds: field(String)
+    @display("Reference to a kind not taken")
+    wrong_reference: error("reference") {
+      title = "{name} is a {kind}, and a {from} references only {kinds}"
       name: field(String)
       kind: field(String)
-      | Reported as [layers.links.link_kinds] says.
+      from: field(String)
+      kinds: field(String)
+      | Reported as [layers.references.reference_kinds] says, and on a kind with no list as "{name} is a {kind}, and @touch on a {from} takes only a rule, a constraint, a use case or its step, a part, a [lifecycle](#heron.language.specifications.lifecycles.lifecycle) or a transition", as [layers.references.touch_annotation] says. A term gets its own message, "{name} is a term, which is vocabulary: a {from} doesn't reference it; mention it in the prose", or "@see doesn't reference it" for a [soft reference](#heron.language.specifications.layers.references.soft_reference), as [layers.references.term_not_referenced] says.
     }
 
-    @display("Derivation cycle")
-    derives_cycle: error("cycle") {
-      title = "{name} derives from itself through {path}"
+    @display("Two subjects")
+    two_subjects: error("subject") {
+      title = "rule {name} binds {first} and {second}; a rule references at most one actor or part, its subject"
+      name: field(String)
+      first: field(String)
+      second: field(String)
+      | Reported as [layers.references.one_subject] says.
+    }
+
+    @display("Rule linking a rule")
+    rule_links_rule: error("rule-link") {
+      title = "rule {name} links the rule {target}; a rule references no other rule, so link the term, part or section they share, or state the fact in the rule itself"
+      name: field(String)
+      target: field(String)
+      | Reported as [layers.references.no_rule_to_rule] says.
+    }
+
+    @display("Reference listed twice")
+    listed_twice: error("reference") {
+      title = "{name} is listed twice, in the constructor and in @touch; list it once"
+      name: field(String)
+      | Reported as [layers.references.listed_twice] says.
+    }
+
+    @display("Reference cycle")
+    reference_cycle: error("cycle") {
+      title = "{name} references itself through {path}"
       name: field(String)
       path: field(String)
-      | Reported as [layers.links.derives_acyclic] says.
+      | Reported as [layers.references.references_acyclic] says.
     }
 
     @display("Revision below 1")

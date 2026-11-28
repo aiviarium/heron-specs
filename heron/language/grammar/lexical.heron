@@ -14,59 +14,50 @@ lexical: section {
     reads them.
   }}
 
-  @by(system.parser)
-  line_kinds: rule {
+  line_kinds: rule(system.parser) {
     must {{ tell what a line is from how it starts, after its indentation: `|` starts a prose line, `///` a doc line, `//` a comment, and anything else structure }}
     while {{ the line stands outside multi-line strings, fenced blocks and `{{ }}` bodies, which read their lines as their own text }}
     then {{ no line's meaning depends on the kind it's written in or on the lines after it }}
   }
 
-  @by(system.parser)
-  meaning_is_local: rule {
+  meaning_is_local: rule(system.parser) {
     mustNot {{ change how a construct parses with the kind it's written in, the imports or anything a checker knows }}
     then {{ a file parses the same alone as in its tree, and an editor can parse it on every keystroke }}
   }
 
-  @by(system.parser)
-  line_ends: rule {
+  line_ends: rule(system.parser) {
     must {{ end a line at `\n` or at `\r\n`, and keep the line end as one `Newline` token }}
     then {{ a `\r` on its own isn't a line end: in structure it's an unexpected character }}
   }
 
-  @by(system.parser)
-  layout_whitespace: rule {
+  layout_whitespace: rule(system.parser) {
     must {{ read spaces and tabs between tokens as layout, never as indentation that groups members }}
     then {{ nesting is always written with brackets, and the formatter alone decides indentation }}
   }
 
-  @by(system.parser)
-  identifiers: rule {
+  identifiers: rule(system.parser) {
     must {{ read a name as a Unicode letter or `_` followed by letters, digits and `_` }}
     then {{ a hyphen ends a name, so `max-items` is `max - items` in an expression and an error in a path }}
     example {{ `größe`, `_draft` and `v2`: names }}
   }
 
-  @by(system.parser)
-  numbers: rule {
+  numbers: rule(system.parser) {
     must {{ read a number as decimal digits with optional `_` separators, an optional fraction of `.` and at least one digit, and an optional exponent of `e` or `E`, a sign and digits }}
     then {{ a number has no sign of its own, so `-1` is a negation, and there are no hexadecimal or binary literals: an [embedded string](#language.grammar.strings.embedded.embedded_string) such as `(hex)"ff"` writes those }}
     example {{ `1_000`, `0.25` and `6.02e23`: numbers; `1.` is the number `1` followed by a stray `.` }}
   }
 
-  @by(system.parser)
-  comments: rule {
+  comments: rule(system.parser) {
     must {{ read `//` that isn't `///` as a comment running to the end of its line, wherever structure, code or a bracketed list is read }}
     then {{ a comment always stands on a line of its own or at the end of a line of structure or code }}
   }
 
-  @by(system.parser)
-  no_comments_in_text: rule {
+  no_comments_in_text: rule(system.parser) {
     mustNot {{ read `//` as a comment inside a prose line, a doc line, a `{{ }}` body or a string }}
     then {{ a URL in prose or in a string needs no escape }}
   }
 
-  @by(system.parser)
-  comment_members: rule {
+  comment_members: rule(system.parser) {
     must {{ keep a comment on a line of its own as a `CommentLine` member of its body, or a statement of its code block, and a comment at the end of a line as [trivia](#language.grammar.lexical.trivia) of that line }}
     then {{ the formatter keeps every comment, attached to the member after it }}
   }
@@ -77,53 +68,40 @@ lexical: section {
     names, so a rule's `if {{ … }}` and a field named `for` need no escape.
   }}
 
-  @by(system.parser)
-  @targets(reserved_words)
-  words_in_structure: rule {
+  words_in_structure: rule(system.parser) {
     must {{ read a reserved word as a keyword only where code or an expression is read, and as a name in structure }}
     example {{ `if {{ a refund is late }}`: a node named `if`; `do: rule`: a declaration named `do` }}
   }
 
-  @by(system.parser)
-  @targets(reserved_words)
-  words_in_structure_otherwise: rule {
+  words_in_structure_otherwise: rule(system.parser) {
     where {{ a reserved word is `do` followed by `{`, or `let` followed by a space and a name, in structure }}
     must {{ read `do {` as opening code and `let name` as binding a local }}
   }
 
-  @by(system.parser)
-  @targets(reserved_words)
-  word_boundaries: rule {
+  word_boundaries: rule(system.parser) {
     must {{ read a word operator or keyword only when no letter, digit or `_` follows it }}
     example {{ `order` and `origin`: names, not `or` followed by a name }}
   }
 
   /// The token kinds of the tree. Every character of a file is in exactly one token.
-  @realizes(language.grammar.lexical.line_kinds, language.grammar.lexical.meaning_is_local)
   @display("Token kinds")
-  @source("grammar/heron.ungram")
-  tokens: grammar(notation = "ungrammar") {
+  tokens: grammar(language.grammar.lexical.line_kinds, language.grammar.lexical.meaning_is_local, notation = "ungrammar", source = "grammar/heron.ungram") {
     | Each token is given by the characters it matches, in the notation of the productions:
     | quoted literals, character classes in brackets, and `*`, `+`, `?` and `|`. Tokens of
     | prose and strings are matched only in their modes, as their sections say.
 
     /// Spaces and tabs.
-    @realizes(language.grammar.lexical.layout_whitespace)
-    Whitespace: token {{ [ \t]+ }}
+    Whitespace: token(language.grammar.lexical.layout_whitespace) {{ [ \t]+ }}
     /// A line end.
-    @realizes(language.grammar.lexical.line_ends)
-    Newline: token {{ "\n" | "\r\n" }}
+    Newline: token(language.grammar.lexical.line_ends) {{ "\n" | "\r\n" }}
     /// A comment, to the end of its line.
-    @realizes(language.grammar.lexical.comments, language.grammar.lexical.no_comments_in_text)
-    Comment: token {{ "//" [^/\r\n] [^\r\n]* | "//" }}
+    Comment: token(language.grammar.lexical.comments, language.grammar.lexical.no_comments_in_text) {{ "//" [^/\r\n] [^\r\n]* | "//" }}
     /// A run of characters the parser couldn't place, kept so the tree stays lossless.
     Error: token {{ any character }}
     /// A name.
-    @realizes(language.grammar.lexical.identifiers)
-    Ident: token {{ [\p{L}_] [\p{L}\p{N}_]* }}
+    Ident: token(language.grammar.lexical.identifiers) {{ [\p{L}_] [\p{L}\p{N}_]* }}
     /// A decimal number.
-    @realizes(language.grammar.lexical.numbers)
-    Number: token {{ [0-9] [0-9_]* ("." [0-9] [0-9_]*)? ([eE] [+-]? [0-9] [0-9_]*)? }}
+    Number: token(language.grammar.lexical.numbers) {{ [0-9] [0-9_]* ("." [0-9] [0-9_]*)? ([eE] [+-]? [0-9] [0-9_]*)? }}
     KwLet: token {{ "let" }}
     KwDo: token {{ "do" }}
     KwIf: token {{ "if" }}
@@ -182,8 +160,7 @@ lexical: section {
     /// Starts an insert of an expression.
     DollarBrace: token {{ "$" "{" }}
     /// A raw string, backticks included.
-    @realizes(language.grammar.strings.raw.one_line_raw, language.grammar.strings.raw.raw_runs)
-    Raw: token {{ "`"+ any text "`"+ }}
+    Raw: token(language.grammar.strings.raw.one_line_raw, language.grammar.strings.raw.raw_runs) {{ "`"+ any text "`"+ }}
     /// The prefix of a prose line.
     Pipe: token {{ "|" }}
     /// The prefix of a doc line.

@@ -1,5 +1,4 @@
-@realizes(cli.version.prints_versions, cli.version.version_option)
-version: command("heron version") {
+version: command("heron version", cli.version.prints_versions, cli.version.version_option) {
   usage = ["heron version", "heron --version"]
 
   | Prints which `heron` this is, on standard output, one fact per line: the product's
@@ -24,25 +23,21 @@ version: command("heron version") {
 
   example {{ `heron --version` prints the same lines as `heron version`. }}
 
-  @by(system.command_line)
-  prints_versions: rule {
+  prints_versions: rule(system.command_line) {
     must {{ print `heron` and the product version, `spec` and the version of the spec it implements, `commit` and the commit it was built from, `built` and the time it was built, in UTC, and `platform` and the operating system and architecture it runs on, each on a line of its own, in that order }}
   }
 
-  @by(system.command_line)
-  unknown_build: rule {
+  unknown_build: rule(system.command_line) {
     where {{ the binary doesn't know the commit or the time it was built from }}
     must {{ print `unknown` in its place }}
     then {{ the lines and their order are the same for every build, so a script reads them by their first word }}
   }
 
-  @by(system.command_line)
-  version_option: rule {
+  version_option: rule(system.command_line) {
     must {{ answer `heron --version` as `heron version`, before looking a command up }}
   }
 
-  @by(system.command_line)
-  product_version: rule {
+  product_version: rule(system.command_line) {
     must {{ give as the product version the version of the spec it implements, followed by the build's own counter after `+`, as `0.6.0+build1` }}
     then {{ a build never claims a spec version it doesn't implement }}
   }

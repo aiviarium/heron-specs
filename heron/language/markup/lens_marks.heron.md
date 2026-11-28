@@ -13,38 +13,38 @@ one, one `{{ }}` body, or one block of a [prose file](#language.core_format.pros
 its paragraphs included.
 </term>
 
-<rule id="mark_attaches" @targets="prose_run" @by="system.parser">
+<rule id="mark_attaches" refs="system.parser">
 <must>attach an annotation on the lines directly above a run of `|` lines, or on a `{{ }}` body, to that [prose run](#language.markup.lens_marks.prose_run), as the annotations of any member attach</must>
 </rule>
 
-<rule id="mark_splits_run" @targets="prose_run" @by="system.parser">
+<rule id="mark_splits_run" refs="system.parser">
 <must>end a run of `|` lines at an annotation line, and start a new [prose run](#language.markup.lens_marks.prose_run) with the `|` lines after it</must>
 <then>two marked blocks can follow each other with nothing between them but the second's mark</then>
 </rule>
 
-<rule id="one_text_still" @targets="prose_run" @by="system.checker">
+<rule id="one_text_still" refs="system.checker">
 <must>join a node's [prose runs](#language.markup.lens_marks.prose_run) into its one text, in the order written, as paragraphs</must>
 <then>a mark changes which lenses show a block, never what the node's text is</then>
 </rule>
 
-<rule id="mark_checked_on_prose" @targets="prose_run" @by="system.checker">
-<must>check a [lens mark](#tools.docs.lenses.lens_mark) on a [prose run](#language.markup.lens_marks.prose_run) as one on a node, reporting [unknown lens](#tools.docs.lenses.errors.unknown_lens) and [not a lens](#tools.docs.lenses.errors.not_a_lens) at the name</must>
+<rule id="mark_checked_on_prose" refs="system.checker">
+<must>check a [lens mark](#tools.docs.lenses.lens_mark) on a [prose run](#language.markup.lens_marks.prose_run) as one on a node, reporting unknown lens and not a lens at the name</must>
 </rule>
 
-<rule id="element_marks" @targets="prose_run" @by="system.checker">
+<rule id="element_marks" refs="system.checker">
 <where>an element that declares no node has an `@lens` attribute, as `<p @lens="user, developer">…</p>`</where>
 <must>read it as a [lens mark](#tools.docs.lenses.lens_mark) on the element's content, checked as one on a [prose run](#language.markup.lens_marks.prose_run)</must>
 <then>a prose file's block that is such an element is a marked [prose run](#language.markup.lens_marks.prose_run), as `|` lines under `@lens(user, developer)` are</then>
 </rule>
 
-<rule id="element_marks_shown" @targets="prose_run" @by="system.docs_generator">
+<rule id="element_marks_shown" refs="system.docs_generator">
 <where>an element inside a [prose run](#language.markup.lens_marks.prose_run) carries a [lens mark](#tools.docs.lenses.lens_mark)</where>
 <must>render its content only in the lenses the mark names, and in explore with the mark's lenses beside it, as a marked run renders</must>
 </rule>
 
-<rule id="only_lens_on_prose" @targets="prose_run" @by="system.linter">
+<rule id="only_lens_on_prose" refs="system.linter">
 <if>a [prose run](#language.markup.lens_marks.prose_run) carries an annotation other than `@lens`</if>
-<should>report [annotation placement](#language.schemas.annotations.errors.annotation_misplaced) at it</should>
+<should>report annotation placement at it</should>
 </rule>
 
 <example id="marked_prose_example" @display="A marked prose run">

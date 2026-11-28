@@ -8,31 +8,26 @@ code: section {
     | A code block holds a fixed set of statements; anything else on a line of code is an
     | expression.
 
-    @by(system.parser)
-    statement_shapes: rule {
+    statement_shapes: rule(system.parser) {
       must {{ read a line of code as `let` and a binding, `return` with an optional value on the same line, an assignment when an expression is followed by `=` and not `==`, a comment, or else an expression statement }}
     }
 
-    @by(system.parser)
-    trailing_blocks: rule {
+    trailing_blocks: rule(system.parser) {
       must {{ attach a `{ … }` that follows an expression statement on the same line to it as a code block, and never read `{{` there as one }}
       example {{ `check("x") { expect(a) }`: a call with a trailing block }}
     }
 
-    @by(system.parser)
-    assignment_targets: rule {
+    assignment_targets: rule(system.parser) {
       must {{ keep the target of an assignment as a `Path`, not as an expression }}
       example {{ `node.field = 1`: the path `node.field` set to `1` }}
     }
 
-    @by(system.parser)
-    else_placement: rule {
+    else_placement: rule(system.parser) {
       must {{ read `else` after an `if` block on the same line as its `}` or at the start of the next line, and `else if` as a nested `IfExpr` }}
       then {{ both layouts give the same tree, and the formatter keeps the one written }}
     }
 
-    @by(system.parser)
-    for_loops: rule {
+    for_loops: rule(system.parser) {
       must {{ read `for name in expr` followed by a code block as a loop over the value of `expr` }}
     }
   }
@@ -49,43 +44,36 @@ code: section {
     | | 4     | `+` `-`                                |
     | | 5     | `*` `/` `%`                            |
 
-    @by(system.parser)
-    operator_precedence: rule {
+    operator_precedence: rule(system.parser) {
       must {{ group binary operators by the levels of the [table](#heron.language.markup.components.table), a higher level first, and operators of one level from the left }}
       example {{ `a or b and c` is `a or (b and c)`; `1 + 2 * 3` is `1 + (2 * 3)`; `a - b - c` is `(a - b) - c` }}
     }
 
-    @by(system.parser)
-    unary_operators: rule {
+    unary_operators: rule(system.parser) {
       must {{ apply `not` to an operand read at level 3 and above, and `-` to the operand directly after it }}
       example {{ `not a == b` is `not (a == b)`; `-a.b` negates `a.b` }}
     }
 
-    @by(system.parser)
-    postfix_binds_tightest: rule {
+    postfix_binds_tightest: rule(system.parser) {
       must {{ attach a call's flags and arguments and a field access to the value directly before them, with no space between, before any operator applies }}
       example {{ `f (x)` isn't a call, and `list.contains(x)` calls `contains` on `list` }}
     }
 
-    @by(system.parser)
-    operator_continues_line: rule {
+    operator_continues_line: rule(system.parser) {
       must {{ continue an expression onto the next line after an operator that ends a line }}
     }
 
-    @by(system.parser)
-    unspaced_operators: rule {
+    unspaced_operators: rule(system.parser) {
       must {{ read an operator with or without spaces around it, except that `<` directly after a name and followed by a flag list is a flag list }}
       example {{ `a<b` and `a < b`: comparisons; `f<pure>(1)`: a call with a flag }}
     }
 
-    @by(system.parser)
-    word_logic: rule {
+    word_logic: rule(system.parser) {
       must {{ write logic with the words `and`, `or` and `not`, and membership and type tests with `in` and `is` }}
       then {{ `|` and `&` keep their type meaning, a union and an intersection, and never combine values }}
     }
 
-    @by(system.parser)
-    union_not_prose: rule {
+    union_not_prose: rule(system.parser) {
       mustNot {{ read a `|` after a value as an operator or as the start of prose }}
       instead {{ report the rest of the line, since a prose value starts only right after `=` }}
       example {{ `x = a | b`: `x = a` and an error at `|` }}
@@ -97,22 +85,18 @@ code: section {
       [embedded string](#language.grammar.strings.embedded.embedded_string).
     }}
 
-    @by(system.parser)
-    @targets(cast)
-    cast_lookahead: rule {
+    cast_lookahead: rule(system.parser) {
       must {{ read `(` as a [cast](#language.grammar.code.expressions.cast) when its bracket closes before any string, line end, brace, `|` or `=`, and a string, a raw string, `[`, `{`, `(`, a digit or a name follows the `)` with no space }}
       then {{ any other `(` opens a parenthesised expression }}
       example {{ `(a) + 1` adds, while `(u8)12` converts }}
     }
 
-    @by(system.parser)
-    collection_literals: rule {
+    collection_literals: rule(system.parser) {
       must {{ separate an array's items with `,`, and a map's entries with `,` or a line end, allowing line ends anywhere between items and one trailing comma }}
       example {{ `{ a = 1, b = [2]` and `c = "d" }` on the next line: a map of three entries }}
     }
 
-    @by(system.parser)
-    map_after_eq: rule {
+    map_after_eq: rule(system.parser) {
       must {{ read `{` where a value is expected as a map whose entries are paths set with `=`, and `{{` there as a prose value }}
       then {{ a map can never start with `{{`, because its entries start with a name }}
     }
@@ -121,14 +105,12 @@ code: section {
   types: section {
     | A type is a path with optional flags and arguments, combined with `?`, `|` and `&`.
 
-    @by(system.parser)
-    type_operators: rule {
+    type_operators: rule(system.parser) {
       must {{ read `?` directly after a type as optional, `|` followed by a space as a union and `&` as an intersection, the two combined from the left }}
       example {{ `String?`; `A | B`; `Comparable & Listable` }}
     }
 
-    @by(system.parser)
-    type_arguments: rule {
+    type_arguments: rule(system.parser) {
       must {{ read type arguments as an ordinary argument list after the type's name, never in `< >` }}
       then {{ `< >` after a type holds flags only }}
       example {{ `List(Payment)` and `task<confirm>` }}
@@ -137,21 +119,16 @@ code: section {
 
   /// The productions of code, expressions and types.
   @display("Code productions")
-  @source("grammar/heron.ungram")
-  tree: grammar(notation = "ungrammar") {
+  tree: grammar(notation = "ungrammar", source = "grammar/heron.ungram") {
     /// A block of statements.
     Code: production {{ LBrace Stmt* RBrace }}
-    @realizes(language.grammar.code.statements.statement_shapes)
-    Stmt: production {{ LetStmt | AssignStmt | ReturnStmt | ExprStmt | CommentLine | ErrorNode }}
+    Stmt: production(language.grammar.code.statements.statement_shapes) {{ LetStmt | AssignStmt | ReturnStmt | ExprStmt | CommentLine | ErrorNode }}
     LetStmt: production {{ KwLet Ident Colon? Type? Eq Expr }}
-    @realizes(language.grammar.code.statements.assignment_targets)
-    AssignStmt: production {{ Path Eq Expr }}
+    AssignStmt: production(language.grammar.code.statements.assignment_targets) {{ Path Eq Expr }}
     ReturnStmt: production {{ KwReturn Expr? }}
     /// An expression, with an optional trailing block.
-    @realizes(language.grammar.code.statements.trailing_blocks)
-    ExprStmt: production {{ Expr Code? }}
-    @realizes(language.grammar.code.expressions.union_not_prose)
-    Expr: production {{
+    ExprStmt: production(language.grammar.code.statements.trailing_blocks) {{ Expr Code? }}
+    Expr: production(language.grammar.code.expressions.union_not_prose) {{
       Literal | StringLit | PathExpr | CallExpr | FieldExpr | ArrayExpr | MapExpr
       | ParenExpr | CastExpr | BinaryExpr | UnaryExpr | IfExpr | ForExpr
       | ProseLines | ProseBlock | ErrorNode
@@ -159,31 +136,21 @@ code: section {
     /// A number, `true`, `false` or a raw string.
     Literal: production {{ Number? KwTrue? KwFalse? Raw? }}
     PathExpr: production {{ Path }}
-    @realizes(language.grammar.code.expressions.postfix_binds_tightest)
-    CallExpr: production {{ callee:Expr Flags? Args }}
-    @realizes(language.grammar.code.expressions.postfix_binds_tightest)
-    FieldExpr: production {{ Expr Dot Ident }}
-    @realizes(language.grammar.code.expressions.collection_literals)
-    ArrayExpr: production {{ LBracket Expr* Comma* RBracket }}
-    @realizes(language.grammar.code.expressions.collection_literals, language.grammar.code.expressions.map_after_eq)
-    MapExpr: production {{ LBrace MapEntry* Comma* RBrace }}
+    CallExpr: production(language.grammar.code.expressions.postfix_binds_tightest) {{ callee:Expr Flags? Args }}
+    FieldExpr: production(language.grammar.code.expressions.postfix_binds_tightest) {{ Expr Dot Ident }}
+    ArrayExpr: production(language.grammar.code.expressions.collection_literals) {{ LBracket Expr* Comma* RBracket }}
+    MapExpr: production(language.grammar.code.expressions.collection_literals, language.grammar.code.expressions.map_after_eq) {{ LBrace MapEntry* Comma* RBrace }}
     MapEntry: production {{ Path Eq Expr }}
     ParenExpr: production {{ LParen Expr RParen }}
     /// A [cast](#language.grammar.code.expressions.cast), and an [embedded string](#language.grammar.strings.embedded.embedded_string) when the value is a string.
     CastExpr: production {{ LParen Type RParen Expr }}
     /// Two operands; the operator is the token between them.
-    @realizes(language.grammar.code.expressions.operator_continues_line, language.grammar.code.expressions.operator_precedence, language.grammar.code.expressions.unspaced_operators, language.grammar.code.expressions.word_logic)
-    BinaryExpr: production {{ lhs:Expr rhs:Expr }}
-    @realizes(language.grammar.code.expressions.unary_operators)
-    UnaryExpr: production {{ KwNot? Minus? Expr }}
-    @realizes(language.grammar.code.statements.else_placement)
-    IfExpr: production {{ KwIf cond:Expr then:Code KwElse? else:Code? elseIf:IfExpr? }}
-    @realizes(language.grammar.code.statements.for_loops)
-    ForExpr: production {{ KwFor Ident KwIn Expr Code }}
-    @realizes(language.grammar.code.types.type_operators)
-    Type: production {{ NamedType | OptionalType | UnionType | IntersectionType | ErrorNode }}
-    @realizes(language.grammar.code.types.type_arguments)
-    NamedType: production {{ Path Flags? Args? }}
+    BinaryExpr: production(language.grammar.code.expressions.operator_continues_line, language.grammar.code.expressions.operator_precedence, language.grammar.code.expressions.unspaced_operators, language.grammar.code.expressions.word_logic) {{ lhs:Expr rhs:Expr }}
+    UnaryExpr: production(language.grammar.code.expressions.unary_operators) {{ KwNot? Minus? Expr }}
+    IfExpr: production(language.grammar.code.statements.else_placement) {{ KwIf cond:Expr then:Code KwElse? else:Code? elseIf:IfExpr? }}
+    ForExpr: production(language.grammar.code.statements.for_loops) {{ KwFor Ident KwIn Expr Code }}
+    Type: production(language.grammar.code.types.type_operators) {{ NamedType | OptionalType | UnionType | IntersectionType | ErrorNode }}
+    NamedType: production(language.grammar.code.types.type_arguments) {{ Path Flags? Args? }}
     OptionalType: production {{ Type Question }}
     UnionType: production {{ lhs:Type Bar rhs:Type }}
     IntersectionType: production {{ lhs:Type Amp rhs:Type }}

@@ -3,30 +3,22 @@ flags: section {
   | declaring package's choice, made from its own side: `on` can name another package's
   | kinds, valid wherever both are imported.
 
-  @by(system.checker)
-  @targets(language.core_format.nodes.flags.flag_term)
-  declaring_flags: rule {
+  declaring_flags: rule(system.checker) {
     must {{ make a flag known where it's declared or imported, by its name, as `slow: flag(on = [case])` makes `<slow>` }}
   }
 
-  @by(system.linter)
-  @targets(language.core_format.nodes.flags.flag_term)
-  flag_on: rule {
+  flag_on: rule(system.linter) {
     where {{ a flag is declared with `on`, a list of kinds and categories }}
     should {{ report flag placement where it stands on a node whose kind is none of them and in none of the categories }}
     while {{ the flag's `on` lists kinds or categories }}
   }
 
-  @by(system.linter)
-  @targets(language.core_format.nodes.flags.flag_term)
-  flag_on_annotation: rule {
+  flag_on_annotation: rule(system.linter) {
     where {{ a flag's `on` names an annotation, as `raw: flag(on = [insert])` }}
     should {{ report flag on annotation where it stands on any other annotation }}
   }
 
-  @by(system.linter)
-  @targets(language.core_format.nodes.flags.flag_term)
-  flag_groups: rule {
+  flag_groups: rule(system.linter) {
     where {{ flags are declared with the same `group`, as `std/http` declares `get`, `post`, `put`, `patch` and `delete` in the group `"method"` }}
     should {{ report flags of one group where a node carries two flags of one group }}
   }

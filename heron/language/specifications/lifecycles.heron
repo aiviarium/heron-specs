@@ -16,48 +16,37 @@ lifecycles: section {
   }}
 
   performs_annotation: term {{
-    `@performs(payment_lifecycle.captured)` above an op, `std/spec`'s annotation for the
-    transitions the op may cause.
+    `capture(id: String): op(Payment, payment_lifecycle.captured)`, an op's
+    [hard reference](#language.specifications.layers.references.hard_reference) to a transition
+    it may cause: an op that references a transition performs it.
   }}
 
-  @by(system.checker)
-  @targets(transition_kind)
-  transition_variants: rule {
+  transition_variants: rule(system.checker) {
     must {{ resolve a transition's `from` and `to` as variants of their enum, and report an unknown one as unresolved }}
     example {{ `transition(Status.OPEN, Status.GONE)` reports "Status has no member GONE" }}
   }
 
-  @by(system.checker)
-  @targets(transition_kind)
-  transition_body: rule {
+  transition_body: rule(system.checker) {
     must {{ report doesn't accept at a strength in a transition's body }}
   }
 
-  @by(system.docs_generator)
-  @targets(lifecycle)
-  lifecycle_view: rule {
+  lifecycle_view: rule(system.docs_generator) {
     must {{ show a [lifecycle](#language.specifications.lifecycles.lifecycle) as a diagram of its states and transitions, with a [table](#heron.language.markup.components.table) beside it of each transition's name, its from and to states and the ops that perform it }}
     then {{ a transition no op performs shows "No op" in the [table](#heron.language.markup.components.table) }}
   }
 
-  @by(system.checker)
-  @targets(lifecycle)
-  lifecycle_field_enum: rule {
+  lifecycle_field_enum: rule(system.checker) {
     if {{ the field a [lifecycle](#language.specifications.lifecycles.lifecycle) names isn't of an enum type, or a transition's variants aren't of the field's enum }}
     must {{ report not an enum field at the field or the variant }}
   }
 
-  @by(system.interpreter)
-  @targets(lifecycle)
-  closed_model: rule {
+  closed_model: rule(system.interpreter) {
     when {{ a run observes a change of a modelled field }}
-    must {{ fail the check of the run unless the change is a transition the op performing it declares with `@performs` }}
+    must {{ fail the check of the run unless the change is a transition the op performing it references }}
   }
 
-  @by(system.linter)
-  @targets(lifecycle)
-  lifecycle_lints: rule {
-    should {{ report incomplete [lifecycle](#heron.language.specifications.lifecycles.lifecycle) for a state with no way in or out, a transition no op performs, and an op that changes the field without `@performs` }}
+  lifecycle_lints: rule(system.linter) {
+    should {{ report incomplete [lifecycle](#heron.language.specifications.lifecycles.lifecycle) for a state with no way in or out, a transition no op performs, and an op that changes the field without referencing a transition }}
   }
 
   errors: section {

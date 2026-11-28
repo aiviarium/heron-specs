@@ -31,49 +31,35 @@ prose_layer: section {
     rules as `|` lines, and a blank line ends them.
   }}
 
-  @by(system.checker)
-  @targets(doc_lines)
-  docs_are_doc: rule {
+  docs_are_doc: rule(system.checker) {
     must {{ attach [doc lines](#language.core_format.prose_layer.doc_lines) to the member after them as its `@doc` }}
   }
 
-  @by(system.checker)
-  @targets(prose_lines)
-  prose_needs_a_kind: rule {
+  prose_needs_a_kind: rule(system.checker) {
     if {{ a node whose kind accepts no prose holds `|` lines or a `{{ }}` body }}
     must {{ report takes no prose }}
   }
 
-  @by(system.checker)
-  @targets(prose_lines)
-  links_resolve: rule {
+  links_resolve: rule(system.checker) {
     if {{ a link's `#path` names no node }}
     must {{ report broken link with the closest name }}
   }
 
-  @by(system.checker)
-  @targets(prose_lines)
-  tags_name_kinds: rule {
+  tags_name_kinds: rule(system.checker) {
     if {{ a tag names no kind in scope, or an attribute names no parameter of its kind }}
     must {{ report unknown tag, or unknown attribute with the closest parameter }}
   }
 
-  @by(system.checker)
-  @targets(prose_lines)
-  inserts_resolve: rule {
+  inserts_resolve: rule(system.checker) {
     must {{ resolve an insert's path in the scope of the text it's written in, and report one that doesn't resolve as unknown name }}
   }
 
-  @by(system.checker)
-  @targets(prose_file)
-  headings_need_a_kind: rule {
+  headings_need_a_kind: rule(system.checker) {
     if {{ a [prose file](#language.core_format.prose_layer.prose_file) has a heading and no kind with `heading = true` is in scope }}
     must {{ report heading needs a kind }}
   }
 
-  @by(system.server)
-  @targets(prose_lines)
-  all_prose_input: rule {
+  all_prose_input: rule(system.server) {
     when {{ input is all prose, such as a chat message to the prompt workbench }}
     must {{ read it as if every line started with `|` }}
   }

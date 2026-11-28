@@ -1,5 +1,4 @@
-@realizes(cli.check.errors_fail)
-check: command("heron check") {
+check: command("heron check", cli.check.errors_fail) {
   usage = ["heron check [--json] [--watch] [entry points…]"]
 
   | Parses, resolves and type-checks the tree of each [entry point](#language.core_format.files.entry_point), and prints every
@@ -20,8 +19,7 @@ check: command("heron check") {
     | node's `name`, `path`, `kind` or `type`, `file`, `line`, literal `value` and `children`.
   }
 
-  @realizes(cli.check.watch_rechecks_edit)
-  watch: option("--watch", type = Bool, default = false) {
+  watch: option("--watch", cli.check.watch_rechecks_edit, type = Bool, default = false) {
     | Checks once, then polls the size and modification time of every file the trees read
     | every 200 ms and checks again when one changes, reusing the session's memo. It
     | writes `heron check: watching ‹n› files` and, after each recheck,
@@ -41,13 +39,11 @@ check: command("heron check") {
 
   example {{ `heron check spec petstore` checks two trees in one session, so the standard packages are parsed once. }}
 
-  @by(system.command_line)
-  errors_fail: rule {
+  errors_fail: rule(system.command_line) {
     must {{ exit with status 1 when any diagnostic of a checked tree is an error, and 0 when every one is a warning or a hint }}
   }
 
-  @by(system.command_line)
-  watch_rechecks_edit: rule {
+  watch_rechecks_edit: rule(system.command_line) {
     when {{ a file of a watched tree changes }}
     must {{ check again, rechecking only the nodes the edit touched }}
   }

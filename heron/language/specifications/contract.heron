@@ -3,10 +3,10 @@ contract: section {
   | The contract [layer](#heron.language.specifications.layers.layer) says exactly what a consumer can observe and rely on: the entries of the
   | product's [surfaces](#heron.tools.frontend.design_system.surfaces), the errors they report, the types they exchange and examples of each.
   | It's still a requirement, never a design: it pins what a consumer relies on and nothing
-  | inside. Every entry names the rules and use case steps it exists for with `@realizes`. An
+  | inside. Every entry names the rules and use case steps it exists for in its constructor. An
   | error is a result, not an entry that solves anything: its prose links the rule that says when
   | it's reported, and it never names who reports it. The raiser names the error instead: an op's
-  | `@throws`, a command holding it, or the `@by` of the rule it links.
+  | `@throws`, a command holding it, or the subject of the rule it links.
   |
   | | Surface                     | Entry                                | Inputs                    | Outcomes                    |
   | | --------------------------- | ------------------------------------ | ------------------------- | --------------------------- |
@@ -18,7 +18,7 @@ contract: section {
   | | Kind                                                   | Holds                                                         |
   | | ------------------------------------------------------ | ------------------------------------------------------------- |
   | | `error(id)`, with `@status`, `@exit` and `@severity`  | its `title`, with a `{name}` for each `field`, `related`, a link to its rule, examples |
-  | | `example`, with `@refines`                             | one concrete case, exact inputs and outputs                    |
+  | | `example(scenario)`                                     | one concrete case, exact inputs and outputs                    |
   | | `command(name)`                                        | `usage` lines, `errors`, arguments, options, examples and subcommands |
   | | `screen(route)`                                        | regions, nested as the layout nests                            |
 
@@ -34,7 +34,7 @@ contract: section {
     identity wherever it's reported: its id. Its `title` is the message, with a `{name}` for
     each part filled in where it happens, each a `field` of the error. Its prose links the rule
     that says when it's reported, as `Reported as [late_rejected] says.`; it never names who
-    reports it, which comes from the rule's `@by`, the command holding it or an op's `@throws`.
+    reports it, which comes from the rule's subject, the command holding it or an op's `@throws`.
     These are core annotations, with no import. Where a surface reports
     it, a projection annotation says how: `@status`, the HTTP status; `@code`, its
     [error code](#language.apis.rpc.rpc_code) on a gRPC or JSON-RPC binding; `@exit`, the
@@ -48,7 +48,7 @@ contract: section {
   }}
 
   example_kind: term {{
-    `@refines(scenario) example {{ … }}`, a concrete case with its exact inputs and outputs,
+    `example(scenario) {{ … }}`, a concrete case with its exact inputs and outputs,
     pinning only what the contract guarantees; a rule's `example {{ … }}` child is a key or
     boundary case of that rule.
   }}
@@ -65,80 +65,56 @@ contract: section {
     region holding what it shows and the regions inside it.
   }}
 
-  @by(system.checker)
-  @targets(contract)
-  contract_layer: rule {
+  contract_layer: rule(system.checker) {
     must {{ give `error`, `example`, `command`, `argument`, `option`, `screen`, `region`, `api`, `op` and the kinds of `std/types` and `std/grammar` the `CONTRACT` [layer](#language.specifications.layers.layer) }}
   }
 
-  @by(system.checker)
-  @targets(error_kind)
-  placeholders_declared: rule {
+  placeholders_declared: rule(system.checker) {
     if {{ an error's `title` or `related` holds a `{name}` that no `field` of the error declares, or a field appears in neither }}
     must {{ report it as an error at the [placeholder](#heron.language.core_format.expressions.placeholder) or the field }}
     then {{ every value a message carries is also given as data, so nobody parses the message }}
   }
 
-  @by(system.checker)
-  @targets(error_kind)
-  error_title_required: rule {
+  error_title_required: rule(system.checker) {
     if {{ an error sets no `title` }}
     must {{ report the missing field, as for any member declared without a default }}
   }
 
-  @by(system.checker)
-  @targets(error_kind)
-  one_identity: rule {
+  one_identity: rule(system.checker) {
     must {{ give each error one identity, its id, for every surface that reports it, and report it on each surface through its [projection](#language.specifications.contract.error_projection) there }}
     then {{ a diagnostic, an API error and an exit status of the same problem are one error }}
   }
 
-  @by(system.checker)
-  @targets(example_kind)
-  refines_scenario: rule {
-    if {{ an example's `@refines` names something other than an outcome scenario }}
+  refines_scenario: rule(system.checker) {
+    if {{ an example references something other than an outcome scenario }}
     must {{ report it as an error at the reference }}
   }
 
-  @by(system.docs_generator)
-  @targets(command_kind)
-  command_view: rule {
+  command_view: rule(system.docs_generator) {
     must {{ show a command under its name as the page title, with its arguments and its options each as a [table](#heron.language.markup.components.table) of name, type, default and description, or as lines where they're a [small table](#tools.docs.rendering.small_table), and the errors it exits with as a [table](#heron.language.markup.components.table) of exit status and title }}
   }
 
-  @by(system.docs_generator)
-  @targets(screen_kind)
-  screen_view: rule {
+  screen_view: rule(system.docs_generator) {
     must {{ show a screen's route as a fact and its regions nested, each with an anchor }}
   }
 
-  @by(system.docs_generator)
-  @targets(error_kind)
-  error_view: rule {
-    must {{ show an error as an entry of its section's list: its id and its title with each `{name}` marked on one line, its projections, its related message and, outside a command, who reports it, derived from the `@by` of a rule its prose links or from an op that throws it, as one line of facts, and its prose; and list it on the Errors page, grouped by id, with a link to its anchor }}
+  error_view: rule(system.docs_generator) {
+    must {{ show an error as an entry of its section's list: its id and its title with each `{name}` marked on one line, its projections, its related message and, outside a command, who reports it, derived from the subject of a rule its prose links or from an op that throws it, as one line of facts, and its prose; and list it on the Errors page, grouped by id, with a link to its anchor }}
   }
 
-  @by(system.docs_generator)
-  @targets(error_kind)
-  errors_on_surfaces: rule {
+  errors_on_surfaces: rule(system.docs_generator) {
     must {{ show on each [surface entry](#heron.language.specifications.contract.surface_entry) the errors it reports with their projection there: an op's with their status and their codes on its RPC bindings, a command's with their exit status }}
   }
 
-  @by(actors.author)
-  @targets(error_kind)
-  error_granularity: rule {
+  error_granularity: rule(actors.author) {
     must {{ write two problems as one error when the same fix resolves both, and as two errors when their fixes differ }}
   }
 
-  @by(actors.author)
-  @targets(error_kind)
-  error_ids: rule {
+  error_ids: rule(actors.author) {
     should {{ name a new error's id after its domain and its reason, as `refund.WINDOW_EXPIRED`, and keep an id once it's published }}
   }
 
-  @by(actors.author)
-  @targets(example_kind)
-  contract_minimal: rule {
+  contract_minimal: rule(actors.author) {
     should {{ pin in an example only what a consumer may rely on, and leave out values the contract doesn't guarantee }}
   }
 
@@ -161,10 +137,10 @@ contract: section {
     }
 
     @display("Refines no outcome scenario")
-    refines_not_scenario: error("link") {
-      title = "@refines takes an outcome scenario, and {name} is a {kind}"
+    refines_not_scenario: error("reference") {
+      title = "{name} is a quality scenario; an example pins down an outcome scenario"
       name: field(String)
-      kind: field(String)
+      | A reference to a node that's no scenario at all is reported as [layers.references.reference_kinds] says.
       | Reported as [refines_scenario] says.
     }
   }
@@ -176,8 +152,7 @@ contract: section {
     |
     | desk: part {{ The support console. }}
     |
-    | @by(desk)
-    | late_rejected: rule {
+    | late_rejected: rule(desk) {
     |   if {{ a refund arrives more than 30 days after capture }}
     |   must {{ reject the request }}
     | }
